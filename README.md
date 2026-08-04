@@ -1,88 +1,268 @@
-# Boat-Home — Road-Towable Solar Trimaran (Design Study)
+# Boat-Home — Road-Towable Solar Trimaran
 
-A 7.2 m Dutch-barge style boat-home that is **its own trailer**: the
-stabilizer floats fold underneath the hull and carry six driven wheels,
-so one Mercedes-Viano-class car tows it on German roads, and it drives
-itself in and out of the water on slipways. Solar-electric, weed-proof
-waterjets, and a walk-on glass sun deck on the roof — you stand on the
-glass, the solar panels live safely underneath it.
+A 7.2 m Dutch-barge-style boat-home that is **its own trailer**: the
+stabiliser floats fold underneath the hull and carry six driven wheels,
+so one Mercedes-Viano-class car tows it on German roads and it drives
+itself in and out of the water on a slipway. Solar-electric, weed-proof
+waterjets, and a walk-on glass sun deck — you stand on the glass, the
+panels live safely underneath it.
 
-Parametric CAD in FreeCAD (Python-scripted); every legal and
-hydrostatic constraint is asserted in code.
+Parametric CAD in FreeCAD (Python-scripted); every legal, structural
+and hydrostatic constraint is asserted in code, so a dimension cannot
+drift without the build failing.
 
-## Key numbers
+![cruise](freecad/shots/cruise_iso.png)
+
+---
+
+## 1. Principal dimensions
 
 | | |
 |---|---|
-| Hull | 7.20 × 2.50 m Dutch barge, WL draft 260 mm, ~2.0 t |
-| Road envelope | 2 535 mm wide × 3.01 m tall (limits 2 550 / 4 000) |
-| Wheels | 6 × 205/70 R15 all-terrain, in-float hydraulic drive |
-| Floats | 6.2 m, ~1.55 t reserve each (82 %), righting SF ≈ 4.5 |
-| Water beam | 4.72 m (trimaran), floats fold flush under hull on road |
-| Solar | 4 × 500 W under the walk-on glass + 6 × 400 W **bifacial** on the balconies — 4.40 kWp nominal / ~4.35 effective |
-| Structure | external steel frame (ladder loop) carries all arm/balcony/tow loads — nothing crosses the cabin |
-| Tow | stern-first; A-arch pin-locked: sea gantry / extensible drawbar, +100 kg tongue |
-| Stern gear | 2 t electric self-recovery winch + anchor on a transom roller |
-| Propulsion | 3 × 2 kW flush-intake waterjets (weed-proof), differential steering |
-| Aft entry | self-draining cockpit, gasketed storm door, rain porch, ladder to the terrace |
-| Cabin | 5.3 × 2.28 m inside, 1.85 m clear headroom |
-| Interior | heads with shower, galley (fridge/freezer tower, washer), dinette that sleeps 2, athwartships double; batteries + water under the settees |
-| Roof deck | walk-on glass over a ventilated air box: 8 laminated panes on an alu grid, modules underneath — no moving parts, no guardrail |
-| Side balconies | full-width 500 W modules recessed into an alu ladder frame, 48 mm folded; the 540 mm aft passage is the walked route |
+| Length over hull | **7 200 mm** |
+| Length with drawbar out | **9 094 mm** |
+| Beam, hull | **2 500 mm** |
+| Beam, road (folded) | **2 535 mm** (StVZO limit 2 550) |
+| Beam, afloat (floats out) | **4 716 mm** |
+| Height on the road | **3 009 mm** (limit 4 000) |
+| Air draft afloat | **2 267 mm** |
+| Draft | **260 mm** light, ~300 mm loaded |
+| Displacement | 1 970 kg at the 260 mm waterline |
+| Design all-up mass | 2 000 kg (see §7 — this is the tight one) |
+| Ground clearance, road | 482 mm |
+| Track / wheelbase | 2 270 / 3 400 mm |
+| Coupling height / tongue load | 445 mm / +100 kg |
 
-## The five configurations
+### Living quarters
 
-`road` (towed, shutters closed) · `launch` (self-driving on slipway) ·
-`harbor` (jack-up: floats under hull carry the boat, keel awash, tires as rolling quay fenders) ·
-`cruise` (trimaran, panels out) · `anchor` (lying to the stern anchor,
-guardrail up on the sun deck).
-Renders: `freecad/shots/`.
+| | |
+|---|---|
+| Cabin | 5 300 × 2 280 mm inside |
+| Headroom | **1 850 mm** clear over the sole |
+| Floor area | 12.1 m² |
+| Berths | **5** — athwartships double, bunk (2), single settee, dinette double |
+| Heads | 1 400 × 900 wetroom with shower |
+| Galley | induction hob, sink, washer-dryer, full-height fridge/freezer |
+| Fresh water | 200 L in a bilge tank under the sole |
+| Glazing | 2 picture windows per side, 1 800 × 600 and 1 200 × 600 |
 
-## Repository layout
+![interior](docs/images/interior_plan.png)
+
+---
+
+## 2. Performance
+
+**Installed power: 3 × 2 kW flush-intake waterjets = 6 kW.** Estimates
+from an ITTC friction line plus a residuary factor for a blunt barge
+hull; wetted surface 27.3 m² in trimaran trim, 2 600 kg all-up,
+waterjet propulsive efficiency 0.45. Method in
+[docs/performance.md](docs/performance.md).
+
+| Speed | Shaft power | Range on 45 kWh usable | Endurance |
+|---|---|---|---|
+| 2.0 kn | 0.18 kW | **500 NM** | 250 h |
+| 3.0 kn | 0.56 kW | **240 NM** | 80 h |
+| 3.5 kn | 1.00 kW | **157 NM** | 45 h |
+| 4.0 kn | 2.09 kW | **86 NM** | 21 h |
+| 4.5 kn | 4.24 kW | **48 NM** | 11 h |
+| **4.8 kn max** | 6.0 kW | 33 NM | 7 h |
+
+**Maximum ≈ 4.8 knots**, power-limited rather than hull-speed-limited
+(theoretical hull speed is 6.2 kn). The last 0.3 kn costs as much power
+as the first 4 — this is a boat to cruise at 3–4 kn, not to push.
+
+**Solar-neutral cruising.** With 4.40 kWp and ≈ 24 kWh on a good summer
+day, eight hours at **4.2 knots** is solar-neutral: the boat moves all day
+and finishes with a fuller battery than it started. In spring or autumn
+(12 kWh) that falls to 3.6 kn, and on an overcast winter day (6 kWh) to
+2.7 kn.
+
+| | |
+|---|---|
+| Battery | 48 V LiFePO₄, **50 kWh**, 357 kg, split under both settees |
+| Solar | **4.40 kWp** — 4 × 500 W under the walk-on glass, 6 × 400 W bifacial on the balconies (4.35 kWp effective) |
+| House load | ≈ 2.5 kWh/day (fridge, lights, water, AC standby) |
+| Steering | differential thrust, no rudder |
+| On land | ≤ 10 km/h under its own wheels; towed at road speeds |
+
+---
+
+## 3. The five configurations
+
+| Mode | What it is | Renders |
+|---|---|---|
+| `road` | floats folded under the hull, balconies up over the windows, towed stern-first | [iso](freecad/shots/road_iso.png) · [side](freecad/shots/road_side.png) · [bow](freecad/shots/road_bow.png) · [aft](freecad/shots/road_aft.png) |
+| `launch` | driving itself down the slipway on six wheels | [iso](freecad/shots/launch_iso.png) · [side](freecad/shots/launch_side.png) · [bow](freecad/shots/launch_bow.png) · [aft](freecad/shots/launch_aft.png) |
+| `harbor` | jack-up: floats carry the boat, keel awash, tyres as rolling quay fenders | [iso](freecad/shots/harbor_iso.png) · [side](freecad/shots/harbor_side.png) · [bow](freecad/shots/harbor_bow.png) · [aft](freecad/shots/harbor_aft.png) |
+| `cruise` | trimaran, floats out, balconies down | [iso](freecad/shots/cruise_iso.png) · [side](freecad/shots/cruise_side.png) · [bow](freecad/shots/cruise_bow.png) · [aft](freecad/shots/cruise_aft.png) |
+| `anchor` | lying to the stern anchor | [iso](freecad/shots/anchor_iso.png) · [side](freecad/shots/anchor_side.png) · [bow](freecad/shots/anchor_bow.png) · [aft](freecad/shots/anchor_aft.png) |
+
+![road](freecad/shots/road_iso.png)
+
+![general arrangement](docs/images/general_arrangement.png)
+
+---
+
+## 4. Key systems
+
+**Hangar / running gear** — one rigid welded arm per station, a single
+shoulder pin, 90° swing. Road: float on its side flush under the hull,
+wheels vertical. Water: float flat, wheels dry above the waterline. Six
+205/70 R15 all-terrain wheels, electric-over-hydraulic drive with the
+machinery sealed inside the floats. → [docs/wheels.md](docs/wheels.md)
+
+**Jack-up stance** — the floats hold 3.1 t of buoyancy against a 2.0 t
+boat, so folding the arms in deep water lifts the *hull*: the floats end
+65 % submerged carrying everything and the keel rides awash. Pontoon
+GM ≈ 3.1 m.
+
+**Propulsion** — flush perforated intake grids on the float sides below
+the waterline (0.5 m/s face velocity, 14 mm holes, so weed drifts past),
+internal duct to an enclosed pump, tail nozzle. Nothing rotating is
+reachable by weed. → [docs/propulsion.md](docs/propulsion.md)
+
+**Exoskeleton** — an external steel ladder-loop frame carries every
+point load (arms, balconies, tow, fenders); nothing structural crosses
+the living volume. → [docs/structure.md](docs/structure.md)
+
+**Roof deck** — walk-on 6+6 laminated glass over a ventilated 60 mm air
+box on an aluminium grid, solar modules underneath, no moving parts.
+Sized for full building-code deck loads: 2 kN/m² plus 2 kN on a
+50 × 50 mm patch. → [docs/roof.md](docs/roof.md)
+
+![roof deck](docs/images/roof_deck.png)
+
+![glass sizing](docs/images/roof_glass.png)
+
+**Interior** — heads, galley, dinette that sleeps two, elevating double
+bed forward, fold-down bunk to port; batteries and water low and
+amidships. → [docs/interior.md](docs/interior.md)
+
+![interior iso](freecad/shots/interior_iso.png)
+
+**Tow and stern gear** — a wide A-arch on the transom pin-locks into a
+sea gantry or an extensible drawbar; the 2 t electric self-recovery
+winch and the anchor share the centreline so a ramp pull has no yaw
+bias.
+
+---
+
+## 5. Cost estimate (2026, EUR, materials)
+
+| Item | Low | High | Source |
+|---|---|---|---|
+| Hull shell, structure, fairing | 12 000 | 18 000 | est. |
+| Floats, 2 × 6.2 m | 3 500 | 4 500 | est. |
+| Exoskeleton frame + tow arch | 2 600 | 3 200 | [structure.md](docs/structure.md) |
+| Wheels, hubs, in-float drive | 5 600 | 6 500 | [wheels.md](docs/wheels.md) |
+| Propulsion, 3 × 2 kW waterjets | 8 800 | 13 300 | [propulsion.md](docs/propulsion.md) |
+| Walk-on glass roof deck | 5 110 | 6 000 | [roof.md](docs/roof.md) |
+| Solar balconies | 1 700 | 2 000 | [roof.md](docs/roof.md) |
+| Battery bank, 50 kWh LiFePO₄ | 9 000 | 11 000 | at 180–220 €/kWh |
+| Electrics: inverter/charger, MPPT, switchgear, cabling | 3 000 | 4 500 | est. |
+| Glazing: winter garden + windows | 6 000 | 9 000 | est. |
+| Interior fit-out incl. appliances, heads, AC | 12 000 | 16 000 | est. |
+| Paint, antifoul, deck finish | 2 000 | 3 000 | est. |
+| Approvals: CE self-certification, TÜV/StVZO trailer | 2 000 | 4 000 | est. |
+| **Materials total** | **73 000** | **101 000** | |
+
+**Built professionally**, add labour: ≈ 2 550 h at 60–80 €/h =
+**150 000–205 000**, so a yard-built boat lands near
+**230 000–300 000**. The design assumes a self-build, where that labour
+is your own time.
+
+---
+
+## 6. Build time
+
+| Phase | Hours |
+|---|---|
+| Hull shell, bulkheads, fairing | 700 |
+| Floats, arms, wheels, hangar kinematics | 350 |
+| Propulsion install and ducting | 150 |
+| Roof deck, glass, solar, wiring | 200 |
+| Interior joinery and fit-out | 500 |
+| Electrics, plumbing, systems | 250 |
+| Paint and finishing | 250 |
+| Commissioning, trials, approvals | 150 |
+| **Total** | **≈ 2 550 h** |
+
+- **Self-build at 15 h/week** — ≈ 3.3 years
+- **Self-build at 25 h/week** — ≈ 2 years
+- **Professional yard, 2–3 people** — ≈ 6–9 months elapsed
+
+---
+
+## 7. Open risks
+
+1. **Mass budget — the binding constraint.** The interior alone is
+   832 kg (the 50 kWh bank is 357 of it) and the glass deck 460 kg,
+   against a 2 000 kg design figure for towing. Hull, frame, floats,
+   wheels, arms and jets do not fit in what is left. Levers, cheapest
+   first: travel with the water tank empty (−200 kg), carry half the
+   bank as removable modules (−180 kg), or re-budget at ~2 500 kg and
+   tow with a heavier car. → [interior.md §8](docs/interior.md)
+2. **TÜV approval** of the integrated running gear as a trailer is
+   unprecedented; get an engineer's sign-off early.
+3. **Jet hydrodynamics** are first-order estimates — the intake grids
+   want CFD or a tank test before committing.
+4. **Arm and shoulder-pin fatigue** — each arm carries ~1 000 kg
+   through one pin, cycled every launch.
+5. **No guardrail on the sun deck** — a deliberate choice for looks;
+   that deck is 2.4 m above the water.
+
+---
+
+## 8. Documents
+
+| Document | Covers |
+|---|---|
+| [performance.md](docs/performance.md) | speed, range, the resistance model |
+| [wheels.md](docs/wheels.md) | hangar kinematics, in-float drive, BOM |
+| [propulsion.md](docs/propulsion.md) | waterjets, weed strategy, BOM |
+| [structure.md](docs/structure.md) | exoskeleton frame, tow arch, stern gear |
+| [roof.md](docs/roof.md) | walk-on glass deck, glass sizing, balconies |
+| [interior.md](docs/interior.md) | layout, stowage, services, mass budget |
+| [aft_entry.md](docs/aft_entry.md) | companionway, porch, ladder, AC, lockers |
+| [glossary.md](docs/glossary.md) | vocabulary for every part and term |
+
+---
+
+## 9. Repository layout
 
 ```
-freecad/            primary model
+freecad/            the model — the source of truth
   params.py         ALL dimensions, kinematics, checks() asserts
   build_boat.py     geometry builders -> boat_<mode>.FCStd
-  view.sh           build + open in FreeCAD GUI (./view.sh [modes])
+  view.sh           build + open in the FreeCAD GUI
   capture.py        wipes shots/, re-renders every configuration
+  interior_shots.py interior renders
   ga_drawing.py     dimensioned general-arrangement sheet
-  roof_cards.py     roof-deck spec cards
   interior_plan.py  interior sheet: plan + stowage plan + sections
-  shots/            current renders (always regenerated, never stale)
+  roof_cards.py     roof-deck spec cards
+  shots/            current renders (regenerated, never stale)
 docs/
-  glossary.md       shared vocabulary for every part and term
-  wheels.md         wheel system: kinematics, drive, BOM + 2026 costs
-  propulsion.md     waterjet system: weed strategy, BOM
-  structure.md      exoskeleton frame + two-pose tow arch
-  aft_entry.md      companionway, porch, ladder, AC, lockers, gates
-  roof.md           roof deck: glass sizing, air box, loads, yield
-  interior.md       layout, stowage (incl. hidden), services, mass
-  images/           dimensioned spec cards for purchasable parts
+  *.md              per-system design studies (table above)
+  images/           dimensioned spec cards and drawings
+  make_pdf.py       renders this README to docs/boat-home.pdf
 drafts/             original concept PDF + STL sketch
-*.scad, Makefile    legacy OpenSCAD sketch (superseded by freecad/)
+*.scad, Makefile    legacy OpenSCAD sketch (superseded)
 ```
 
-## Working on it
+## 10. Working on it
 
 ```sh
-./freecad/view.sh                 # open cruise+road+foiling in the GUI
-./freecad/view.sh anchor          # any mode by name
-~/bin/FreeCAD.AppImage freecad/capture.py    # regenerate all renders
+./freecad/view.sh                              # open in the GUI
+~/bin/FreeCAD.AppImage freecad/capture.py      # regenerate all renders
+~/bin/FreeCAD.AppImage freecad/interior_shots.py
+python3 freecad/ga_drawing.py                  # arrangement sheet
+python3 freecad/interior_plan.py               # interior sheet
+python3 freecad/roof_cards.py                  # roof spec cards
+python3 docs/make_pdf.py                       # this README as a PDF
 python3 -c "import sys; sys.path.insert(0,'freecad'); import params; params.checks()"
 ```
 
-`params.py` is the single source of truth; `checks()` recomputes road
-legality (StVZO), submergence margins, stability and displacement from
-the same numbers the geometry uses — change a dimension and the asserts
-tell you what broke.
-
-## Status / open engineering risks
-
-Design study — not build drawings. Known open items: TÜV approval of
-the integrated running gear as a trailer; 1.9 t all-in mass budget is
-ambitious; arm/shoulder fatigue loads; wheel-arch recesses for
-suspension travel not yet modeled; jet hydrodynamics are
-first-order estimates; the waterjet intake grids' final position needs
-Max's sign-off (moved to float midbody sides + transom, 2026-08-04).
-See docs/ for per-system detail.
+`params.py` is the single source of truth. `checks()` recomputes road
+legality (StVZO), submergence margins, stability, glass thickness, panel
+fit and interior clearances from the same numbers the geometry uses —
+change a dimension and the asserts tell you what broke.
