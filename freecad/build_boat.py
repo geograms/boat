@@ -706,18 +706,6 @@ def build_aft_entry(rail_up=False, door_open=False):
         parts.append(box(P.GATE_X1 - P.GATE_X0, 240, 50,
                          (P.GATE_X0, sgn * P.GATE_PLATE_Y
                           - (240 if sgn > 0 else 0), DECK_Z)))
-        # grab post on the balcony frame + tie back into the cabin wall
-        parts.append(rod((P.GRAB_POST_X, sgn * P.GRAB_POST_Y, DECK_Z),
-                         (P.GRAB_POST_X, sgn * P.GRAB_POST_Y,
-                          DECK_Z + P.GRAB_POST_H), 65))
-        parts.append(rod((P.GRAB_POST_X, sgn * P.GRAB_POST_Y,
-                          DECK_Z + P.GRAB_POST_H),
-                         (P.CABIN_X0 - 30, sgn * (P.CABIN_W / 2 - 40),
-                          DECK_Z + P.GRAB_POST_H - 120), 55))
-        parts.append(rod((P.GRAB_POST_X, sgn * P.GRAB_POST_Y,
-                          DECK_Z + P.GRAB_POST_H),
-                         (P.GATE_X1, sgn * P.GRAB_POST_Y,
-                          DECK_Z + P.GRAB_POST_H), 55))
     return (Part.makeCompound(parts), Part.makeCompound(dark),
             Part.makeCompound(glass))
 

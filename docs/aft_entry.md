@@ -114,9 +114,9 @@ pieces:
 2. **Half step** at the outboard edge of the landing, then the
    **boarding gate** (x 950–1450): a gap deliberately left in the sheer
    rail with a threshold plate.
-3. **Grab post bolted to the balcony frame** at the gate, 900 mm tall,
-   tied back into the cabin wall and running forward along the
-   balcony edge — a handhold exactly where you step across.
+3. **Flush threshold plate** at the gate, kept inside the deck edge.
+   No stanchions or grab posts: they stood in the middle of the
+   passage and would have pushed the road width over the limit.
 
 You then walk the 1 200 mm-wide balcony over the float for the whole
 length of the boat. In road trim the balconies fold up over the

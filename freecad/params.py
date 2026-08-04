@@ -263,14 +263,10 @@ STAIR_STEPS = 8
 GATE_X0, GATE_X1 = 200, 800    # sheer-rail gap right beside the
                                # cockpit: step straight out of the
                                # door onto the balcony walkway
-# transition from the door out to the balcony walkways: a triangular
-# landing in each forward corner at bench height, and a grab post
-# bolted to the balcony frame at the gate
+# transition from the door out to the balcony walkway: a landing at
+# bench height, a half step, and a flush threshold plate at the gate
 LANDING_Z = 850
 GATE_PLATE_Y = 1180           # threshold plate stays inside the hull
-GRAB_POST_X = 520
-GRAB_POST_Y = 1150            # inboard of the deck edge (road width)
-GRAB_POST_H = 900
 # aft wall fit-out, seen from the cockpit: AC upper right, lockers below
 AC_Y0, AC_Y1 = 600, 1140
 AC_Z0, AC_Z1 = 1760, 2100
@@ -375,8 +371,7 @@ def checks(verbose=True):
     float_outer_road = POD_ROAD[0] + FLOAT_H / 2               # sideways
     road_width = 2 * max(HULL_BEAM / 2, wheel_outer, float_outer_road,
                          BALC_HINGE_Y + BALC_T + 2 * PANEL_T + 12,
-                         GATE_PLATE_Y,            # gate threshold plate
-                         GRAB_POST_Y + 35)        # boarding grab post
+                         GATE_PLATE_Y)            # gate threshold plate
     road_height = CABIN_ROOF_Z + CANOPY_THICK - GROUND_Z
     track = 2 * wheel_disc_y
     # water: floats flat, wheels flat on deck
