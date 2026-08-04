@@ -22,7 +22,7 @@ for mode in ("road", "launch", "harbor", "cruise", "anchor"):
     view = Gui.ActiveDocument.ActiveView
     planes = [doc.getObject(n) for n in PLANES if doc.getObject(n)]
     for vp, name in ((view.viewIsometric, "iso"), (view.viewFront, "side"),
-                     (view.viewRight, "bow")):
+                     (view.viewRight, "bow"), (view.viewLeft, "aft")):
         for p in planes:
             p.ViewObject.Visibility = False
         vp()

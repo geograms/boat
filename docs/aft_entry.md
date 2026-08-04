@@ -6,14 +6,20 @@ Status: design study. Geometry in `freecad/params.py` (`COCKPIT_*`,
 
 ## 1. The constraint that shapes everything
 
-The cabin is only **1 000 mm tall above the deck** — the other 800 mm
-of the 1 800 mm headroom comes from the hull below. So a full-height
-door is not geometrically possible: a 1 900 mm door would need the
-cockpit floor 20 mm above the keel, i.e. underwater.
+The cabin is only **1 000 mm tall above the deck**, so the door height
+is bought entirely by how deep the footwell goes. Dropping the floor to
+**400 mm** buys three things at once:
 
-The answer is the one every barge and sailboat uses: a **companionway**
-— a sunken footwell, a storm sill, a header you duck under, then you
-stand up inside.
+| floor | freeboard | clear at the door | bulwark |
+|---|---|---|---|
+| 620 | 360 | 1 480 — you duck | 530 |
+| **400** | **140** | **1 700 — you walk in** | **750** |
+| 350 | 90 | 1 750 | 800 (won't gravity-drain) |
+
+400 mm is the sweet spot: **1 700 mm clear at the threshold** (no
+ducking), a **750 mm bulwark** all round the well that stops anyone
+stepping off into the water, and still 140 mm of freeboard so the
+cockpit gravity-drains through the transom.
 
 ```
                      porch roof (top flush with the terrace)
@@ -40,9 +46,10 @@ The living quarters stay sealed from every direction:
 - **Gasketed door** with four dogs (two per side), sealing against a
   continuous frame — the same detail used on wheelhouse doors.
 - **Porch roof** over the whole cockpit, so rain never falls on the
-  door while it is open, and the crew can stand dry while unlocking.
-  A flashing plate closes the 80 mm gap between porch and cabin wall
-  and sheds that water to the sides.
+  door while it is open. It is **cantilevered off the cabin wall on two
+  diagonal tubes** — no posts standing on the deck, because nobody
+  walks on this roof and posts would only clutter the entry. A flashing
+  plate seals it to the wall.
 - **The AC unit does not breach the envelope**: only its ventilator
   box sits outside, bolted to the aft wall through a gasketed flange.
 - **Lockers open outward**, into the cockpit — they are separate
@@ -61,11 +68,12 @@ Standing in the cockpit facing forward:
 
 ## 4. Stairs to the roof terrace
 
-720 mm of run for 1 000 mm of rise is a **ship's ladder (54°)**, not a
-staircase — the aft deck simply has no more length. It is detailed as
-a proper ladder rather than pretending otherwise: two stringers on
-edge, seven nosed treads let into them. The ladder rises through a
-cut-out in the porch roof and lands flush on the terrace.
+The ladder is pushed **hard against the aft wall** — 420 mm of run for
+1 000 mm of rise, i.e. **67°** — so it takes almost no deck. That angle
+is only walkable with **alternating treads** (the loft/engine-room
+stair): eight half-width treads that swap sides, so each foot gets a
+250 mm-deep step in half the going a normal stair would need. Two
+stringers on edge carry them.
 
 **One folding handrail, outboard only.** The rail is needed solely
 when the roof terrace is in use, so it does not stand permanently in

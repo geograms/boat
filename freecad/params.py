@@ -236,24 +236,30 @@ COUPLING_H = 430              # target coupling height above ground
 # deck, and are entered through boarding gates in the sheer rail.
 COCKPIT_X0, COCKPIT_X1 = 150, 900
 COCKPIT_HW = 700              # footwell half width
-COCKPIT_FLOOR = 620           # 360 mm above WL -> drains overboard
+COCKPIT_FLOOR = 400           # deep well: 1700 mm clear at the door, no
+                              # ducking; 750 mm bulwark all round as the
+                              # fall barrier; still 140 mm above WL so it
+                              # gravity-drains through the transom
 COCKPIT_WALL = 40
+BENCH_Z = 850                 # side benches: seat, and the step up to deck
+BENCH_DEPTH = 400
 DOOR_HW = 350
-DOOR_Z0, DOOR_Z1 = 800, 2100  # sill 180 above the footwell floor
-PORCH_X0, PORCH_X1 = 150, 820 # stops short of the wall; flashing seals
-PORCH_HW = 1150
-PORCH_T = 180                 # top flush with the roof terrace
-PORCH_POST_Y = 640
-STAIR_Y0, STAIR_Y1 = -1200, -720   # port strip, to the LEFT of the door
-STAIR_X0, STAIR_X1 = 160, 880   # longest run the aft deck allows
-STAIR_STEPS = 7
+DOOR_Z0, DOOR_Z1 = 550, 2100  # 150 sill; 1700 mm clear above the floor
+PORCH_X0, PORCH_X1 = 120, 820 # cantilevered, flashing seals it to the wall
+PORCH_HW = 700                # narrow: covers the well, clears the ladder
+PORCH_T = 180
+PORCH_STRUT_Y = 620           # diagonal tubes to the wall — no deck posts
+# alternating-tread ladder, hard against the aft wall to save floor space
+STAIR_Y0, STAIR_Y1 = -1200, -740   # port strip, to the LEFT of the door
+STAIR_X0, STAIR_X1 = 460, 880
+STAIR_STEPS = 8
 GATE_X0, GATE_X1 = 950, 1450   # sheer-rail gap: step out to the balconies
 # aft wall fit-out, seen from the cockpit: AC upper right, lockers below
 AC_Y0, AC_Y1 = 600, 1140
 AC_Z0, AC_Z1 = 1760, 2100
 AC_DEPTH = 340
 LOCKER_Y0, LOCKER_Y1 = 430, 1140
-LOCKER_Z0, LOCKER_Z1 = 900, 1700
+LOCKER_Z0, LOCKER_Z1 = 950, 1720
 LOCKER_DEPTH = 300
 
 # ---- stern gear: electric winch + anchor ----
@@ -397,10 +403,13 @@ def checks(verbose=True):
     # aft entry
     stair_ang = math.degrees(math.atan2(CABIN_ROOF_Z - CABIN_BASE_Z,
                                         STAIR_X1 - STAIR_X0))
-    assert COCKPIT_FLOOR >= WL_Z + 250, \
+    assert COCKPIT_FLOOR >= WL_Z + 120, \
         f"cockpit floor only {COCKPIT_FLOOR - WL_Z} mm above WL"
-    assert DOOR_Z0 - COCKPIT_FLOOR >= 150, "storm sill too low"
-    assert stair_ang <= 65, f"stairs {stair_ang:.0f} deg too steep"
+    assert DOOR_Z0 - COCKPIT_FLOOR >= 140, "storm sill too low"
+    assert DOOR_Z1 - COCKPIT_FLOOR >= 1650, \
+        f"only {DOOR_Z1 - COCKPIT_FLOOR} mm clear at the door — you would duck"
+    assert CABIN_BASE_Z - COCKPIT_FLOOR >= 600, "bulwark too low to stop a fall"
+    assert stair_ang <= 70, f"ladder {stair_ang:.0f} deg too steep"
     assert PORCH_X1 < CABIN_X0, "porch must clear the cabin wall for flashing"
     # jack-up stance equilibrium
     jack_d = FLOAT_W * BOAT_MASS / (2 * reserve_kg)      # submerged depth
@@ -438,9 +447,9 @@ def checks(verbose=True):
               f"{sea_z - WL_Z:.0f} above WL")
         print(f"stern tow       coupling {cpl_h:.0f} mm high, overhang aft "
               f"{-cpl_x:.0f} mm, tongue load {tongue:+.0f} kg")
-        print(f"aft entry       cockpit floor {COCKPIT_FLOOR - WL_Z:.0f} above WL, "
-              f"door {DOOR_Z1 - DOOR_Z0} tall over a {DOOR_Z0 - COCKPIT_FLOOR} sill, "
-              f"stairs {stair_ang:.0f} deg")
+        print(f"aft entry       {DOOR_Z1 - COCKPIT_FLOOR} mm clear at the door, "
+              f"bulwark {CABIN_BASE_Z - COCKPIT_FLOOR}, "
+              f"floor {COCKPIT_FLOOR - WL_Z} above WL, ladder {stair_ang:.0f} deg")
         print(f"jack-up stance  floats {jack_frac * 100:.0f}% deep, "
               f"keel {-harbor_wl:.0f} mm above water (awash), "
               f"pontoon GM ~{gm_est:.1f} m")

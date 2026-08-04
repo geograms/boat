@@ -545,25 +545,37 @@ def build_tow(pose):
 
 
 def build_aft_entry(rail_up=False):
-    """Companionway door, rain porch, stairs to the roof terrace, AC
-    ventilator box and cockpit lockers on the aft wall. The single
-    outboard handrail is raised only when the terrace is in use."""
+    """Deep self-draining cockpit with side benches, storm door with
+    1700 mm clear height, cantilevered rain porch (no deck posts —
+    diagonal tubes to the wall), alternating-tread ladder hard against
+    the aft wall, AC box and lockers. One folding outboard handrail."""
     parts, glass, dark = [], [], []
     x0, x1 = P.COCKPIT_X0, P.COCKPIT_X1
-    # --- porch roof (top flush with the terrace) + posts + flashing
-    porch = box(P.PORCH_X1 - P.PORCH_X0, 2 * P.PORCH_HW, P.PORCH_T,
-                (P.PORCH_X0, -P.PORCH_HW, P.CABIN_ROOF_Z - P.PORCH_T))
-    porch = porch.cut(box(P.STAIR_X1 - 150, P.STAIR_Y1 - P.STAIR_Y0 + 120,
-                          400, (200, P.STAIR_Y0 - 60,
-                                P.CABIN_ROOF_Z - P.PORCH_T - 100)))
-    parts.append(porch)
+
+    # --- side benches: seats, and the step from the well up to the deck
     for sgn in (-1, 1):
-        parts.append(rod((x0 + 60, sgn * P.PORCH_POST_Y, DECK_Z),
-                         (x0 + 60, sgn * P.PORCH_POST_Y,
-                          P.CABIN_ROOF_Z - P.PORCH_T), 90))
-    parts.append(box(P.CABIN_X0 - P.PORCH_X1 + 40, 2 * P.PORCH_HW, 60,
-                     (P.PORCH_X1 - 20, -P.PORCH_HW,
-                      P.CABIN_ROOF_Z - P.PORCH_T - 30)))     # flashing
+        parts.append(box(x1 - x0 - 120, P.BENCH_DEPTH, 60,
+                         (x0 + 60, sgn * P.COCKPIT_HW - (P.BENCH_DEPTH
+                                                         if sgn > 0 else 0),
+                          P.BENCH_Z - 60)))
+        parts.append(box(x1 - x0 - 120, 50, P.BENCH_Z - P.COCKPIT_FLOOR,
+                         (x0 + 60,
+                          sgn * (P.COCKPIT_HW - P.BENCH_DEPTH) - (50 if sgn > 0
+                                                                  else 0),
+                          P.COCKPIT_FLOOR)))
+
+    # --- cantilevered porch: no posts, two diagonal tubes to the wall
+    parts.append(box(P.PORCH_X1 - P.PORCH_X0, 2 * P.PORCH_HW, P.PORCH_T,
+                     (P.PORCH_X0, -P.PORCH_HW,
+                      P.CABIN_ROOF_Z - P.PORCH_T)))
+    for sgn in (-1, 1):
+        parts.append(rod((P.PORCH_X0 + 90, sgn * P.PORCH_STRUT_Y,
+                          P.CABIN_ROOF_Z - P.PORCH_T),
+                         (P.CABIN_X0 - 20, sgn * P.PORCH_STRUT_Y, 1430), 85))
+    parts.append(box(P.CABIN_X0 - P.PORCH_X1 + 60, 2 * P.PORCH_HW, 60,
+                     (P.PORCH_X1 - 30, -P.PORCH_HW,
+                      P.CABIN_ROOF_Z - P.PORCH_T - 30)))        # flashing
+
     # --- companionway: storm sill, frame, gasketed door leaf
     parts.append(box(180, 2 * P.DOOR_HW + 160, P.DOOR_Z0 - P.COCKPIT_FLOOR,
                      (x1 - 90, -P.DOOR_HW - 80, P.COCKPIT_FLOOR)))
@@ -572,49 +584,47 @@ def build_aft_entry(rail_up=False):
                          (x1 - 75, sgn * P.DOOR_HW - 35, P.DOOR_Z0)))
     parts.append(box(150, 2 * P.DOOR_HW + 70, 70,
                      (x1 - 75, -P.DOOR_HW - 35, P.DOOR_Z1 - 35)))
-    leaf = box(50, 2 * P.DOOR_HW - 40, P.DOOR_Z1 - P.DOOR_Z0 - 60,
-               (x1 - 25, -P.DOOR_HW + 20, P.DOOR_Z0 + 30))
-    dark.append(leaf)
-    glass.append(box(20, 2 * P.DOOR_HW - 300, 620,
-                     (x1 - 40, -P.DOOR_HW + 150, P.DOOR_Z0 + 520)))
-    for dz in (0, 620):                                       # dogs
+    dark.append(box(50, 2 * P.DOOR_HW - 40, P.DOOR_Z1 - P.DOOR_Z0 - 60,
+                    (x1 - 25, -P.DOOR_HW + 20, P.DOOR_Z0 + 30)))
+    glass.append(box(20, 2 * P.DOOR_HW - 300, 800,
+                     (x1 - 40, -P.DOOR_HW + 150, P.DOOR_Z0 + 620)))
+    for dz in (0, 700):                                          # dogs
         for sgn in (-1, 1):
             parts.append(Part.makeCylinder(
                 26, 90, Vector(x1 - 40, sgn * (P.DOOR_HW - 60),
-                               P.DOOR_Z0 + 300 + dz), Vector(-1, 0, 0)))
-    # --- ship's ladder to the roof terrace, port side of the door.
-    # A 2.15 m roof off a 1.15 m deck in 720 mm of run is a ladder, not
-    # a staircase — so it is detailed as one: stringers on edge, nosed
-    # treads let into them, handrails both sides (the inboard side
-    # overlooks the footwell) returning onto the terrace as grab rails.
+                               P.DOOR_Z0 + 320 + dz), Vector(-1, 0, 0)))
+
+    # --- alternating-tread ladder, hard against the aft wall (67 deg).
+    # Alternating treads are what make this angle walkable in 420 mm of
+    # run; a normal stair would need three times the floor space.
     n, sx0, sx1 = P.STAIR_STEPS, P.STAIR_X0, P.STAIR_X1
     z0, z1 = DECK_Z, P.CABIN_ROOF_Z
     rise, going = (z1 - z0) / n, (sx1 - sx0) / n
-    for sy in (P.STAIR_Y0 + 55, P.STAIR_Y1 - 55):          # stringers
-        parts.append(rod((sx0 - 60, sy, z0 - 40), (sx1 + 40, sy, z1 - 40),
-                         150))
-    for i in range(n):                                      # nosed treads
+    ymid = (P.STAIR_Y0 + P.STAIR_Y1) / 2
+    for sy in (P.STAIR_Y0 + 50, P.STAIR_Y1 - 50):                # stringers
+        parts.append(rod((sx0 - 70, sy, z0 - 30), (sx1 + 50, sy, z1 - 30),
+                         140))
+    for i in range(n):
         tz = z0 + (i + 1) * rise
         tx = sx0 + i * going
-        parts.append(box(going + 55, P.STAIR_Y1 - P.STAIR_Y0 - 60, 42,
-                         (tx, P.STAIR_Y0 + 30, tz - 42)))
-        parts.append(rod((tx, P.STAIR_Y0 + 30, tz - 21),
-                         (tx, P.STAIR_Y1 - 30, tz - 21), 42))
-    # ONE folding handrail, on the OUTBOARD side only. It is needed
-    # solely when the roof terrace is in use, so it folds flat onto the
-    # stringer the rest of the time and takes no space.
+        y_lo = P.STAIR_Y0 + 40 if i % 2 else ymid
+        parts.append(box(250, (P.STAIR_Y1 - P.STAIR_Y0) / 2 - 40, 40,
+                         (tx - 95, y_lo, tz - 40)))
+        parts.append(rod((tx - 95, y_lo, tz - 20),
+                         (tx - 95, y_lo + (P.STAIR_Y1 - P.STAIR_Y0) / 2 - 40,
+                          tz - 20), 40))
+
+    # ONE folding handrail, outboard side only: up only when the roof
+    # terrace is in use, folded flat on the stringer otherwise.
     ry = P.STAIR_Y0 + 45
     if rail_up:
         parts.append(rod((sx0, ry, z0), (sx0, ry, z0 + 950), 60))
         parts.append(rod((sx1, ry, z1), (sx1, ry, z1 + 950), 60))
         parts.append(rod((sx0, ry, z0 + 950), (sx1, ry, z1 + 950), 55))
-        parts.append(rod((sx1, ry, z1 + 950),
-                         (sx1 + 420, ry, z1 + 950), 55))      # terrace grab
-        parts.append(rod((sx1 + 420, ry, z1 + 950),
-                         (sx1 + 420, ry, z1), 55))
-    else:                                    # folded flat along the ladder
-        parts.append(rod((sx0 - 40, ry, z0 + 90), (sx1 + 30, ry, z1 + 90),
-                         55))
+        parts.append(rod((sx1, ry, z1 + 950), (sx1 + 420, ry, z1 + 950), 55))
+        parts.append(rod((sx1 + 420, ry, z1 + 950), (sx1 + 420, ry, z1), 55))
+    else:
+        parts.append(rod((sx0 - 40, ry, z0 + 90), (sx1 + 30, ry, z1 + 90), 55))
         for px in (sx0, sx1):
             pz = z0 + (px - sx0) / (sx1 - sx0) * (z1 - z0)
             parts.append(rod((px, ry, pz), (px, ry, pz + 110), 60))
@@ -622,19 +632,20 @@ def build_aft_entry(rail_up=False):
     # --- AC ventilator box (upper right) and lockers (rest of the wall)
     dark.append(box(P.AC_DEPTH, P.AC_Y1 - P.AC_Y0, P.AC_Z1 - P.AC_Z0,
                     (x1 - P.AC_DEPTH, P.AC_Y0, P.AC_Z0)))
-    for i in range(5):                                        # louvres
+    for i in range(5):
         parts.append(box(30, P.AC_Y1 - P.AC_Y0 - 80, 26,
                          (x1 - P.AC_DEPTH - 15, P.AC_Y0 + 40,
                           P.AC_Z0 + 50 + i * 58)))
     parts.append(box(P.LOCKER_DEPTH, P.LOCKER_Y1 - P.LOCKER_Y0,
                      P.LOCKER_Z1 - P.LOCKER_Z0,
                      (x1 - P.LOCKER_DEPTH, P.LOCKER_Y0, P.LOCKER_Z0)))
-    for i in range(2):                                        # locker doors
+    for i in range(2):
         dark.append(box(24, (P.LOCKER_Y1 - P.LOCKER_Y0) / 2 - 30,
                         P.LOCKER_Z1 - P.LOCKER_Z0 - 60,
                         (x1 - P.LOCKER_DEPTH - 20,
                          P.LOCKER_Y0 + 15 + i * (P.LOCKER_Y1 - P.LOCKER_Y0) / 2,
                          P.LOCKER_Z0 + 30)))
+
     # --- boarding steps out to the solar balconies, both sides
     for sgn in (-1, 1):
         parts.append(box(P.GATE_X1 - P.GATE_X0, 200, 50,
