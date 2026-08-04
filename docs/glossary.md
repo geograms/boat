@@ -48,6 +48,10 @@ Shared language for the design. Geometry values live in
   the shoulder swing 1:1 (90° swing = side-to-flat).
 - **Roll (float roll)** — the float's rotation about its own long axis:
   90° = on its side (road), 0° = flat on the water.
+- **Jack-up stance** — the folded-arms-afloat configuration: floats
+  65 % submerged carry the whole boat, hull keel awash and unloaded.
+  The boat stands on its own floats (self-propelled by the waterjets;
+  nothing external involved).
 - **Pose / mode** — a named configuration of all movable parts: `road`,
   `launch`, `harbor`, `cruise`, `anchor`, `foiling`.
 - **Reserve buoyancy** — the float volume above water available to
@@ -115,26 +119,6 @@ Shared language for the design. Geometry values live in
   at different speeds/directions; replaces a rudder at low speed.
 - **Nacelle** — the streamlined housing of the main thruster behind the
   transom.
-
-## Hydrofoil
-
-- **Hydrofoil / foil** — underwater wing that lifts the bow at speed
-  (partial lift / semi-foiling).
-- **Strut** — the vertical blade connecting hull to foil wing; raked
-  15° aft.
-- **Rake** — the aft lean of the strut; makes ground strikes glance and
-  kick the foil back instead of snapping it.
-- **Wet case / trunk** — the watertight box the foil retracts into; its
-  walls end above the waterline so no moving seal is needed.
-- **Keel slot + flush doors** — the opening in the hull bottom the strut
-  passes through, closed by fairing doors when retracted.
-- **Wing recess** — the shaped pocket in the hull bottom the retracted
-  foil wing nests into, flush, for shallow water.
-- **Lead screw (drive)** — the threaded shaft that raises/lowers the
-  foil; mounted dry above the wet case (Max's "spiral on a tube",
-  relocated above the waterline).
-- **Shear pin** — sacrificial pin that breaks at overload, letting the
-  foil kick back in a grounding instead of destroying the structure.
 
 ## Road & regulation
 

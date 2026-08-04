@@ -411,69 +411,24 @@ def build_balcony(fold_deg):
 # ---------------------------------------------------------------
 # Bow hydrofoil, drawbar, stern pod
 # ---------------------------------------------------------------
-def build_foil_trunk(ext):
-    """Watertight keel trunk the foil retracts into + flush slot doors."""
-    kz = P.keel_z_at(P.FOIL_X)
-    outer = box(P.FOIL_TRUNK_L, P.FOIL_TRUNK_W, 760 - kz + 40,
-                (P.FOIL_X - P.FOIL_TRUNK_L / 2, -P.FOIL_TRUNK_W / 2, kz - 40))
-    inner = box(P.FOIL_TRUNK_L - 60, P.FOIL_TRUNK_W - 60, 760 - kz + 40,
-                (P.FOIL_X - P.FOIL_TRUNK_L / 2 + 30,
-                 -P.FOIL_TRUNK_W / 2 + 30, kz - 10))
-    trunk = outer.cut(inner)
-    doors = []
-    dw = P.FOIL_SLOT_W - 2
-    for s in (-1, 1):
-        d = box(P.FOIL_TRUNK_L - 140, dw, 18,
-                (P.FOIL_X - (P.FOIL_TRUNK_L - 140) / 2,
-                 0 if s > 0 else -dw, kz - 30))
-        if ext > 0.5:                       # swing open about the outer edge
-            d.rotate(Vector(P.FOIL_X, s * dw, kz - 21),
-                     Vector(1, 0, 0), s * 100)
-        doors.append(d)
-    return trunk, Part.makeCompound(doors)
-
-
-def build_foil(ext):
-    """Aft-raked strut (FOIL_RAKE_DEG): glancing groundings deflect the
-    boat up and kick the foil aft. Wing nests into the hull-bottom
-    recess when retracted."""
-    wing_z = P.FOIL_STOW_Z + (P.FOIL_DEPLOY_Z - P.FOIL_STOW_Z) * ext
-    tan_r = math.tan(math.radians(P.FOIL_RAKE_DEG))
-    strut_secs = []
-    for z in (wing_z, 700):
-        xle = P.FOIL_X - (700 - z) * tan_r      # aft-raked leading edge
-        pts = [(xle + P.FOIL_STRUT_CHORD / 2 - x, y, z)
-               for x, y in P.naca_pts(P.FOIL_STRUT_CHORD, 0.15)]
-        strut_secs.append(bspline_wire(pts))
-    strut = Part.makeLoft(strut_secs, True, False)
-    xw = P.FOIL_X - (700 - wing_z) * tan_r
-    halves = []
-    for sgn in (-1, 1):
-        secs = []
-        for yy, s in ((0, 1.0), (sgn * P.FOIL_SPAN / 2, 0.65)):
-            c = P.FOIL_CHORD * s
-            dz = abs(yy) * math.tan(math.radians(4))
-            pts = [(xw + c / 2 - x, yy, wing_z + dz + y)
-                   for x, y in P.naca_pts(c, 0.12)]
-            secs.append(bspline_wire(pts))
-        halves.append(Part.makeLoft(secs, True, False))
-    return strut.fuse(halves[0]).fuse(halves[1])
-
-
-def build_foil_drive():
-    """Lift drive ABOVE the waterline: lead screw + motor sit dry on top
-    of the wet case — no dynamic seal anywhere near the water."""
-    screw = Part.makeCylinder(30, 480, Vector(P.FOIL_X, 0, 620))
-    motor = box(220, 180, 160, (P.FOIL_X - 110, -90, 1100))
-    return screw.fuse(motor)
-
-
 def build_drawbar(deployed):
     tip = ((P.LOA + P.DRAWBAR_LEN, 0, P.GROUND_Z + P.COUPLING_H)
            if deployed else (7050, 0, 1900))
     parts = [rod((6500, s * 430, 900), tip, 90) for s in (-1, 1)]
     parts.append(Part.makeSphere(80, Vector(*tip)))
     return Part.makeCompound(parts)
+
+
+def build_wintergarden():
+    """Single molded curved plexiglass bubble over the foredeck: lofted
+    closed spline sections hugging the gunwale line down to the bow."""
+    wires = []
+    for x, w, az, ez in P.WG_SECTIONS:
+        pts = [(x, -w, ez), (x, -0.68 * w, ez + (az - ez) * 0.72),
+               (x, 0, az), (x, 0.68 * w, ez + (az - ez) * 0.72),
+               (x, w, ez), (x, 0, ez - 25)]
+        wires.append(bspline_wire(pts))
+    return Part.makeLoft(wires, True, False)
 
 
 def build_main_jet():
@@ -521,18 +476,7 @@ def build_mode(mode):
 
     g_gear = doc.addObject("App::DocumentObjectGroup", "Hangar")
 
-    kz = P.keel_z_at(P.FOIL_X)
-    hull_shape = build_hull().cut(box(          # keel slot for the foil
-        P.FOIL_TRUNK_L - 120, P.FOIL_SLOT_W * 2, 400,
-        (P.FOIL_X - (P.FOIL_TRUNK_L - 120) / 2, -P.FOIL_SLOT_W, kz - 150)))
-    # shallow recess in the hull bottom: the retracted wing nests flush
-    xw_stow = P.FOIL_X - (700 - P.FOIL_STOW_Z) * math.tan(
-        math.radians(P.FOIL_RAKE_DEG))
-    hull_shape = hull_shape.cut(box(
-        P.FOIL_CHORD + 80, P.FOIL_SPAN + 80, 90,
-        (xw_stow - (P.FOIL_CHORD + 80) / 2, -(P.FOIL_SPAN + 80) / 2,
-         P.FOIL_STOW_Z - 30)))
-    add("Hull", hull_shape, HULL_COL)
+    add("Hull", build_hull(), HULL_COL)
     cabin, panes = build_cabin()
     add("Cabin", cabin, WHITE)
     add("Glazing", panes, (0.5, 0.7, 0.8), 70)
@@ -573,17 +517,18 @@ def build_mode(mode):
         for i, r in enumerate(rims):
             add(f"Rim{side}{i}", m(r), STEEL, group=g_gear)
 
-    add("Hydrofoil", build_foil(cfg["foil"]), BLUE)
-    trunk, doors = build_foil_trunk(cfg["foil"])
-    add("FoilTrunk", trunk, (0.5, 0.55, 0.6), 30)
-    add("FoilDoors", doors, HULL_COL)
-    add("FoilDrive", build_foil_drive(), STEEL)
     add("Drawbar", build_drawbar(cfg["drawbar"]), GRAY)
     add("MainJet", build_main_jet(), (0.8, 0.65, 0.2))
+    add("WinterGarden", build_wintergarden(), (0.75, 0.88, 0.92), 70)
 
     if mode == "road":
         add("Ground", box(13000, 9000, 20,
             (P.LOA / 2 - 6500, -4500, P.GROUND_Z - 20)), (0.5, 0.5, 0.5), 40)
+    elif mode == "harbor":
+        # jack-up stance: floats carry the boat, keel awash
+        add("Water", box(13000, 9000, 20,
+            (P.LOA / 2 - 6500, -4500, P.HARBOR_WL_Z - 20)),
+            (0.55, 0.75, 0.9), 50)
     elif mode == "launch":
         add("Slipway", box(13000, 9000, 20,
             (P.LOA / 2 - 6500, -4500, P.GROUND_Z - 20)), (0.5, 0.5, 0.5), 40)

@@ -20,15 +20,14 @@ hydrostatic constraint is asserted in code.
 | Water beam | 5.06 m (trimaran), floats fold flush under hull on road |
 | Solar | 12 flexible laminates (1700×1130), ~5.2 kWp; balcony panels bifacial |
 | Propulsion | 3 × 2 kW flush-intake waterjets (weed-proof), differential steering |
-| Hydrofoil | retractable bow T-foil, wet case, kick-back rake, wing nests flush |
 | Cabin | 5.3 × 2.4 m, 1.8 m headroom; pop-top roof = chillout deck at anchor |
 
-## The six configurations
+## The five configurations
 
 `road` (towed, shutters closed) · `launch` (self-driving on slipway) ·
-`harbor` (floats under hull, tires as rolling quay fenders) ·
-`cruise` (trimaran, panels out) · `anchor` (roof raised) ·
-`foiling` (bow foil deployed). Renders: `freecad/shots/configs.png`.
+`harbor` (jack-up: floats under hull carry the boat, keel awash, tires as rolling quay fenders) ·
+`cruise` (trimaran, panels out) · `anchor` (roof raised).
+Renders: `freecad/shots/configs.png`.
 
 ## Repository layout
 
@@ -67,7 +66,7 @@ tell you what broke.
 Design study — not build drawings. Known open items: TÜV approval of
 the integrated running gear as a trailer; 1.9 t all-in mass budget is
 ambitious; arm/shoulder fatigue loads; wheel-arch recesses for
-suspension travel not yet modeled; foil and jet hydrodynamics are
+suspension travel not yet modeled; jet hydrodynamics are
 first-order estimates; the waterjet intake grids' final position needs
 Max's sign-off (moved to float midbody sides + transom, 2026-08-04).
 See docs/ for per-system detail.

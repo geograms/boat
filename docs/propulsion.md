@@ -54,7 +54,7 @@ thrust** gives more yaw authority than any rudder at ≤ 10 km/h:
 |---|---|---|---|
 | Canal cruise | main only | ~1.2 kW | ~4.5 kn (8.3 km/h) |
 | Fast cruise | main + floats low | ~2.5 kW | ~5.5 kn (hull speed region) |
-| Sprint / maneuver | all three | 6 kW max | short bursts, docking, foil takeoff assist |
+| Sprint / maneuver | all three | 6 kW max | short bursts, docking |
 
 6 kW peak sits inside the 5.2 kWp solar array + 48 V bank; a sunny-day
 canal cruise is energy-neutral around 1.2–1.5 kW draw. (Reference: the

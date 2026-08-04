@@ -94,6 +94,18 @@ WHEEL_DROP = 60                    # axle dropped so wheels, not floats, touch g
 
 GROUND_Z = POD_ROAD[1] - WHEEL_DROP - WHEEL_DIA / 2   # -448
 
+# ---- jack-up stance (folded arms afloat) ----
+# Floats hold ~3.1 t of max buoyancy vs a 2.0 t boat: folding the arms
+# in deep water lifts the HULL until the floats alone carry the boat.
+# Equilibrium: floats ~65% submerged; the hull keel ends up AT the
+# water surface (unloaded, awash) — float top is welded flush to the
+# hull bottom, so true dry clearance is ~zero by construction.
+BOAT_MASS = 2000
+_wedge = 0.5 * (BOTTOM_SLOPE * FLOAT_H) * FLOAT_H * FLOAT_LEN
+_reserve = (FLOAT_LEN * FLOAT_W * FLOAT_H * 0.62 - _wedge) * 1e-6
+JACK_DEPTH = FLOAT_W * BOAT_MASS / (2 * _reserve)        # ~387 mm
+HARBOR_WL_Z = (POD_ROAD[1] - FLOAT_W / 2) + JACK_DEPTH   # ~-1: keel awash
+
 # in-float electric-hydraulic drive bay (see docs/wheels.md):
 # 48V motor + pump + valve manifold in a watertight compartment;
 # hydraulic orbital motors in the wheel hubs, hoses internal to the
@@ -139,17 +151,6 @@ MAIN_GRID_Y = 420        # +- from centerline, flanking the nozzle
 MAIN_GRID_Z = 130
 MAIN_NOZZLE = (0, 0, 150)  # exits through the transom
 
-# ---- bow hydrofoil: wet case, dry screw drive, kick-back rake ----
-FOIL_X = 5800
-FOIL_SPAN = 1500
-FOIL_CHORD = 300
-FOIL_STRUT_CHORD = 220
-FOIL_DEPLOY_Z = -900
-FOIL_STOW_Z = 60         # wing nests into the hull-bottom recess
-FOIL_RAKE_DEG = 15
-FOIL_TRUNK_W = 340
-FOIL_TRUNK_L = 760
-FOIL_SLOT_W = 90
 
 
 def keel_z_at(x):
@@ -159,6 +160,19 @@ def keel_z_at(x):
             t = (x - x0) / (x1 - x0)
             return STATIONS[i][3] + t * (STATIONS[i + 1][3] - STATIONS[i][3])
     return STATIONS[-1][3]
+
+# ---- winter garden: single molded curved plexiglass over the foredeck ----
+# Wraps from the cabin roof front edge down to the bow deck: a glazed
+# conservatory where the foredeck becomes an all-weather sitting area.
+# [x, half_width, apex_z, edge_z] — half_width tracks the gunwale line
+# minus 40 mm so the glass sits right at the boat edge (bubble effect)
+WG_SECTIONS = [
+    [6200, 1096, 2150, 1195],
+    [6550,  985, 1950, 1225],
+    [6850,  866, 1690, 1250],
+    [7060,  586, 1470, 1292],
+    [7180,  390, 1350, 1310],
+]
 
 # ---- drawbar + stern pod ----
 DRAWBAR_LEN = 1600
@@ -171,12 +185,11 @@ STERNPOD_LEN = 700
 # balc: 90 folded up over the windows, 0 horizontal over the water
 # roll is NOT independent: rigid arm -> roll = 90 - phi
 MODES = {
-    "road":    dict(phi=0,         balc=90, foil=0, drawbar=True,  lift=0),
-    "launch":  dict(phi=0,         balc=90, foil=0, drawbar=False, lift=0),
-    "harbor":  dict(phi=0,         balc=90, foil=0, drawbar=False, lift=0),
-    "cruise":  dict(phi=PHI_WATER, balc=0,  foil=0, drawbar=False, lift=0),
-    "anchor":  dict(phi=PHI_WATER, balc=0,  foil=0, drawbar=False, lift=CANOPY_LIFT),
-    "foiling": dict(phi=PHI_WATER, balc=0,  foil=1, drawbar=False, lift=0),
+    "road":    dict(phi=0,         balc=90, drawbar=True,  lift=0),
+    "launch":  dict(phi=0,         balc=90, drawbar=False, lift=0),
+    "harbor":  dict(phi=0,         balc=90, drawbar=False, lift=0),
+    "cruise":  dict(phi=PHI_WATER, balc=0,  drawbar=False, lift=0),
+    "anchor":  dict(phi=PHI_WATER, balc=0,  drawbar=False, lift=CANOPY_LIFT),
 }
 
 
@@ -243,7 +256,6 @@ def checks(verbose=True):
     reserve_kg = (FLOAT_LEN * FLOAT_W * FLOAT_H * 0.62 - wedge) * 1e-6
     m_right = reserve_kg * 9.81 * POD_WATER[0] / 1e6
     m_heel = 0.5 * 1.2 * 1.1 * 11.5 * 25.7**2 * 1.5 / 1000
-    kz = keel_z_at(FOIL_X)
     box_gap = BALC_HINGE_Z - BALC_T - WHEELBOX_TOP_Z           # leg length
 
     assert road_width <= 2550, f"road width {road_width}"
@@ -257,12 +269,20 @@ def checks(verbose=True):
     assert 1700 < disp < 2400, f"displacement {disp}"
     assert reserve_kg >= 0.80 * 1900, f"ama reserve {reserve_kg:.0f}"
     assert m_right / m_heel >= 3, f"righting SF {m_right / m_heel:.1f}"
-    assert FOIL_STOW_Z >= kz - 80, f"stowed wing too deep (keel {kz:.0f})"
     assert BALC_HINGE_Y >= CABIN_W / 2 + CANOPY_OVERHANG + 15, \
         "folded balcony hits the canopy"
     assert BALC_HINGE_Z + BALC_SPAN <= CABIN_ROOF_Z + CANOPY_THICK + 50, \
         "folded balcony sticks above the canopy"
     assert 100 <= box_gap <= 450, f"balcony leg length odd: {box_gap}"
+    # jack-up stance equilibrium
+    jack_d = FLOAT_W * BOAT_MASS / (2 * reserve_kg)      # submerged depth
+    harbor_wl = (POD_ROAD[1] - FLOAT_W / 2) + jack_d     # ~0 = keel awash
+    jack_frac = jack_d / FLOAT_W
+    L_m, w_m, d_m = FLOAT_LEN / 1000, FLOAT_H / 1000, 0.700
+    gm_est = 2 * (L_m * w_m**3 / 12 + L_m * w_m * d_m**2) / (BOAT_MASS / 1000)
+    assert jack_frac <= 0.85, f"floats too small to jack up: {jack_frac:.2f}"
+    assert -60 <= harbor_wl <= 40, \
+        f"jack-up equilibrium off keel-awash regime: {harbor_wl:.0f}"
     grid_top = POD_WATER[1] + JET_Z_LOCAL + JET_GRID_H / 2
     assert grid_top <= WL_Z - 40, \
         f"intake grids not submerged enough: top {grid_top}"
@@ -286,4 +306,7 @@ def checks(verbose=True):
         print(f"balcony legs    {box_gap:.0f} mm down to the wheel boxes")
         print(f"waterjets       3 x {JET_POWER_W} W, grid top "
               f"{WL_Z - grid_top:.0f} mm under WL, face v {face_v:.2f} m/s")
+        print(f"jack-up stance  floats {jack_frac * 100:.0f}% deep, "
+              f"keel {-harbor_wl:.0f} mm above water (awash), "
+              f"pontoon GM ~{gm_est:.1f} m")
     return True

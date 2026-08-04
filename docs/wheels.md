@@ -44,6 +44,34 @@ exists only mid-swing, when the wheels are unloaded. Launching happens
 in the road configuration: the boat drives in on its wheels until it
 floats free, then swings the arms out in deeper water.
 
+## 3b. Jack-up stance — how the floats fold under while afloat
+
+The floats hold ~3.1 t of maximum buoyancy against a 2.0 t boat, so
+they can never be pushed fully underwater. Folding the arms in deep
+water therefore lifts the HULL instead: every kilogram of buoyancy the
+descending floats pick up is a kilogram the hull sheds, and the hull
+rises as the swing completes.
+
+Equilibrium (asserted in `checks()`): the floats end **65 % submerged**
+(387 of 600 mm) carrying the entire boat; the hull keel arrives **at
+the water surface — unloaded, awash** (float tops are welded flush to
+the hull bottom, so true dry clearance is ~zero by construction; the
+deadrise keeps most of the bottom plating just clear). Standing on the
+two side-lying floats the waterplane gives a pontoon **GM ≈ 3 m** —
+stiffer than the trimaran; protected-water stance only.
+
+Loads: the actuators can never see more than the boat's own weight
+(the rising hull is the relief valve) — peak ≤ 8.3 kNm per shoulder →
+one ⌀80 mm / 160 bar cylinder per side; lock pins hold the parked
+load, already sized for road bumps.
+
+Ramp exit needs no mechanism motion: wheels protrude 60 mm below the
+float bottoms; grip needed and grip available both scale with the
+weight-on-wheels during the buoyancy handover, so no traction gap
+exists (requirement: tire mu > ramp slope, ~0.18 for a 15 % slipway);
+the still-submerged waterjets push directly in the weightless-wheel
+zone.
+
 ## 4. Fender function
 
 The wheel covers are **open on the outboard side**: the tire edge stands
