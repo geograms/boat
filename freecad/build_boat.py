@@ -87,13 +87,33 @@ def build_hull():
     # forward, so the extra height forward becomes a bow bulwark)
     shell = shell.fuse(outer.common(
         box(P.LOA + 400, 3200, 60, (-200, -1600, DECK_Z - 60))))
+    # sunken self-draining cockpit: cut the well, drop in a watertight tub
+    shell = shell.cut(box(
+        P.COCKPIT_X1 - P.COCKPIT_X0, 2 * P.COCKPIT_HW, 800,
+        (P.COCKPIT_X0, -P.COCKPIT_HW, P.COCKPIT_FLOOR)))
+    tub = box(P.COCKPIT_X1 - P.COCKPIT_X0 + P.COCKPIT_WALL,
+              2 * P.COCKPIT_HW + 2 * P.COCKPIT_WALL,
+              DECK_Z - P.COCKPIT_FLOOR + P.COCKPIT_WALL,
+              (P.COCKPIT_X0 - P.COCKPIT_WALL,
+               -P.COCKPIT_HW - P.COCKPIT_WALL,
+               P.COCKPIT_FLOOR - P.COCKPIT_WALL))
+    tub = tub.cut(box(P.COCKPIT_X1 - P.COCKPIT_X0, 2 * P.COCKPIT_HW,
+                      DECK_Z - P.COCKPIT_FLOOR + 100,
+                      (P.COCKPIT_X0, -P.COCKPIT_HW, P.COCKPIT_FLOOR)))
+    shell = shell.fuse(tub)
     shell = shell.cut(plan_prism(       # cabin-footprint deck opening
         [(P.CABIN_X0 + 50, -P.CABIN_W / 2 + 70),
          (P.CABIN_X1 - 50, -P.CABIN_W / 2 + 70),
          (P.CABIN_X1 - 50, P.CABIN_W / 2 - 70),
          (P.CABIN_X0 + 50, P.CABIN_W / 2 - 70)],
         DECK_Z - 60, DECK_Z + 60))
+    shell = shell.cut(door_opening())   # companionway through the bulkhead
     return shell
+
+
+def door_opening():
+    return box(220, 2 * P.DOOR_HW, P.DOOR_Z1 - P.DOOR_Z0,
+               (P.COCKPIT_X1 - 60, -P.DOOR_HW, P.DOOR_Z0))
 
 
 # ---------------------------------------------------------------
@@ -119,7 +139,7 @@ def build_cabin():
         panes.append(box(600, P.CABIN_W - 40, wh, (wx, -P.CABIN_W / 2 + 20, wz0)))
     cuts.append(box(200, 1500, wh, (P.CABIN_X1 - 100, -750, wz0)))   # windshield
     panes.append(box(120, 1500, wh, (P.CABIN_X1 - 60, -750, wz0)))
-    cuts.append(box(200, 650, 900, (P.CABIN_X0 - 100, -325, P.CABIN_BASE_Z)))
+    cuts.append(door_opening())          # companionway
     for c in cuts:
         shell = shell.cut(c)
     return shell, Part.makeCompound(panes)
@@ -451,6 +471,8 @@ def build_frame():
         for a, c in zip(chassis, chassis[1:]):
             parts.append(rod(a, c, P.FRAME_TUBE))
         for a, c in zip(sheer, sheer[1:]):
+            if a[0] >= P.GATE_X0 - 60 and c[0] <= P.GATE_X1 + 60:
+                continue                  # boarding gate to the balcony
             parts.append(rod(a, c, P.FRAME_SHEER_TUBE))
         # external straps tying the two rails, on the outside of the skin
         for sx in P.FRAME_STRAP_X:
@@ -520,6 +542,93 @@ def build_tow(pose):
         parts.append(Part.makeSphere(80, Vector(cx, 0, cz)))
         parts.append(box(70, 150, 150, (cx + 150, -75, cz - 40)))
     return Part.makeCompound(parts)
+
+
+def build_aft_entry():
+    """Companionway door, rain porch, stairs to the roof terrace, AC
+    ventilator box and cockpit lockers on the aft wall."""
+    parts, glass, dark = [], [], []
+    x0, x1 = P.COCKPIT_X0, P.COCKPIT_X1
+    # --- porch roof (top flush with the terrace) + posts + flashing
+    porch = box(P.PORCH_X1 - P.PORCH_X0, 2 * P.PORCH_HW, P.PORCH_T,
+                (P.PORCH_X0, -P.PORCH_HW, P.CABIN_ROOF_Z - P.PORCH_T))
+    porch = porch.cut(box(P.STAIR_X1 - 150, P.STAIR_Y1 - P.STAIR_Y0 + 120,
+                          400, (200, P.STAIR_Y0 - 60,
+                                P.CABIN_ROOF_Z - P.PORCH_T - 100)))
+    parts.append(porch)
+    for sgn in (-1, 1):
+        parts.append(rod((x0 + 60, sgn * P.PORCH_POST_Y, DECK_Z),
+                         (x0 + 60, sgn * P.PORCH_POST_Y,
+                          P.CABIN_ROOF_Z - P.PORCH_T), 90))
+    parts.append(box(P.CABIN_X0 - P.PORCH_X1 + 40, 2 * P.PORCH_HW, 60,
+                     (P.PORCH_X1 - 20, -P.PORCH_HW,
+                      P.CABIN_ROOF_Z - P.PORCH_T - 30)))     # flashing
+    # --- companionway: storm sill, frame, gasketed door leaf
+    parts.append(box(180, 2 * P.DOOR_HW + 160, P.DOOR_Z0 - P.COCKPIT_FLOOR,
+                     (x1 - 90, -P.DOOR_HW - 80, P.COCKPIT_FLOOR)))
+    for sgn in (-1, 1):
+        parts.append(box(150, 70, P.DOOR_Z1 - P.DOOR_Z0,
+                         (x1 - 75, sgn * P.DOOR_HW - 35, P.DOOR_Z0)))
+    parts.append(box(150, 2 * P.DOOR_HW + 70, 70,
+                     (x1 - 75, -P.DOOR_HW - 35, P.DOOR_Z1 - 35)))
+    leaf = box(50, 2 * P.DOOR_HW - 40, P.DOOR_Z1 - P.DOOR_Z0 - 60,
+               (x1 - 25, -P.DOOR_HW + 20, P.DOOR_Z0 + 30))
+    dark.append(leaf)
+    glass.append(box(20, 2 * P.DOOR_HW - 300, 620,
+                     (x1 - 40, -P.DOOR_HW + 150, P.DOOR_Z0 + 520)))
+    for dz in (0, 620):                                       # dogs
+        for sgn in (-1, 1):
+            parts.append(Part.makeCylinder(
+                26, 90, Vector(x1 - 40, sgn * (P.DOOR_HW - 60),
+                               P.DOOR_Z0 + 300 + dz), Vector(-1, 0, 0)))
+    # --- ship's ladder to the roof terrace, port side of the door.
+    # A 2.15 m roof off a 1.15 m deck in 720 mm of run is a ladder, not
+    # a staircase — so it is detailed as one: stringers on edge, nosed
+    # treads let into them, handrails both sides (the inboard side
+    # overlooks the footwell) returning onto the terrace as grab rails.
+    n, sx0, sx1 = P.STAIR_STEPS, P.STAIR_X0, P.STAIR_X1
+    z0, z1 = DECK_Z, P.CABIN_ROOF_Z
+    rise, going = (z1 - z0) / n, (sx1 - sx0) / n
+    for sy in (P.STAIR_Y0 + 55, P.STAIR_Y1 - 55):          # stringers
+        parts.append(rod((sx0 - 60, sy, z0 - 40), (sx1 + 40, sy, z1 - 40),
+                         150))
+    for i in range(n):                                      # nosed treads
+        tz = z0 + (i + 1) * rise
+        tx = sx0 + i * going
+        parts.append(box(going + 55, P.STAIR_Y1 - P.STAIR_Y0 - 60, 42,
+                         (tx, P.STAIR_Y0 + 30, tz - 42)))
+        parts.append(rod((tx, P.STAIR_Y0 + 30, tz - 21),
+                         (tx, P.STAIR_Y1 - 30, tz - 21), 42))
+    for sy in (P.STAIR_Y0 + 40, P.STAIR_Y1 - 40):           # handrails
+        parts.append(rod((sx0, sy, z0), (sx0, sy, z0 + 950), 60))
+        parts.append(rod((sx1, sy, z1), (sx1, sy, z1 + 950), 60))
+        parts.append(rod((sx0, sy, z0 + 950), (sx1, sy, z1 + 950), 55))
+        parts.append(rod((sx1, sy, z1 + 950),
+                         (sx1 + 420, sy, z1 + 950), 55))     # terrace grab
+        parts.append(rod((sx1 + 420, sy, z1 + 950),
+                         (sx1 + 420, sy, z1), 55))
+    # --- AC ventilator box (upper right) and lockers (rest of the wall)
+    dark.append(box(P.AC_DEPTH, P.AC_Y1 - P.AC_Y0, P.AC_Z1 - P.AC_Z0,
+                    (x1 - P.AC_DEPTH, P.AC_Y0, P.AC_Z0)))
+    for i in range(5):                                        # louvres
+        parts.append(box(30, P.AC_Y1 - P.AC_Y0 - 80, 26,
+                         (x1 - P.AC_DEPTH - 15, P.AC_Y0 + 40,
+                          P.AC_Z0 + 50 + i * 58)))
+    parts.append(box(P.LOCKER_DEPTH, P.LOCKER_Y1 - P.LOCKER_Y0,
+                     P.LOCKER_Z1 - P.LOCKER_Z0,
+                     (x1 - P.LOCKER_DEPTH, P.LOCKER_Y0, P.LOCKER_Z0)))
+    for i in range(2):                                        # locker doors
+        dark.append(box(24, (P.LOCKER_Y1 - P.LOCKER_Y0) / 2 - 30,
+                        P.LOCKER_Z1 - P.LOCKER_Z0 - 60,
+                        (x1 - P.LOCKER_DEPTH - 20,
+                         P.LOCKER_Y0 + 15 + i * (P.LOCKER_Y1 - P.LOCKER_Y0) / 2,
+                         P.LOCKER_Z0 + 30)))
+    # --- boarding steps out to the solar balconies, both sides
+    for sgn in (-1, 1):
+        parts.append(box(P.GATE_X1 - P.GATE_X0, 200, 50,
+                         (P.GATE_X0, sgn * 1040 - 100, DECK_Z)))
+    return (Part.makeCompound(parts), Part.makeCompound(dark),
+            Part.makeCompound(glass))
 
 
 def build_stern_gear():
@@ -673,6 +782,10 @@ def build_mode(mode):
     add("Frame", build_frame(), (0.42, 0.44, 0.47))
     add("SternArch", build_tow(cfg["tow"]), (0.42, 0.44, 0.47))
     add("SternGear", build_stern_gear(), (0.55, 0.57, 0.6))
+    aft_s, aft_d, aft_g = build_aft_entry()
+    add("AftEntry", aft_s, WHITE)
+    add("AftFittings", aft_d, (0.30, 0.32, 0.35))
+    add("DoorGlass", aft_g, (0.5, 0.7, 0.8), 70)
     add("MainJet", build_main_jet(), (0.8, 0.65, 0.2))
     add("WinterGarden", build_wintergarden(), (0.75, 0.88, 0.92), 70)
 

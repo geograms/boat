@@ -223,12 +223,45 @@ ARCH_EXT = 800                # telescoping tongue stroke
 ARCH_TUBE = 95
 COUPLING_H = 430              # target coupling height above ground
 
+# ---- aft entry: sunken cockpit, storm door, porch, stairs ----
+# The cabin is only 1000 mm above deck, so the entry is a proper
+# COMPANIONWAY: a self-draining footwell (floor 360 mm above the
+# waterline, scuppers through the transom), a storm sill, and a
+# 1300 mm door header — you step over the sill and duck, then stand
+# up in the 1800 mm saloon. Every barge works this way; the geometry
+# leaves no alternative (a 1900 mm door would need the cockpit floor
+# 20 mm above the keel).
+# Side decks are only 50 mm wide, so the cockpit is also the hub for
+# reaching the solar balconies: they start at x 900, level with the
+# deck, and are entered through boarding gates in the sheer rail.
+COCKPIT_X0, COCKPIT_X1 = 150, 900
+COCKPIT_HW = 700              # footwell half width
+COCKPIT_FLOOR = 620           # 360 mm above WL -> drains overboard
+COCKPIT_WALL = 40
+DOOR_HW = 350
+DOOR_Z0, DOOR_Z1 = 800, 2100  # sill 180 above the footwell floor
+PORCH_X0, PORCH_X1 = 150, 820 # stops short of the wall; flashing seals
+PORCH_HW = 1150
+PORCH_T = 180                 # top flush with the roof terrace
+PORCH_POST_Y = 640
+STAIR_Y0, STAIR_Y1 = -1200, -720   # port strip, to the LEFT of the door
+STAIR_X0, STAIR_X1 = 160, 880   # longest run the aft deck allows
+STAIR_STEPS = 7
+GATE_X0, GATE_X1 = 950, 1450   # sheer-rail gap: step out to the balconies
+# aft wall fit-out, seen from the cockpit: AC upper right, lockers below
+AC_Y0, AC_Y1 = 600, 1140
+AC_Z0, AC_Z1 = 1760, 2100
+AC_DEPTH = 340
+LOCKER_Y0, LOCKER_Y1 = 430, 1140
+LOCKER_Z0, LOCKER_Z1 = 900, 1700
+LOCKER_DEPTH = 300
+
 # ---- stern gear: electric winch + anchor ----
 # Winch: self-recovery on slippery ramps — pull to a ramp-top anchor
 # point and the boat hauls itself out even with no wheel grip.
 # Anchor: stern roller on the gantry leg, rode to the same drum family.
 WINCH_PULL_KG = 2000          # 4500 lb class, 12/24 V
-WINCH_POS = (150, 0, 1010)
+WINCH_POS = (330, -980, 1265)   # on the port deck strip, clear of the door
 ANCHOR_ROLLER = (-140, 0, 1150)
 
 # ---- stern pod ----
@@ -361,6 +394,14 @@ def checks(verbose=True):
     assert sea_x < -300, "sea gantry not clear aft of the transom"
     assert sea_z > WL_Z + 1200, "gantry too low to hang an anchor"
     assert 2 * ARCH_PIVOT_Y + ARCH_TUBE <= 2550, "stern arch wider than road"
+    # aft entry
+    stair_ang = math.degrees(math.atan2(CABIN_ROOF_Z - CABIN_BASE_Z,
+                                        STAIR_X1 - STAIR_X0))
+    assert COCKPIT_FLOOR >= WL_Z + 250, \
+        f"cockpit floor only {COCKPIT_FLOOR - WL_Z} mm above WL"
+    assert DOOR_Z0 - COCKPIT_FLOOR >= 150, "storm sill too low"
+    assert stair_ang <= 65, f"stairs {stair_ang:.0f} deg too steep"
+    assert PORCH_X1 < CABIN_X0, "porch must clear the cabin wall for flashing"
     # jack-up stance equilibrium
     jack_d = FLOAT_W * BOAT_MASS / (2 * reserve_kg)      # submerged depth
     harbor_wl = (POD_ROAD[1] - FLOAT_W / 2) + jack_d     # ~0 = keel awash
@@ -397,6 +438,9 @@ def checks(verbose=True):
               f"{sea_z - WL_Z:.0f} above WL")
         print(f"stern tow       coupling {cpl_h:.0f} mm high, overhang aft "
               f"{-cpl_x:.0f} mm, tongue load {tongue:+.0f} kg")
+        print(f"aft entry       cockpit floor {COCKPIT_FLOOR - WL_Z:.0f} above WL, "
+              f"door {DOOR_Z1 - DOOR_Z0} tall over a {DOOR_Z0 - COCKPIT_FLOOR} sill, "
+              f"stairs {stair_ang:.0f} deg")
         print(f"jack-up stance  floats {jack_frac * 100:.0f}% deep, "
               f"keel {-harbor_wl:.0f} mm above water (awash), "
               f"pontoon GM ~{gm_est:.1f} m")

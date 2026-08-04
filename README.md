@@ -23,6 +23,7 @@ hydrostatic constraint is asserted in code.
 | Tow | stern-first; A-arch pin-locked: sea gantry / extensible drawbar, +100 kg tongue |
 | Stern gear | 2 t electric self-recovery winch + anchor on a transom roller |
 | Propulsion | 3 × 2 kW flush-intake waterjets (weed-proof), differential steering |
+| Aft entry | self-draining cockpit, gasketed storm door, rain porch, ladder to the terrace |
 | Cabin | 5.3 × 2.4 m, 1.8 m headroom; pop-top roof = chillout deck at anchor |
 
 ## The five configurations
@@ -46,6 +47,7 @@ docs/
   wheels.md         wheel system: kinematics, drive, BOM + 2026 costs
   propulsion.md     waterjet system: weed strategy, BOM
   structure.md      exoskeleton frame + two-pose tow arch
+  aft_entry.md      companionway, porch, ladder, AC, lockers, gates
   images/           dimensioned spec cards for purchasable parts
 drafts/             original concept PDF + STL sketch
 *.scad, Makefile    legacy OpenSCAD sketch (superseded by freecad/)

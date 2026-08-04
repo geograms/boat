@@ -60,6 +60,24 @@ Shared language for the design. Geometry values live in
 - **Bevel (mating face)** — the 12° flat machined/molded on each float
   so it sits flush on the hull bottom in road pose (zero dead space).
 
+## Aft entry (details in [aft_entry.md](aft_entry.md))
+
+- **Companionway** — the boat-style entrance: sunken footwell, storm
+  sill, a header you duck under, then full standing height inside.
+- **Footwell / cockpit** — the sunken self-draining deck aft of the
+  cabin; floor 360 mm above the waterline, scuppers through the
+  transom. The hub for entering the boat and the balconies.
+- **Storm sill (coaming)** — the 180 mm raised threshold under the
+  door; water must rise over it to reach the living quarters.
+- **Dogs** — the clamping latches that squeeze a gasketed door onto
+  its frame.
+- **Porch** — the fixed roof over the cockpit; its top is flush with
+  the roof terrace, so it doubles as terrace floor.
+- **Ship's ladder** — a stair steeper than ~45°, with stringers and
+  nosed treads; the only thing that fits the aft deck's 720 mm run.
+- **Boarding gate** — the gap left in the sheer rail (x 950–1450) with
+  a threshold step, where you cross from the cockpit onto a balcony.
+
 ## Structure (details in [structure.md](structure.md))
 
 - **Exoskeleton (space frame)** — external welded steel frame carrying
