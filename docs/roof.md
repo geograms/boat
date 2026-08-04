@@ -98,9 +98,11 @@ a dropped anchor are all inside the envelope.
 - **Cabling and junction boxes** live in the perimeter channel, never
   under a walked pane.
 - **Anti-slip**: ceramic frit, R11, on the top face.
-- **Guardrail**: the plug-in bar sockets remain, but the bars are now
-  **1 000 mm stanchions with two lifelines**, removable so they cost
-  nothing on the road.
+- **No guardrail** (Max: the stanchions and lifelines looked awful).
+  The edge carries the 80 mm toe rail and nothing else. This is a sun
+  deck to sit on rather than a working deck, and the fall risk from
+  2.4 m is accepted deliberately — worth knowing before anyone brings
+  children aboard.
 - **Stability**: four people hard to one side is 3.7 kNm of heeling
   against ≈31 kNm of float righting — asserted in `checks()`.
 

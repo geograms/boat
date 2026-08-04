@@ -27,7 +27,7 @@ hydrostatic constraint is asserted in code.
 | Aft entry | self-draining cockpit, gasketed storm door, rain porch, ladder to the terrace |
 | Cabin | 5.3 × 2.28 m inside, 1.85 m clear headroom |
 | Interior | heads with shower, galley (fridge/freezer tower, washer), dinette that sleeps 2, athwartships double; batteries + water under the settees |
-| Roof deck | walk-on glass over a ventilated air box: 8 laminated panes on an alu grid, panels bonded underneath — no moving parts |
+| Roof deck | walk-on glass over a ventilated air box: 8 laminated panes on an alu grid, modules underneath — no moving parts, no guardrail |
 | Side balconies | full-width 500 W modules recessed into an alu ladder frame, 48 mm folded; the 540 mm aft passage is the walked route |
 
 ## The five configurations

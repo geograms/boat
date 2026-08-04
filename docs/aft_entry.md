@@ -81,14 +81,14 @@ stair): eight half-width treads that swap sides, so each foot gets a
 250 mm-deep step in half the going a normal stair would need. Two
 stringers on edge carry them.
 
-**One small grab rail, at the ladder head.** Max's call: no long rail
-running along the deck edge — just a handhold exactly where you need
-it. A compact inverted-U grab, 880 mm high, is bolted **beside the top
-of the ladder** on the outboard side, so there is something to hold as
-you step off onto the terrace. Nothing folds, nothing stands in the
-way lower down, and the roof deck has its own guardrail once you are
-up there. The inboard side of the ladder needs nothing: it faces the
-cabin wall, and the footwell drop beside it is only 530 mm.
+**A handrail that follows the ladder.** Max's reference is the boarding
+ladder on a Sea-class motor yacht: a second side rail running
+**parallel to the stringer**, carried on three short standoffs, that
+you grip like a ladder rail as you climb. It is offset 220 mm from the
+stringer and **terminates exactly at deck level** — nothing projects
+above the roof deck, which is what made the earlier version ugly. The
+inboard side needs nothing: it faces the cabin wall, and the footwell
+drop beside it is only 530 mm.
 
 If a gentler stair is ever wanted, the only way is to hang it along
 the cabin side over a solar balcony (1 300 mm of run → 37°) — at the

@@ -175,14 +175,14 @@ def terrace_plan():
             (P.CABIN_X0 + P.CABIN_X1) / 2)
 
 
-def build_terrace(rails=True):
+def build_terrace():
     """Roof terrace: bonded laminates on the structural roof, a
     ventilated air box, an alu grid and 8 walk-on glass panes over the
     top. Nothing here moves — the pop-top lift is gone.
-    Returns (deck, laminates, frame, glass, rail)."""
+    Returns (deck, laminates, frame, glass, None)."""
     tl, tw, cx = terrace_plan()
     z0 = P.CABIN_ROOF_Z
-    deck, lam, frame, glass, rail = [], [], [], [], []
+    deck, lam, frame, glass = [], [], [], []
 
     # walking surface of the structural roof, and its toe rail
     deck.append(box(tl, tw, 12, (cx - tl / 2, -tw / 2, z0)))
@@ -243,31 +243,11 @@ def build_terrace(rails=True):
                               -fhw + j * py + P.DECK_FRAME_W / 2 + 3,
                               tz - P.DECK_GLASS_T)))
 
-    # 5. removable stanchions + lifelines (sea modes only)
-    for sy in (-1, 1):
-        for bx in P.BAR_XS:
-            frame.append(Part.makeCylinder(
-                P.BAR_D / 2 + 8, 90, Vector(bx, sy * P.BAR_Y, z0 - 40)))
-            if rails:
-                rail.append(rod((bx, sy * P.BAR_Y, z0 + 12),
-                                (bx, sy * P.BAR_Y, z0 + P.RAIL_H), P.BAR_D))
-        if rails:
-            # a real top rail, not a wire: it reads as a guardrail and
-            # you can actually lean on it
-            rail.append(rod((P.BAR_XS[0], sy * P.BAR_Y, z0 + P.RAIL_H),
-                            (P.BAR_XS[-1], sy * P.BAR_Y, z0 + P.RAIL_H),
-                            P.BAR_D - 8))
-            rail.append(rod((P.BAR_XS[0], sy * P.BAR_Y, z0 + P.RAIL_H / 2),
-                            (P.BAR_XS[-1], sy * P.BAR_Y, z0 + P.RAIL_H / 2),
-                            P.LIFELINE_D))
-            # tie the two sides together across the forward end
-            if sy > 0:
-                rail.append(rod((P.BAR_XS[-1], -P.BAR_Y, z0 + P.RAIL_H),
-                                (P.BAR_XS[-1], P.BAR_Y, z0 + P.RAIL_H),
-                                P.BAR_D - 8))
+    # 5. NO guardrail (Max): the deck edge is clean, with only the toe
+    #    rail. Nothing stands up off this deck.
+
     return (Part.makeCompound(deck), Part.makeCompound(lam),
-            Part.makeCompound(frame), Part.makeCompound(glass),
-            Part.makeCompound(rail) if rail else None)
+            Part.makeCompound(frame), Part.makeCompound(glass), None)
 
 
 # ---------------------------------------------------------------
@@ -752,13 +732,24 @@ def build_aft_entry(rail_up=False, door_open=False):
                          (tx - 95, y_lo + (P.STAIR_Y1 - P.STAIR_Y0) / 2 - 40,
                           tz - 20), 40))
 
-    # SMALL grab rail beside the ladder head — a handhold exactly
-    # where you step off onto the terrace, and nothing else. No long
-    # folding rail running along the deck edge.
+    # Handrail that FOLLOWS THE LADDER (Max's reference photo): a
+    # second side rail parallel to the stringer, offset 220 mm on short
+    # standoffs, terminating exactly AT deck level — nothing sticks up
+    # above the roof deck.
     ry = P.STAIR_Y0 + 55
-    parts.append(rod((sx1 - 40, ry, z1), (sx1 - 40, ry, z1 + 880), 42))
-    parts.append(rod((sx1 - 40, ry, z1 + 880), (sx1 - 300, ry, z1 + 880), 42))
-    parts.append(rod((sx1 - 300, ry, z1 + 880), (sx1 - 300, ry, z1 + 560), 42))
+    run, rise = sx1 - sx0, z1 - z0
+    ln = math.hypot(run, rise)
+    ux, uz = run / ln, rise / ln
+    off = 220
+    rx0, rz0 = sx0 - uz * off, z0 + ux * off
+    rx1, rz1 = sx1 - uz * off, z1 + ux * off
+    t = (P.CABIN_ROOF_Z - rz0) / (rz1 - rz0)      # clip at the deck
+    rx1, rz1 = rx0 + t * (rx1 - rx0), P.CABIN_ROOF_Z
+    parts.append(rod((rx0, ry, rz0), (rx1, ry, rz1), 42))
+    for f in (0.08, 0.5, 0.92):                   # standoffs to the stringer
+        parts.append(rod((sx0 + f * run, ry, z0 + f * rise),
+                         (rx0 + f * (rx1 - rx0), ry, rz0 + f * (rz1 - rz0)),
+                         30))
 
     # --- AC ventilator box (upper right) and lockers (rest of the wall)
     ac = box(P.AC_DEPTH, P.AC_Y1 - P.AC_Y0, P.AC_Z1 - P.AC_Z0,
@@ -1103,14 +1094,11 @@ def build_mode(mode):
     add("Fittings", iglass, (0.20, 0.22, 0.24), group=g_int)
 
     g_roof = doc.addObject("App::DocumentObjectGroup", "RoofDeck")
-    tdeck, tlam, tframe, tglass, trail = build_terrace(
-        rails=cfg["tow"] == "sea")
+    tdeck, tlam, tframe, tglass, trail = build_terrace()
     add("Terrace", tdeck, WHITE, group=g_roof)
     add("DeckLaminates", tlam, PANEL, group=g_roof)
     add("DeckFrame", tframe, (0.62, 0.64, 0.67), group=g_roof)
     add("WalkOnGlass", tglass, (0.62, 0.78, 0.86), 72, group=g_roof)
-    if trail:
-        add("Guardrail", trail, STEEL, group=g_roof)
 
     pod = P.pod_at(cfg["phi"])
     roll = 90 - cfg["phi"]          # rigid arm: roll locked to swing

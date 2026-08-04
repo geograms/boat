@@ -343,15 +343,9 @@ DECK_VENT_H = 25                   # mesh slots fore and aft of the box
 TERRACE_TOERAIL = 80
 TERRACE_SCUPPER = 60               # corner drains
 
-# guardrail: the old plug-in bar sockets stay, but the bars are now
-# 1000 mm stanchions with two lifelines, removable for the road
-BAR_D = 42                     # slim stanchion; a fence looks wrong here
-BAR_T = 3
-BAR_XS = (1150, 2883, 4617, 6150)
-BAR_Y = 1120                       # inside the toe rail
-RAIL_H = 1000
-LIFELINE_N = 2
-LIFELINE_D = 6
+# NO guardrail on the roof deck (Max: the stanchions and lifelines
+# looked awful). The edge carries the toe rail and nothing else — a sun
+# deck to sit on, not a working deck; the fall risk is accepted.
 
 DECK_PANELS = 4                    # what actually fits — see deck_panel_xy()
 PANEL_W_PEAK = MODULE_500_W        # W per roof module
@@ -796,7 +790,7 @@ def checks(verbose=True):
         f"air box {AIRBOX_H} too shallow for a {mod_t} mm framed module"
     assert DECK_BUILDUP == AIRBOX_H + DECK_FRAME_H + DECK_GLASS_T, \
         "deck build-up does not add up"
-    assert RAIL_H >= 1000, f"guardrail {RAIL_H} mm too low for a roof deck"
+    assert "RAIL_H" not in globals(), "a guardrail crept back onto the deck"
     assert interior_clear >= 1800, f"interior clear only {interior_clear}"
     assert m_heel_crew <= 0.3 * m_right, \
         f"crew on one side heels {m_heel_crew:.1f} vs righting {m_right:.1f}"
@@ -865,6 +859,7 @@ def checks(verbose=True):
         print(f"roof modules    {DECK_PANELS} x standard {mod_l}x{mod_w} "
               f"{MODULE_500_W} W framed, laid across, "
               f"{DECK_PANELS * MODULE_500_KG} kg")
+        print(f"deck edge       toe rail {TERRACE_TOERAIL} mm, no guardrail")
         print(f"deck loads      {DECK_LOAD_UDL * 1000:.1f} kN/m2 + "
               f"{DECK_LOAD_POINT / 1000:.1f} kN point; crew one side "
               f"{m_heel_crew:.1f} vs righting {m_right:.1f} kNm")
