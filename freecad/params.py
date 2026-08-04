@@ -42,6 +42,13 @@ CANOPY_THICK = 180
 CANOPY_LIFT = 1900       # Max: stand up on the terrace under the canopy
 CANOPY_OVERHANG = -20    # canopy 2360: fits 2 rows of panels, clears shutters
 WIN_Z0, WIN_H = 1500, 600          # window band (taller with the new roof)
+# FEWER, BIGGER windows (Max): two picture windows per side instead of
+# six small ones — one over the whole saloon, one over the bed. They
+# land where no full-height joinery can ever go, so the interior can be
+# rearranged later without touching the glass.
+WINDOWS = [(2500, 1800), (4900, 1200)]      # (x0, length)
+WIN_PIER = 600                     # solid pillar between the two openings
+PORTHOLE = (1500, 1780, 360)       # service zone: light + ventilation
 
 # ONE panel footprint everywhere: FLEXIBLE laminates (~430 W, ~6 kg,
 # bifacial on the balconies)
@@ -333,6 +340,96 @@ WIND_SURVIVE_KN = 50               # pins + latches sized for this
 WIND_PANEL_KN = 20                 # side walls come off above this
 CP_NET = 1.5                       # EN 1991-1-4 free-standing canopy
 
+# ---- interior ----
+# 5300 x 2280 of floor and 1850 of height. Four zones, aft to forward:
+#   services (heads to port, galley to starboard, corridor between)
+#   dinette  (two settees that are also single berths, table between)
+#   wardrobes (flanking the passage)
+#   sleeping (double bed ATHWARTSHIPS — a 2000 mm body fits across the
+#             2280 mm beam, so the bed eats only 1400 mm of length)
+# Everything heavy (batteries, water) lives under the settees and the
+# bed: low, amidships, and out of the way.
+SOLE_Z = 350
+IN_HW = CABIN_W / 2 - 60           # 1140: inside half beam
+SEAT_H = 450                       # above the sole
+COUNTER_H = 900
+OH_Z0, OH_Z1 = 1750, 2200          # overhead lockers, hard to the ceiling
+OH_DEPTH = 320
+
+# AC: the indoor air handler stands in the aft-STARBOARD corner, right
+# beside the door and directly inboard of the ventilator box already on
+# the outside of that wall — the duct crosses the wall on the shortest
+# possible run. Below the handler the same column is a full-height
+# broom/utility locker.
+AC_UNIT_X = (950, 1250)
+AC_UNIT_Y = (640, IN_HW)
+AC_HANDLER_Z = (1450, 2200)
+
+HEADS_X = (950, 2350)              # wetroom: toilet, shower, basin
+HEADS_Y = (-IN_HW, -240)           # 900 deep to port
+HEADS_DOOR_X = (1850, 2300)        # sliding, opens into the corridor
+GALLEY_X = (1250, 2350)
+GALLEY_Y = (540, IN_HW)            # 600 deep to starboard
+FRIDGE_X = (1750, 2350)            # full-height fridge + freezer tower
+WASHER_W = 460                     # compact washer-dryer under the counter
+CORRIDOR_Y = (-240, 540)           # 780 clear between heads and galley
+# vertical space: in the SERVICE zone both sides are solid joinery to
+# the ceiling and daylight comes from two portholes, so the galley gets
+# a 750 mm locker band over the worktop. In the living zones the
+# glazing (1500-2100) wins, and storage goes in the band UNDER it.
+GAL_OH_Z = (1450, 2200)
+GAL_OH_DEPTH = 300
+SHELF_Z = (1150, 1480)             # side shelf band under the windows
+SHELF_DEPTH = 260
+
+DINETTE_X = (2400, 4400)
+SETTEE_D = 620                     # seat depth = berth width
+BERTH_X = (2450, 4350)             # 1900 single berth each side
+TABLE_L, TABLE_W = 900, 700        # removable, drops to make a double
+TABLE_Z = 1050
+ELEC_X = (4350, 4700)              # inverter/charger/MPPT, wardrobe base
+
+WARDROBE_X = (4400, 4700)
+WARDROBE_W = 700                   # one each side, passage between
+
+# ELEVATING DOUBLE BED at the forward end, right at the big window.
+# The 1900 side lies ACROSS the boat (fits the 2280 inside beam); the
+# 1400 side runs fore-and-aft. The platform rides on four corner rails
+# and is hoisted to the ceiling when it is not being slept in, which
+# gives the whole forward zone back as living space by day.
+BED_X = (4700, 6200)
+MATTRESS_L = 1900                  # across the boat
+MATTRESS_W = 1400                  # fore-and-aft
+BED_FRAME_T = 70                   # platform thickness
+MATTRESS_T = 150
+BED_UP_Z = 1980                    # platform underside, stowed at the deckhead
+BED_DOWN_Z = 650                   # platform underside, made up for sleeping
+BED_RAIL = 45                      # corner guide rail section
+BED_CABLE = 6                      # stainless hoist cable
+BED_SHAFT = 25                     # common drive shaft = mechanical sync
+
+# ---- 48 V house bank: 50 kWh (Max) ----
+# Split symmetrically under BOTH settees: low, amidships, and no list.
+# 50 kWh of LiFePO4 is ~360 kg — 18% of the whole mass budget, so it is
+# also the single biggest threat to staying road legal (see checks()).
+BATT_KWH = 50
+BATT_WH_PER_KG = 140               # pack level, incl. cases and busbars
+BATT_WH_PER_L = 180                # pack level, incl. spacing and vents
+BATT_MASS = BATT_KWH * 1000 / BATT_WH_PER_KG
+BATT_VOL_NEED = BATT_KWH * 1000 / BATT_WH_PER_L / 1000      # m3
+BATT_BOX_X = (2450, 4350)          # full length of both settee bases
+BATT_BOX_H = 400
+# water lives in a shallow BILGE tank under the dinette sole: lower than
+# any locker, on the centreline, and it frees both settee bases for cells
+TANK_BILGE_X = (2500, 4300)
+TANK_BILGE_HW = 900
+TANK_BILGE_H = 250
+WATER_L = 200
+
+# mass budget for the fit-out (kg) — it comes straight off the payload
+INT_MASS = dict(joinery=180, batteries=round(BATT_MASS), water=WATER_L,
+                appliances=95)
+
 # ---- stern gear: electric winch + anchor ----
 # Winch: self-recovery on slippery ramps — pull to a ramp-top anchor
 # point and the boat hauls itself out even with no wheel grip.
@@ -546,6 +643,58 @@ def checks(verbose=True):
     assert jack_frac <= 0.85, f"floats too small to jack up: {jack_frac:.2f}"
     assert -60 <= harbor_wl <= 40, \
         f"jack-up equilibrium off keel-awash regime: {harbor_wl:.0f}"
+    # interior: circulation, berths, stowage, and what it costs in draft
+    corridor_w = CORRIDOR_Y[1] - CORRIDOR_Y[0]
+    berth_l = BERTH_X[1] - BERTH_X[0]
+    aisle_w = 2 * IN_HW - 2 * SETTEE_D
+    passage_w = 2 * (IN_HW - WARDROBE_W)
+    head_clear = CABIN_CEIL_Z - SOLE_Z
+    counter_gap = OH_Z0 - (SOLE_Z + COUNTER_H)
+    heads_area = (HEADS_X[1] - HEADS_X[0]) * (HEADS_Y[1] - HEADS_Y[0]) / 1e6
+    batt_vol = 2 * (BATT_BOX_X[1] - BATT_BOX_X[0]) * (SETTEE_D - 80) * \
+        BATT_BOX_H / 1e9
+    water_vol = (TANK_BILGE_X[1] - TANK_BILGE_X[0]) * 2 * TANK_BILGE_HW * \
+        TANK_BILGE_H / 1e6                                   # litres
+    bed_stow_clear = BED_UP_Z - SOLE_Z
+    bed_travel = BED_UP_Z - BED_DOWN_Z
+    bed_head = CABIN_CEIL_Z - (BED_DOWN_Z + BED_FRAME_T + MATTRESS_T)
+    int_mass = sum(INT_MASS.values())
+    waterplane = 5.5 * 2.4                                   # m2, near WL
+    int_sinkage = int_mass / (waterplane * 1000) * 1000       # mm
+
+    assert corridor_w >= 600, f"corridor only {corridor_w} mm"
+    assert berth_l >= 1850, f"settee berth {berth_l} mm too short"
+    assert aisle_w >= 900, f"dinette aisle {aisle_w} mm"
+    assert passage_w >= 700, f"passage past the wardrobes {passage_w} mm"
+    assert head_clear >= 1800, f"cabin headroom {head_clear} mm"
+    assert counter_gap >= 450, f"only {counter_gap} mm over the worktop"
+    assert heads_area >= 1.2, f"heads {heads_area:.2f} m2 — too tight"
+    assert MATTRESS_L <= 2 * IN_HW - 200, \
+        f"athwartships bed {MATTRESS_L} does not fit the {2 * IN_HW} beam"
+    assert batt_vol >= BATT_VOL_NEED, \
+        f"{BATT_KWH} kWh needs {BATT_VOL_NEED:.2f} m3, bays give {batt_vol:.2f}"
+    assert water_vol >= WATER_L, \
+        f"bilge tank {water_vol:.0f} L < {WATER_L} L"
+    assert MATTRESS_L <= 2 * IN_HW - 100, "bed too long for the beam"
+    assert bed_travel >= 1200, f"bed lift travel only {bed_travel}"
+    assert bed_head >= 900, f"only {bed_head} mm over the mattress in bed"
+    assert BED_UP_Z + BED_FRAME_T + MATTRESS_T <= CABIN_CEIL_Z, \
+        "stowed bed hits the deckhead"
+    assert bed_stow_clear >= 1550, \
+        f"only {bed_stow_clear} mm under the stowed bed"
+    assert BED_X[1] <= CABIN_X1 and WARDROBE_X[1] <= BED_X[0], \
+        "forward zones overlap"
+    # the big windows must never be blocked by full-height joinery
+    tall = [(AC_UNIT_X, "AC column"), (FRIDGE_X, "fridge tower"),
+            (HEADS_X, "heads"), (WARDROBE_X, "wardrobes")]
+    for wx, wl in WINDOWS:
+        for (tx0, tx1), name in tall:
+            assert tx1 <= wx or tx0 >= wx + wl, \
+                f"{name} stands in front of the window at x {wx}"
+    assert min(wl for _, wl in WINDOWS) >= 1200, "windows got small again"
+    assert DINETTE_X[1] <= WARDROBE_X[0] and HEADS_X[1] <= DINETTE_X[0], \
+        "interior zones overlap"
+
     # pop-top roof: scissor kinematics, actuator sizing, wind, stability
     th_up, span_up, travel, push_up = scissor_geom(CANOPY_LIFT)
     _, _, _, push_break = scissor_geom(0)          # breakout, near flat
@@ -614,6 +763,19 @@ def checks(verbose=True):
         print(f"aft entry       {DOOR_Z1 - COCKPIT_FLOOR} mm clear at the door, "
               f"bulwark {CABIN_BASE_Z - COCKPIT_FLOOR}, "
               f"floor {COCKPIT_FLOOR - WL_Z} above WL, ladder {stair_ang:.0f} deg")
+        print(f"interior        corridor {corridor_w:.0f}, aisle "
+              f"{aisle_w:.0f}, passage {passage_w:.0f}, heads "
+              f"{heads_area:.2f} m2, berths 2 x {berth_l:.0f} + "
+              f"{MATTRESS_L}x{MATTRESS_W} double")
+        print(f"bed lift        {MATTRESS_L}x{MATTRESS_W} athwartships, "
+              f"travel {bed_travel} mm, {bed_stow_clear} clear under it "
+              f"stowed, {bed_head} over the mattress made up")
+        print(f"house bank      {BATT_KWH} kWh, {BATT_MASS:.0f} kg, "
+              f"{BATT_VOL_NEED:.2f} m3 in {batt_vol:.2f} m3 of settee base; "
+              f"water {water_vol:.0f} L bilge tank")
+        print(f"interior mass   {int_mass} kg "
+              f"({', '.join(f'{k} {v}' for k, v in INT_MASS.items())})"
+              f" -> +{int_sinkage:.0f} mm draft")
         print(f"cabin inside    {interior_clear:.0f} mm clear "
               f"({CABIN_ROOF_Z} outside, {ROOF_STRUCT} roof structure)")
         print(f"pop-top         lift {CANOPY_LIFT}, scissor {th_up:.1f} deg, "

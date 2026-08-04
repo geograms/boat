@@ -50,6 +50,27 @@ Shared language for the design. Geometry values live in
 - **Air draft** — height from the waterline to the highest point:
   2.07 m roof down, **4.22 m** with the pop-top raised.
 
+## Interior (details in [interior.md](interior.md))
+
+- **Sole** — the cabin floor (z 350). Everything heavy sits on it, not
+  above it.
+- **Settee berth** — a seat that is also a single bed: 1 900 × 620 each
+  side of the dinette.
+- **Dinette** — the saloon: two settee berths facing each other with a
+  removable table between them; drop the table onto its bearers and the
+  filler cushions make a second double.
+- **Athwartships bed** — a bed lying ACROSS the boat. A 2 000 mm body
+  fits the 2 280 mm beam, so the double eats only 1 400 mm of length.
+- **Wetroom** — a heads compartment with no separate shower cubicle:
+  the whole floor is the shower tray and drains to a sump.
+- **Worktop / locker band** — galley counter at 900 and the run of
+  lockers above it (1 450–2 200), only possible where there is no
+  picture window.
+- **Shelf band** — the 1 150–1 480 storage strip UNDER the window band
+  in the living zones, where a locker would blind the saloon.
+- **Air handler** — the indoor half of the AC heat pump, in the
+  aft-starboard column beside the door, opposite its outside vent box.
+
 ## Stabilizer / hangar system
 
 - **Float (floater, ama)** — one of the two 6.2 m outboard buoyancy

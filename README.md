@@ -26,6 +26,7 @@ hydrostatic constraint is asserted in code.
 | Propulsion | 3 × 2 kW flush-intake waterjets (weed-proof), differential steering |
 | Aft entry | self-draining cockpit, gasketed storm door, rain porch, ladder to the terrace |
 | Cabin | 5.3 × 2.28 m inside, 1.85 m clear headroom |
+| Interior | heads with shower, galley (fridge/freezer tower, washer), dinette that sleeps 2, athwartships double; batteries + water under the settees |
 | Pop-top | 4 scissor units lift the solar roof 1.9 m → terrace with standing headroom; air draft 4.22 m raised |
 
 ## The six configurations
@@ -46,6 +47,7 @@ freecad/            primary model
   capture.py        wipes shots/, re-renders every configuration
   ga_drawing.py     dimensioned general-arrangement sheet
   roof_cards.py     pop-top spec cards
+  interior_plan.py  interior sheet: plan + stowage plan + sections
   shots/            current renders (always regenerated, never stale)
 docs/
   glossary.md       shared vocabulary for every part and term
@@ -54,6 +56,7 @@ docs/
   structure.md      exoskeleton frame + two-pose tow arch
   aft_entry.md      companionway, porch, ladder, AC, lockers, gates
   roof.md           pop-top: scissors, sealing, wind loads, side walls
+  interior.md       layout, stowage (incl. hidden), services, mass
   images/           dimensioned spec cards for purchasable parts
 drafts/             original concept PDF + STL sketch
 *.scad, Makefile    legacy OpenSCAD sketch (superseded by freecad/)

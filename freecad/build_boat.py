@@ -144,10 +144,19 @@ def build_cabin():
 
     cuts, panes = [], []
     wz0, wh = P.WIN_Z0, P.WIN_H
-    for i in range(6):                              # 6 windows per side
-        wx = P.CABIN_X0 + 150 + i * 850
-        cuts.append(box(600, P.CABIN_W + 200, wh, (wx, -P.CABIN_W / 2 - 100, wz0)))
-        panes.append(box(600, P.CABIN_W - 40, wh, (wx, -P.CABIN_W / 2 + 20, wz0)))
+    # two BIG picture windows per side (saloon and bed) instead of six
+    # small ones; the service zone is lit by a porthole each side
+    for wx, wl in P.WINDOWS:
+        cuts.append(box(wl, P.CABIN_W + 200, wh, (wx, -P.CABIN_W / 2 - 100, wz0)))
+        panes.append(box(wl, P.CABIN_W - 40, wh, (wx, -P.CABIN_W / 2 + 20, wz0)))
+    px, pz, pd = P.PORTHOLE
+    for sy in (-1, 1):
+        cuts.append(Part.makeCylinder(
+            pd / 2, P.CABIN_W + 200,
+            Vector(px, sy * (P.CABIN_W / 2 + 100), pz), Vector(0, -sy, 0)))
+        panes.append(Part.makeCylinder(
+            pd / 2 - 30, 20, Vector(px, sy * (P.CABIN_W / 2 - 20), pz),
+            Vector(0, sy, 0)))
     cuts.append(box(200, 1500, wh, (P.CABIN_X1 - 100, -750, wz0)))   # windshield
     panes.append(box(120, 1500, wh, (P.CABIN_X1 - 60, -750, wz0)))
     cuts.append(door_opening())          # companionway
@@ -922,6 +931,175 @@ def build_stern_gear():
     return Part.makeCompound(parts)
 
 
+BED_DOWN = True          # module flag so a render script can hoist the bed
+
+
+def build_interior(bed_down=None):
+    """Fit-out of the 5300 x 2280 cabin. Returns
+    (joinery, soft, appliances, tanks_and_batteries, glass)."""
+    S, C = P.SOLE_Z, P.CABIN_CEIL_Z
+    HW = P.IN_HW
+    joinery, soft, appl, heavy, glass = [], [], [], [], []
+
+    def blk(x0, x1, y0, y1, z0, z1):
+        return box(x1 - x0, y1 - y0, z1 - z0, (x0, y0, z0))
+
+    # ---------------- sole + services zone -------------------------
+    joinery.append(blk(P.CABIN_X0 + 50, P.CABIN_X1 - 50, -HW, HW, S - 18, S))
+
+    # heads: a wetroom to port — bulkheads, sliding door, fittings
+    hx0, hx1 = P.HEADS_X
+    hy0, hy1 = P.HEADS_Y
+    for (x0, x1) in ((hx0 - 40, hx0), (hx1, hx1 + 40)):     # end bulkheads
+        joinery.append(blk(x0, x1, hy0, hy1, S, C))
+    door_x0, door_x1 = P.HEADS_DOOR_X
+    joinery.append(blk(hx0, door_x0, hy1, hy1 + 40, S, C))  # inboard wall
+    joinery.append(blk(door_x1, hx1, hy1, hy1 + 40, S, C))
+    joinery.append(blk(door_x0, door_x1, hy1 + 40, hy1 + 62, S + 40, C - 100))
+    # toilet, basin on a shelf, shower tray and riser
+    appl.append(blk(hx0 + 80, hx0 + 560, hy0 + 90, hy0 + 480, S, S + 420))
+    appl.append(Part.makeCylinder(160, 130, Vector(hx0 + 320, hy0 + 285,
+                                                   S + 420)))
+    joinery.append(blk(hx0 + 60, hx0 + 620, hy0, hy0 + 120, S + 900, C - 200))
+    appl.append(blk(hx1 - 620, hx1 - 60, hy0 + 40, hy0 + 420, S + 820,
+                    S + 900))                                # basin shelf
+    appl.append(Part.makeCylinder(190, 110, Vector(hx1 - 340, hy0 + 230,
+                                                   S + 900)))
+    joinery.append(blk(hx1 - 700, hx1 - 40, hy0 + 30, hy1 - 30, S, S + 30))
+    joinery.append(blk(hx1 - 60, hx1 - 40, hy0 + 200, hy0 + 240,
+                       S + 1400, S + 1560))                  # shower riser
+
+    # AC column beside the door: air handler high, utility locker below,
+    # duct straight through the aft wall into the external vent box
+    ax0, ax1 = P.AC_UNIT_X
+    ay0, ay1 = P.AC_UNIT_Y
+    joinery.append(blk(ax0, ax1, ay0, ay1, S, P.AC_HANDLER_Z[0]))
+    appl.append(blk(ax0, ax1, ay0, ay1, *P.AC_HANDLER_Z))
+    for i in range(7):                                       # louvres
+        glass.append(blk(ax0 - 14, ax0, ay0 + 40, ay1 - 40,
+                         P.AC_HANDLER_Z[0] + 90 + i * 70,
+                         P.AC_HANDLER_Z[0] + 130 + i * 70))
+    glass.append(blk(P.CABIN_X0 - 20, ax0, P.AC_Y0, P.AC_Y1,
+                     P.AC_Z0, P.AC_Z1))                      # duct to the box
+
+    # galley to starboard: counter, washer under it, fridge tower
+    gx0, gx1 = P.GALLEY_X
+    gy0, gy1 = P.GALLEY_Y
+    fx0, fx1 = P.FRIDGE_X
+    joinery.append(blk(gx0, fx0, gy0, gy1, S, S + P.COUNTER_H))
+    joinery.append(blk(gx0 - 20, fx0 + 20, gy0 - 20, gy1, S + P.COUNTER_H,
+                       S + P.COUNTER_H + 40))                # worktop
+    appl.append(blk(gx0 + 20, gx0 + 20 + P.WASHER_W, gy0 + 40, gy1 - 40,
+                    S + 120, S + P.COUNTER_H - 60))          # washer-dryer
+    glass.append(blk(fx0 - 470, fx0 - 60, gy0 + 90, gy1 - 90,
+                     S + P.COUNTER_H + 30, S + P.COUNTER_H + 44))  # hob
+    appl.append(blk(gx0 + 40, gx0 + 440, gy0 + 120, gy1 - 120,
+                    S + P.COUNTER_H - 160, S + P.COUNTER_H + 20))  # sink
+    joinery.append(blk(fx0, fx1, gy0, gy1, S, P.OH_Z1))      # fridge tower
+    glass.append(blk(fx0 - 16, fx0, gy0 + 60, gy1 - 60, S + 180, S + 1250))
+    glass.append(blk(fx0 - 16, fx0, gy0 + 60, gy1 - 60, S + 1330, P.OH_Z1 - 120))
+    # locker band over the worktop — this side has no picture window
+    joinery.append(blk(gx0, fx0, gy1 - P.GAL_OH_DEPTH, gy1, *P.GAL_OH_Z))
+
+    # ---------------- dinette --------------------------------------
+    bx0, bx1 = P.BERTH_X
+    for sy in (-1, 1):
+        y_out = sy * HW
+        y_in = sy * (HW - P.SETTEE_D)
+        y0, y1 = min(y_out, y_in), max(y_out, y_in)
+        joinery.append(blk(bx0, bx1, y0, y1, S, S + P.SEAT_H))   # base
+        soft.append(blk(bx0, bx1, y0, y1, S + P.SEAT_H, S + P.SEAT_H + 110))
+        soft.append(blk(bx0, bx1, min(y_out, y_out - sy * 130),
+                        max(y_out, y_out - sy * 130),
+                        S + P.SEAT_H + 110, S + 800))            # backrest
+        # drawers facing the aisle
+        for i in range(3):
+            joinery.append(blk(bx0 + 60 + i * 620, bx0 + 620 + i * 620,
+                               min(y_in, y_in - sy * 18),
+                               max(y_in, y_in - sy * 18),
+                               S + 60, S + P.SEAT_H - 60))
+        # shelf band UNDER the window: the glazing owns 1500-2100 here,
+        # so the storage goes below it rather than blinding the saloon
+        joinery.append(blk(bx0 - 50, bx1 + 50,
+                           min(y_out, y_out - sy * P.SHELF_DEPTH),
+                           max(y_out, y_out - sy * P.SHELF_DEPTH),
+                           *P.SHELF_Z))
+    # removable table on a floor socket
+    joinery.append(blk((bx0 + bx1 - P.TABLE_L) / 2,
+                       (bx0 + bx1 + P.TABLE_L) / 2,
+                       -P.TABLE_W / 2, P.TABLE_W / 2,
+                       P.TABLE_Z, P.TABLE_Z + 34))
+    joinery.append(Part.makeCylinder(45, P.TABLE_Z - S,
+                                     Vector((bx0 + bx1) / 2, 0, S)))
+    # 50 kWh of cells fill BOTH settee bases, symmetrically: lowest
+    # possible, amidships, and no list. Water goes under the sole.
+    for sy in (-1, 1):
+        heavy.append(blk(*P.BATT_BOX_X,
+                         min(sy * HW + sy * 40, sy * (HW - P.SETTEE_D + 40)),
+                         max(sy * HW + sy * 40, sy * (HW - P.SETTEE_D + 40)),
+                         S + 40, S + 40 + P.BATT_BOX_H))
+    heavy.append(blk(*P.TANK_BILGE_X, -P.TANK_BILGE_HW, P.TANK_BILGE_HW,
+                     S - 18 - P.TANK_BILGE_H, S - 18))     # bilge water tank
+
+    # ---------------- wardrobes + bed ------------------------------
+    wx0, wx1 = P.WARDROBE_X
+    for sy in (-1, 1):
+        y_out = sy * HW
+        joinery.append(blk(wx0, wx1, min(y_out, y_out - sy * P.WARDROBE_W),
+                           max(y_out, y_out - sy * P.WARDROBE_W), S, C))
+    bdx0, bdx1 = P.BED_X
+    appl.append(blk(*P.ELEC_X, -HW + 60, -HW + 500,
+                    S + 40, S + 700))                    # inverter cabinet
+
+    # ELEVATING BED: platform on four corner rails, hoisted by four
+    # cables off ONE shaft under the deckhead — one shaft means the
+    # corners cannot go out of sync. Worm gearbox holds it anywhere;
+    # a lever/crank socket drives it by hand if the power is off.
+    if bed_down is None:
+        bed_down = BED_DOWN
+    bz = P.BED_DOWN_Z if bed_down else P.BED_UP_Z
+    joinery.append(blk(bdx0 + 40, bdx0 + 40 + P.MATTRESS_W,
+                       -P.MATTRESS_L / 2 - 60, P.MATTRESS_L / 2 + 60,
+                       bz, bz + P.BED_FRAME_T))
+    soft.append(blk(bdx0 + 60, bdx0 + 60 + P.MATTRESS_W - 40,
+                    -P.MATTRESS_L / 2, P.MATTRESS_L / 2,
+                    bz + P.BED_FRAME_T, bz + P.BED_FRAME_T + P.MATTRESS_T))
+    rails_x = (bdx0 + 70, bdx0 + 10 + P.MATTRESS_W)
+    for rx in rails_x:
+        for sy in (-1, 1):
+            ry = sy * (P.MATTRESS_L / 2 + 30)
+            joinery.append(blk(rx - P.BED_RAIL / 2, rx + P.BED_RAIL / 2,
+                               ry - P.BED_RAIL / 2, ry + P.BED_RAIL / 2,
+                               S, C))                      # guide rail
+            glass.append(rod((rx, ry, bz + P.BED_FRAME_T),
+                             (rx, ry, C - 60), P.BED_CABLE))   # hoist cable
+    # common drive shaft + gearmotor under the deckhead
+    glass.append(rod((rails_x[0], -P.MATTRESS_L / 2 - 30, C - 60),
+                     (rails_x[0], P.MATTRESS_L / 2 + 30, C - 60),
+                     P.BED_SHAFT))
+    glass.append(rod((rails_x[1], -P.MATTRESS_L / 2 - 30, C - 60),
+                     (rails_x[1], P.MATTRESS_L / 2 + 30, C - 60),
+                     P.BED_SHAFT))
+    glass.append(rod((rails_x[0], 0, C - 60), (rails_x[1], 0, C - 60),
+                     P.BED_SHAFT))
+    appl.append(blk(rails_x[0] + 80, rails_x[0] + 380, -120, 180,
+                    C - 200, C - 40))                      # gearmotor
+    # no fixed seat here on purpose: with the bed hoisted the whole
+    # 1500 x 2280 forward zone is free floor, which is the point of it
+    # over the bed: shelves in the solid piers between the windows, and
+    # a shelf across the forward bulkhead under the windshield
+    for sy in (-1, 1):
+        joinery.append(blk(bdx0 + 40, bdx1 - 40,
+                           min(sy * HW, sy * (HW - P.SHELF_DEPTH)),
+                           max(sy * HW, sy * (HW - P.SHELF_DEPTH)),
+                           *P.SHELF_Z))
+    joinery.append(blk(P.CABIN_X1 - 300, P.CABIN_X1 - 60, -HW + 60, HW - 60,
+                       *P.SHELF_Z))
+    return (Part.makeCompound(joinery), Part.makeCompound(soft),
+            Part.makeCompound(appl), Part.makeCompound(heavy),
+            Part.makeCompound(glass))
+
+
 def build_wintergarden():
     """Full curved plexiglass envelope, fuller/rounder profile:
     elliptical side curve with a gentle outward bulge (5 bends per
@@ -1012,6 +1190,14 @@ def build_mode(mode):
     cabin, panes = build_cabin()
     add("Cabin", cabin, WHITE)
     add("Glazing", panes, (0.5, 0.7, 0.8), 70)
+
+    g_int = doc.addObject("App::DocumentObjectGroup", "Interior")
+    ijoin, isoft, iappl, iheavy, iglass = build_interior()
+    add("Joinery", ijoin, (0.80, 0.71, 0.55), group=g_int)
+    add("Cushions", isoft, (0.45, 0.50, 0.55), group=g_int)
+    add("Appliances", iappl, (0.88, 0.89, 0.91), group=g_int)
+    add("BatteriesTanks", iheavy, (0.25, 0.42, 0.35), group=g_int)
+    add("Fittings", iglass, (0.20, 0.22, 0.24), group=g_int)
 
     g_roof = doc.addObject("App::DocumentObjectGroup", "PopTop")
     tdeck, tfit = build_terrace()
