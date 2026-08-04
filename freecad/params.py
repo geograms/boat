@@ -338,8 +338,14 @@ CP_NET = 1.5                       # EN 1991-1-4 free-standing canopy
 # point and the boat hauls itself out even with no wheel grip.
 # Anchor: stern roller on the gantry leg, rode to the same drum family.
 WINCH_PULL_KG = 2000          # 4500 lb class, 12/24 V
-WINCH_POS = (60, -880, 1265)    # hard aft, clear of the boarding gate
+# BOTH ON THE CENTERLINE (Max): an off-centre winch pulls the boat
+# with a yaw bias — on a slipway that fights the wheels and makes the
+# recovery harder. Drum athwartships on a stern-tie bracket, rode
+# leading aft and down over the anchor roller directly beneath it, so
+# the pull line is dead on the keel line.
+WINCH_POS = (-70, 0, 1310)
 ANCHOR_ROLLER = (-140, 0, 1150)
+WINCH_BODY = (300, 420, 230)  # x, y, z: fits between the gantry legs
 
 # ---- stern pod ----
 STERNPOD_DIA = 300
@@ -508,6 +514,16 @@ def checks(verbose=True):
     assert -cpl_x <= 2100, f"drawbar overhang aft {-cpl_x:.0f} too long"
     assert 60 <= tongue <= 130, f"tongue load {tongue:.0f} kg off-spec"
     assert sea_x < -300, "sea gantry not clear aft of the transom"
+    # winch + anchor on the keel line: an off-centre pull yaws the boat
+    # on a slipway and fights the wheels
+    assert abs(WINCH_POS[1]) <= 30, \
+        f"winch {WINCH_POS[1]} mm off centreline — biased ramp pull"
+    assert abs(ANCHOR_ROLLER[1]) <= 30, \
+        f"anchor roller {ANCHOR_ROLLER[1]} mm off centreline"
+    assert WINCH_POS[0] > ANCHOR_ROLLER[0], \
+        "rode must lead aft from the drum onto the roller"
+    assert WINCH_BODY[1] / 2 + 60 <= ARCH_PIVOT_Y, \
+        "winch body fouls the gantry legs"
     assert sea_z > WL_Z + 1200, "gantry too low to hang an anchor"
     assert 2 * ARCH_PIVOT_Y + ARCH_TUBE <= 2550, "stern arch wider than road"
     # aft entry

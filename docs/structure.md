@@ -115,18 +115,41 @@ asserted in `checks()` at 60–130 kg.
 
 ## 2b. Stern gear: winch and anchor
 
-- **Electric winch**, 2 t (4 500 lb) class, 12/24 V, mounted on the
-  stern tie with a fairlead through the transom. Purpose: **self-
-  recovery on slippery ramps**. Algae-covered concrete can drop tyre
-  friction to ~0.2, below the 0.18 needed for a 15 % ramp with no
-  margin; the winch takes a line to a ramp-top eye or the car and the
-  boat hauls itself out regardless of grip. Same drum also serves as a
-  kedge winch.
-- **Anchor** on a roller at the transom under the gantry sheave: shank
-  and plough stow against the roller, rode runs to the drum. Anchoring
-  from the stern suits this boat — the winter garden and the terrace
-  face forward, so lying stern-to the wind keeps the view and the
-  breeze where people sit.
+**Both sit on the centreline**, stacked: drum above, anchor roller
+directly beneath it. That is not cosmetic — an off-centre winch pulls
+the boat with a **yaw bias**, and on a slipway that bias fights the
+wheels and makes the recovery harder, exactly when grip is already
+marginal. On the keel line the pull, the hull and the wheelbase are all
+on the same axis, so the boat tracks straight up the ramp. It also
+keeps the anchor rode leading fair in any wind direction.
+
+```
+        gantry leg              gantry leg
+             ╲                     ╱
+              ╲   ▄▄▄▄▄▄▄▄▄▄▄   ╱     winch, drum athwartships
+               ╲  █  ▓drum▓  █ ╱       (-70, 0, 1310)
+   ═══transom═══╪══█▄▄▄▄▄▄▄▄█══╪══
+                     ║ rode
+                    (●)  anchor roller (-140, 0, 1150)
+                     ↓ straight aft — no yaw
+```
+
+- **Electric winch**, 2 t (4 500 lb) class, 12/24 V, on a bracket off
+  the stern tie, body 300 × 420 mm so it clears the gantry legs at
+  y ±950. Purpose: **self-recovery on slippery ramps**. Algae-covered
+  concrete can drop tyre friction to ~0.2, below the 0.18 needed for a
+  15 % ramp with no margin; the winch takes a line to a ramp-top eye or
+  the car and the boat hauls itself out regardless of grip. Same drum
+  also serves as a kedge winch.
+- **Anchor** on the roller under the gantry sheave: shank and plough
+  stow against the roller, rode runs up to the drum over a chain
+  stripper. Anchoring from the stern suits this boat — the winter
+  garden and the terrace face forward, so lying stern-to the wind keeps
+  the view and the breeze where people sit.
+
+`checks()` asserts both are within 30 mm of the centreline, that the
+drum is forward of the roller (so the rode leads aft), and that the
+winch body clears the gantry legs.
 
 ## 3. Bow: closed and faired
 

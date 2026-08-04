@@ -895,13 +895,21 @@ def build_aft_entry(rail_up=False, door_open=False):
 
 def build_stern_gear():
     """Electric self-recovery winch + stern anchor on its roller."""
+    # winch and anchor share the centerline: the rode leaves the drum,
+    # runs aft and down over the anchor roller right beneath it, so a
+    # ramp recovery pulls straight along the keel line with no yaw
     wx, wy, wz = P.WINCH_POS
-    parts = [box(420, 260, 230, (wx - 210, wy - 130, wz - 115))]   # housing
-    parts.append(Part.makeCylinder(85, 300, Vector(wx, wy - 150, wz),
+    bl, bw, bh = P.WINCH_BODY
+    parts = [box(bl, bw, bh, (wx - bl / 2, wy - bw / 2, wz - bh / 2))]
+    parts.append(Part.makeCylinder(85, bw - 120,
+                                   Vector(wx, wy - (bw - 120) / 2, wz),
                                    Vector(0, 1, 0)))               # drum
-    parts.append(box(60, 300, 190, (wx - 260, wy - 150, wz - 95)))  # fairlead
-    parts.append(Part.makeCylinder(55, 120, Vector(wx - 300, wy - 60, wz),
-                                   Vector(0, 1, 0)))               # roller
+    # bracket down to the stern tie, and the chain stripper aft
+    for sy in (-1, 1):
+        parts.append(box(40, 30, 300,
+                         (wx - 20, sy * (bw / 2 - 30), wz - bh / 2 - 290)))
+    parts.append(box(50, 240, 150, (wx - bl / 2 - 50, wy - 120,
+                                    wz - bh / 2)))                 # stripper
     ax_, ay, az_ = P.ANCHOR_ROLLER
     parts.append(Part.makeCylinder(60, 200, Vector(ax_, ay - 100, az_),
                                    Vector(0, 1, 0)))               # bow roller
