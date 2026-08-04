@@ -139,7 +139,29 @@ PASSAGE_W = 540                # aft section is a narrow PASSAGE, not deck:
 PASSAGE_X = 900                # it widens to the full balcony only from
                                # the cabin wall forward
 BALC_SPAN = 1200
-BALC_T = 40
+BALC_T = 40                    # ladder-frame depth; modules drop INTO it
+
+# WALKABLE balcony (Max): people must be able to walk the side decks,
+# and the panels there are STANDARD FRAMED MODULES — standardised,
+# cheap, and replaceable at any solar shop years from now.
+#
+# The folded balcony stands vertically against the cabin on the road,
+# so the whole assembly may be at most 55 mm thick before the 2550 mm
+# road limit bites. That single number rules out the roof's trick of
+# putting a walking surface OVER the panels (module 35 + gap 40 +
+# tread 30 = 105 mm). So the walkway sits BESIDE the panels, in the
+# same plane, and the modules drop into the frame rather than onto it.
+MODULE_STD = (1480, 670, 35)   # a standard 165 W framed panel
+MODULE_W_PEAK_STD = 165
+MODULE_KG = 11.5
+BALC_WALK_W = 480              # inboard walkway strip, anti-slip tread
+BALC_PANEL_W = 690             # outboard strip: module + clearance
+BALC_TREAD_T = 3               # perforated anti-slip alu sheet
+BALC_MODULE_X0 = 1000
+BALC_MODULES = 3               # per side, along the wide deck
+BALC_FRAME_RAIL = (25, 40, 3)  # alu box: b, h, wall
+BALC_FRAME_PITCH = 740         # cross rails: module ends + mid support
+BALC_FOLDED_T = BALC_T + 8     # frame depth + module lip + tread proud
 BALC_HINGE_Y = 1200                # folded outer face 1256 <= 1275
 BALC_HINGE_Z = 1150
 
@@ -317,7 +339,7 @@ TERRACE_SCUPPER = 60               # corner drains
 
 # guardrail: the old plug-in bar sockets stay, but the bars are now
 # 1000 mm stanchions with two lifelines, removable for the road
-BAR_D = 50
+BAR_D = 42                     # slim stanchion; a fence looks wrong here
 BAR_T = 3
 BAR_XS = (1150, 2883, 4617, 6150)
 BAR_Y = 1120                       # inside the toe rail
@@ -371,7 +393,7 @@ def deck_mass():
 def solar_kwp():
     """(deck kWp, balcony kWp, effective kWp after glass and shading)."""
     deck = DECK_PANELS * PANEL_W_PEAK / 1000
-    balc = 6 * PANEL_W_PEAK / 1000
+    balc = 2 * BALC_MODULES * MODULE_W_PEAK_STD / 1000
     _, _, _, shade = deck_areas()
     eff = deck * GLASS_TRANSMISSION * (1 - shade) * COOLING_GAIN + balc
     return deck, balc, eff
@@ -568,7 +590,7 @@ def checks(verbose=True):
     wheel_outer = wheel_disc_y + (WHEEL_W + 60) / 2
     float_outer_road = POD_ROAD[0] + FLOAT_H / 2               # sideways
     road_width = 2 * max(HULL_BEAM / 2, wheel_outer, float_outer_road,
-                         BALC_HINGE_Y + BALC_T + 2 * PANEL_T + 12,
+                         BALC_HINGE_Y + BALC_FOLDED_T,
                          GATE_PLATE_Y)            # gate threshold plate
     road_height = CABIN_ROOF_Z + DECK_BUILDUP - GROUND_Z
     track = 2 * wheel_disc_y
@@ -601,6 +623,24 @@ def checks(verbose=True):
     assert BALC_HINGE_Z + BALC_SPAN <= CABIN_ROOF_Z + DECK_BUILDUP + 50, \
         "folded balcony sticks above the roof deck"
     assert 100 <= box_gap <= 450, f"balcony leg length odd: {box_gap}"
+    # walkable balcony: the folded thickness is what the road limit sees
+    ml, mw, mt = MODULE_STD
+    balc_free = 1275 - BALC_HINGE_Y
+    balc_mass = (2 * (BALC_X1 - PASSAGE_X) / 1000 * 3 * BALC_FRAME_RAIL[0]
+                 * BALC_FRAME_RAIL[1] * 2.7e-6 * 1000) + \
+        BALC_MODULES * MODULE_KG + \
+        (BALC_X1 - PASSAGE_X) * BALC_WALK_W / 1e6 * 8
+    assert BALC_FOLDED_T <= balc_free, \
+        f"folded balcony {BALC_FOLDED_T} mm thick, only {balc_free:.0f} free"
+    assert mt < BALC_T, \
+        f"module {mt} mm must recess into the {BALC_T} mm frame, not sit on it"
+    assert BALC_WALK_W >= 450, f"balcony walkway only {BALC_WALK_W} mm"
+    assert mw + 20 <= BALC_PANEL_W, \
+        f"module {mw} does not fit the {BALC_PANEL_W} panel strip"
+    assert BALC_WALK_W + BALC_PANEL_W + BALC_FRAME_RAIL[0] <= BALC_SPAN, \
+        "walkway + panel strip wider than the balcony"
+    assert BALC_MODULE_X0 + BALC_MODULES * (ml + 60) <= BALC_X1, \
+        f"{BALC_MODULES} modules do not fit the deck length"
     # tow arch: coupling height on the road, protection reach at sea
     cpl_x, cpl_z = arch_coupling()
     cpl_h = cpl_z - GROUND_Z
@@ -753,6 +793,10 @@ def checks(verbose=True):
               f"({100 * reserve_kg / 1900:.0f}%)")
         print(f"righting SF     {m_right / m_heel:.1f}")
         print(f"balcony legs    {box_gap:.0f} mm down to the wheel boxes")
+        print(f"balcony deck    walkway {BALC_WALK_W} + panels "
+              f"{BALC_PANEL_W} = {BALC_SPAN}; {BALC_MODULES} std modules "
+              f"{ml}x{mw} per side; folded {BALC_FOLDED_T} mm of "
+              f"{balc_free:.0f} free;  ~{balc_mass:.0f} kg/side")
         print(f"waterjets       3 x {JET_POWER_W} W, grid top "
               f"{WL_Z - grid_top:.0f} mm under WL, face v {face_v:.2f} m/s")
         print(f"stern arch      gantry {-sea_x:.0f} mm aft of transom, "

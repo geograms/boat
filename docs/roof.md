@@ -1,4 +1,4 @@
-# Roof Terrace — Walk-On Glass Deck
+# Walkable Decks — Roof Sun Deck and Solar Balconies
 
 Status: design study. Geometry in `freecad/params.py` (the `---- roof
 terrace ----` block), shapes in `build_terrace()`, limits asserted in
@@ -119,7 +119,50 @@ Two limits worth stating plainly:
    and the ventilated box help; barefoot at midday will still be
    unpleasant.
 
-## 6. Cost sketch (2026, EUR)
+## 6. The solar balconies — same problem, different answer
+
+The side balconies must be walkable too, and Max wants **standard
+framed modules** there: standardised, cheap, and replaceable at any
+solar shop in ten years' time.
+
+**The roof's trick does not transfer.** Folded up against the cabin for
+the road, the balcony assembly may be at most **75 mm thick** before
+the 2 550 mm width limit bites. A walking surface *over* the panels
+needs module 35 + air gap 40 + tread 30 = **105 mm**. It does not fit.
+
+So on the balcony the walkway goes **beside** the panels, in the same
+plane, and the modules drop **into** the frame instead of onto it:
+
+```
+   PLAN of one balcony              SECTION (folded thickness 48 mm)
+   +-------------------------+       |<-- 480 -->|<--- 690 --->|
+   | ///// walkway 480 ///// |      .............................
+   +---+-----+-----+-----+---+      | tread 3   | module 35 in  |
+   |   | mod | mod | mod |   |      +----- 40 mm alu ladder ----+
+   +---+-----+-----+-----+---+
+     3 x 1480 x 670 standard panels    hinge <- 1200 -> outer edge
+```
+
+| | |
+|---|---|
+| frame | aluminium box 25 × 40 × 3 ladder, cross rails at 740 |
+| walkway | 480 mm of perforated anti-slip alu tread, full length |
+| modules | **3 standard 1 480 × 670 framed panels per side, 165 W** |
+| folded thickness | **48 mm** of the 75 available |
+| mass | ≈ 141 kg per side |
+
+**What it costs.** Giving 480 mm of the 1 200 mm width to a walkway,
+and using small standard modules rather than full-size laminates, takes
+the balconies from 2.58 kWp to **0.99 kWp**. System total is now
+**3.14 kWp nominal / 2.95 effective** — roughly 15–18 kWh on a good
+summer day against the 50 kWh bank.
+
+If the walkways are ever judged not worth it, the swap is
+straightforward: full-width 1 130 mm modules restore **+1.6 kWp** and
+the balconies become panel surfaces you do not stand on, with only the
+540 mm aft passage walkable.
+
+## 7. Cost sketch (2026, EUR)
 
 | Item | Est. |
 |---|---|
@@ -128,4 +171,11 @@ Two limits worth stating plainly:
 | Gaskets, structural adhesive, fixings | 350 |
 | 5 flexible laminates (bonded, under the glass) | 1 750 |
 | Stanchions, lifelines, sockets | 340 |
-| **Total** | **≈ 6 340** |
+| **Roof deck total** | **≈ 6 340** |
+
+| Balconies (both sides) | Est. |
+|---|---|
+| 6 × standard 165 W framed modules | 480 |
+| Alu ladder frames, hinges, brackets | 900 |
+| Perforated anti-slip tread, 6 m² | 420 |
+| **Balcony total** | **≈ 1 800** |

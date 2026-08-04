@@ -40,6 +40,13 @@ Shared language for the design. Geometry values live in
   is why smaller panes barely thin the glass.
 - **Frit** — ceramic pattern fired onto the glass; here the anti-slip
   (R11) surface of the deck.
+- **Standard framed module** — an ordinary aluminium-framed PV panel
+  (here 1 480 × 670, 165 W). Chosen for the balconies because they are
+  standardised, cheap and replaceable anywhere, unlike bonded
+  laminates.
+- **Recessed module** — a framed panel dropped INTO the depth of the
+  ladder frame rather than onto it, so the folded balcony stays inside
+  the 75 mm the road-width limit allows.
 - **Air draft** — height from the waterline to the highest point:
   **2.27 m**.
 

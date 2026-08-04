@@ -81,14 +81,14 @@ stair): eight half-width treads that swap sides, so each foot gets a
 250 mm-deep step in half the going a normal stair would need. Two
 stringers on edge carry them.
 
-**One folding handrail, outboard only.** The rail is needed solely
-when the roof terrace is in use, so it does not stand permanently in
-the way: a single rail on the **outboard (port) side** raises when the
-pop-top is up — posts at both ends, and a return that carries on as a
-grab rail along the terrace edge — and folds flat onto the stringer
-the rest of the time, taking no space in road, harbour or cruise
-trim. The inboard side needs no rail: it faces the cabin wall, and the
-footwell drop beside it is only 530 mm.
+**One small grab rail, at the ladder head.** Max's call: no long rail
+running along the deck edge — just a handhold exactly where you need
+it. A compact inverted-U grab, 880 mm high, is bolted **beside the top
+of the ladder** on the outboard side, so there is something to hold as
+you step off onto the terrace. Nothing folds, nothing stands in the
+way lower down, and the roof deck has its own guardrail once you are
+up there. The inboard side of the ladder needs nothing: it faces the
+cabin wall, and the footwell drop beside it is only 530 mm.
 
 If a gentler stair is ever wanted, the only way is to hang it along
 the cabin side over a solar balcony (1 300 mm of run → 37°) — at the

@@ -343,13 +343,12 @@ rows = [
     ("", "entry door, clear", f"700 × {D['door']:,} mm".replace(",", " ")),
     ("", "cockpit floor / bulwark", "400 / 750 mm"),
     ("H", "DECKS & SOLAR", ""),
-    ("", "solar balcony walkway",
-     f"{P.BALC_SPAN:,} × {P.BALC_X1 - P.BALC_X0:,} mm, both sides"
-     .replace(",", " ")),
+    ("", "solar balcony", f"{P.BALC_SPAN:,} wide: {P.BALC_WALK_W} walkway"
+     f" + {P.BALC_PANEL_W} panels".replace(",", " ")),
     ("", "aft passage width", f"{P.PASSAGE_W} mm  (part of the folding deck)"),
     ("", "roof terrace", f"{P.CABIN_X1 - P.CABIN_X0:,} × 2 360 mm"
      .replace(",", " ")),
-    ("", "panels", f"11 × {P.PANEL_L:,} × {P.PANEL_W:,} flexible (≈ 4.7 kWp)"
+    ("", "panels", f"5 laminates + 6 std modules (≈ 3.1 kWp)"
      .replace(",", " ")),
     ("H", "ROAD GEAR", ""),
     ("", "wheels", "6 × 205/70 R15 all-terrain"),

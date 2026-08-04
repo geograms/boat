@@ -250,12 +250,19 @@ def build_terrace(rails=True):
                 rail.append(rod((bx, sy * P.BAR_Y, z0 + 12),
                                 (bx, sy * P.BAR_Y, z0 + P.RAIL_H), P.BAR_D))
         if rails:
-            for k in range(P.LIFELINE_N):
-                lz = z0 + P.RAIL_H - 60 - k * (P.RAIL_H - 220) / \
-                    max(P.LIFELINE_N - 1, 1)
-                rail.append(rod((P.BAR_XS[0], sy * P.BAR_Y, lz),
-                                (P.BAR_XS[-1], sy * P.BAR_Y, lz),
-                                P.LIFELINE_D))
+            # a real top rail, not a wire: it reads as a guardrail and
+            # you can actually lean on it
+            rail.append(rod((P.BAR_XS[0], sy * P.BAR_Y, z0 + P.RAIL_H),
+                            (P.BAR_XS[-1], sy * P.BAR_Y, z0 + P.RAIL_H),
+                            P.BAR_D - 8))
+            rail.append(rod((P.BAR_XS[0], sy * P.BAR_Y, z0 + P.RAIL_H / 2),
+                            (P.BAR_XS[-1], sy * P.BAR_Y, z0 + P.RAIL_H / 2),
+                            P.LIFELINE_D))
+            # tie the two sides together across the forward end
+            if sy > 0:
+                rail.append(rod((P.BAR_XS[-1], -P.BAR_Y, z0 + P.RAIL_H),
+                                (P.BAR_XS[-1], P.BAR_Y, z0 + P.RAIL_H),
+                                P.BAR_D - 8))
     return (Part.makeCompound(deck), Part.makeCompound(lam),
             Part.makeCompound(frame), Part.makeCompound(glass),
             Part.makeCompound(rail) if rail else None)
@@ -467,45 +474,68 @@ def build_arms(phi):
 
 
 def build_balcony(fold_deg):
-    """Solar balcony: horizontal deck on gunwale hinge, 2 big panels,
-    edge rail, diagonal brackets. fold_deg 0 = horizontal (water),
-    90 = folded up against the cabin (road). Starboard, posed."""
+    """WALKABLE solar balcony: an aluminium ladder frame carrying
+    STANDARD FRAMED MODULES in its outboard strip and an anti-slip
+    tread in its inboard strip. The modules drop INTO the frame, not
+    onto it — folded against the cabin the whole assembly may only be
+    55 mm thick before the road-width limit bites, which is also why
+    the walkway is beside the panels and not over them.
+    fold_deg 0 = horizontal (water), 90 = folded up (road). Starboard."""
     place = Placement(Vector(0, P.BALC_HINGE_Y, P.BALC_HINGE_Z),
                       Rotation(Vector(1, 0, 0), fold_deg))
-    L = P.BALC_X1 - P.BALC_X0
 
     def posed(s):
         s.Placement = place.multiply(s.Placement)
         return s
 
-    # plate outline: a narrow passage aft, flaring to the full deck at
-    # the cabin wall. Only a walkway is needed back there — widening it
-    # would just add weight and windage.
-    out = wire([(P.BALC_X0, 0, 0), (P.BALC_X0, P.PASSAGE_W, 0),
-                (P.PASSAGE_X - 340, P.PASSAGE_W + 40, 0),
-                (P.PASSAGE_X - 40, P.BALC_SPAN - 120, 0),
-                (P.PASSAGE_X, P.BALC_SPAN, 0),
-                (P.BALC_X1, P.BALC_SPAN, 0), (P.BALC_X1, 0, 0)])
-    plate = posed(Part.Face(out).extrude(Vector(0, 0, P.BALC_T)))
-    # 3 BIFACIAL modules, on the wide section only
-    panels = []
-    wide = P.BALC_X1 - P.PASSAGE_X
-    gx = (wide - 3 * P.PANEL_L) / 4
+    ml, mw, mt = P.MODULE_STD
+    d = P.BALC_T
+    frame, panels, tread, rail = [], [], [], []
+
+    # ---- ladder frame: two long rails + cross rails at the module ends
+    b, h, wall = P.BALC_FRAME_RAIL
+    for fy in (0, P.BALC_WALK_W, P.BALC_SPAN - b):
+        frame.append(posed(box(P.BALC_X1 - P.PASSAGE_X + 40, b, h,
+                               (P.PASSAGE_X - 40, fy, 0))))
+    nx = int((P.BALC_X1 - P.PASSAGE_X) / P.BALC_FRAME_PITCH) + 1
+    for i in range(nx + 1):
+        fx = P.PASSAGE_X + i * P.BALC_FRAME_PITCH
+        if fx <= P.BALC_X1:
+            frame.append(posed(box(b, P.BALC_SPAN, h, (fx, 0, 0))))
+    # narrow aft passage: frame only, all walkway
+    frame.append(posed(box(P.PASSAGE_X - P.BALC_X0, b, h,
+                           (P.BALC_X0, 0, 0))))
+    frame.append(posed(box(P.PASSAGE_X - P.BALC_X0, b, h,
+                           (P.BALC_X0, P.PASSAGE_W - b, 0))))
     for i in range(3):
-        px = P.PASSAGE_X + gx + i * (P.PANEL_L + gx)
-        py = (P.BALC_SPAN - P.PANEL_W) / 2
-        panels.append(posed(box(P.PANEL_L, P.PANEL_W, P.PANEL_T,
-                                (px, py, P.BALC_T))))           # front face
-        panels.append(posed(box(P.PANEL_L, P.PANEL_W, P.PANEL_T,
-                                (px, py, -P.PANEL_T))))         # rear face
-    # outboard edge rail: follows the passage, then the wide deck
-    rail = posed(box(P.BALC_X1 - P.PASSAGE_X, 40, 90,
-                     (P.PASSAGE_X, P.BALC_SPAN - 40, P.BALC_T)))
-    rail = rail.fuse(posed(box(P.PASSAGE_X - 340 - P.BALC_X0, 40, 90,
-                               (P.BALC_X0, P.PASSAGE_W - 40, P.BALC_T))))
-    # diagonal brackets under the deck, back to the hull side
-    # under-deck braces: each must stop at the plate edge, so the wide
-    # section and the narrow passage get their own spans
+        frame.append(posed(box(b, P.PASSAGE_W, h,
+                              (P.BALC_X0 + i * (P.PASSAGE_X - P.BALC_X0) / 2,
+                               0, 0))))
+
+    # ---- standard framed modules, recessed into the outboard strip
+    gy = P.BALC_WALK_W + b + (P.BALC_PANEL_W - mw) / 2
+    for i in range(P.BALC_MODULES):
+        px = P.BALC_MODULE_X0 + i * (ml + 60)
+        panels.append(posed(box(ml, mw, mt, (px, gy, d - mt))))
+        # the alu module frame reads as a lip round the laminate
+        panels.append(posed(box(ml, 35, mt + 4, (px, gy, d - mt - 2))))
+        panels.append(posed(box(ml, 35, mt + 4, (px, gy + mw - 35,
+                                                 d - mt - 2))))
+
+    # ---- walkway: perforated anti-slip tread over the inboard strip
+    tread.append(posed(box(P.BALC_X1 - P.PASSAGE_X + 40, P.BALC_WALK_W,
+                           P.BALC_TREAD_T,
+                           (P.PASSAGE_X - 40, 0, d - P.BALC_TREAD_T))))
+    tread.append(posed(box(P.PASSAGE_X - P.BALC_X0, P.PASSAGE_W,
+                           P.BALC_TREAD_T,
+                           (P.BALC_X0, 0, d - P.BALC_TREAD_T))))
+
+    # ---- outboard edge rail and the under-deck braces to the hull
+    rail_s = posed(box(P.BALC_X1 - P.PASSAGE_X, 40, 90,
+                       (P.PASSAGE_X, P.BALC_SPAN - 40, d)))
+    rail_s = rail_s.fuse(posed(box(P.PASSAGE_X - 340 - P.BALC_X0, 40, 90,
+                                   (P.BALC_X0, P.PASSAGE_W - 40, d))))
+    rail.append(rail_s)
     braces = []
     for bx in (P.PASSAGE_X + 300, (P.PASSAGE_X + P.BALC_X1) / 2,
                P.BALC_X1 - 250):
@@ -513,27 +543,12 @@ def build_balcony(fold_deg):
                                 (bx, P.BALC_SPAN - 120, -20), 55)))
     braces.append(posed(rod((P.BALC_X0 + 260, 60, -20),
                             (P.BALC_X0 + 260, P.PASSAGE_W - 90, -20), 55)))
-    # support legs down onto the wheel-box lids (open pose only)
-    if abs(fold_deg) < 10:
-        leg_len = P.BALC_HINGE_Z - P.WHEELBOX_TOP_Z
-        for dx in P.WHEEL_XS:
-            bx = P.FLOAT_X + dx
-            if P.BALC_X0 + 200 < bx < P.BALC_X1 - 200:
-                braces.append(posed(Part.makeCylinder(
-                    35, leg_len, Vector(bx, P.BALC_SPAN - 90, 0),
-                    Vector(0, 0, -1))))
     hinges = []
-    for hx in (P.BALC_X0 + 200, P.BALC_X1 - 200):
-        hinges.append(Part.makeCylinder(
-            40, 240, Vector(hx - 120, P.BALC_HINGE_Y, P.BALC_HINGE_Z),
-            Vector(1, 0, 0)))
-    return plate, Part.makeCompound(panels), \
-        rail.fuse(Part.makeCompound(braces)), Part.makeCompound(hinges)
+    for hx in (P.BALC_X0 + 200, (P.BALC_X0 + P.BALC_X1) / 2, P.BALC_X1 - 200):
+        hinges.append(posed(rod((hx - 90, 0, 0), (hx + 90, 0, 0), 70)))
+    return (Part.makeCompound(frame + braces), Part.makeCompound(panels),
+            Part.makeCompound(rail + tread), Part.makeCompound(hinges))
 
-
-# ---------------------------------------------------------------
-# Bow hydrofoil, drawbar, stern pod
-# ---------------------------------------------------------------
 def build_frame():
     """EXTERNAL space frame (docs/structure.md). Nothing crosses the
     living volume: two chassis rails half-buried in the topsides at
@@ -737,20 +752,13 @@ def build_aft_entry(rail_up=False, door_open=False):
                          (tx - 95, y_lo + (P.STAIR_Y1 - P.STAIR_Y0) / 2 - 40,
                           tz - 20), 40))
 
-    # ONE folding handrail, outboard side only: up only when the roof
-    # terrace is in use, folded flat on the stringer otherwise.
-    ry = P.STAIR_Y0 + 45
-    if rail_up:
-        parts.append(rod((sx0, ry, z0), (sx0, ry, z0 + 950), 60))
-        parts.append(rod((sx1, ry, z1), (sx1, ry, z1 + 950), 60))
-        parts.append(rod((sx0, ry, z0 + 950), (sx1, ry, z1 + 950), 55))
-        parts.append(rod((sx1, ry, z1 + 950), (sx1 + 420, ry, z1 + 950), 55))
-        parts.append(rod((sx1 + 420, ry, z1 + 950), (sx1 + 420, ry, z1), 55))
-    else:
-        parts.append(rod((sx0 - 40, ry, z0 + 90), (sx1 + 30, ry, z1 + 90), 55))
-        for px in (sx0, sx1):
-            pz = z0 + (px - sx0) / (sx1 - sx0) * (z1 - z0)
-            parts.append(rod((px, ry, pz), (px, ry, pz + 110), 60))
+    # SMALL grab rail beside the ladder head — a handhold exactly
+    # where you step off onto the terrace, and nothing else. No long
+    # folding rail running along the deck edge.
+    ry = P.STAIR_Y0 + 55
+    parts.append(rod((sx1 - 40, ry, z1), (sx1 - 40, ry, z1 + 880), 42))
+    parts.append(rod((sx1 - 40, ry, z1 + 880), (sx1 - 300, ry, z1 + 880), 42))
+    parts.append(rod((sx1 - 300, ry, z1 + 880), (sx1 - 300, ry, z1 + 560), 42))
 
     # --- AC ventilator box (upper right) and lockers (rest of the wall)
     ac = box(P.AC_DEPTH, P.AC_Y1 - P.AC_Y0, P.AC_Z1 - P.AC_Z0,
@@ -1109,7 +1117,7 @@ def build_mode(mode):
     (fl, strips, forks, tires, rims, wboxes,
      hatch, hydraulics, thruster) = build_float(pod, roll)
     arms, acts = build_arms(cfg["phi"])
-    bplate, bpanels, brail, bhinges = build_balcony(cfg["balc"])
+    bframe, bpanels, bwalk, bhinges = build_balcony(cfg["balc"])
     for side, mir in (("Stb", False), ("Port", True)):
         m = mirror_y if mir else (lambda s: s)
         add(f"Float{side}", m(fl), ORANGE, group=g_gear)
@@ -1121,9 +1129,10 @@ def build_mode(mode):
             group=g_gear)
         if wboxes:
             add(f"WheelBoxes{side}", m(wboxes), WHITE, group=g_gear)
-        add(f"Balcony{side}", m(bplate), WHITE, group=g_gear)
+        add(f"BalconyFrame{side}", m(bframe), (0.62, 0.64, 0.67),
+            group=g_gear)
         add(f"BalconyPanels{side}", m(bpanels), PANEL, group=g_gear)
-        add(f"BalconyRail{side}", m(brail), STEEL, group=g_gear)
+        add(f"BalconyWalkway{side}", m(bwalk), STEEL, group=g_gear)
         add(f"BalconyHinges{side}", m(bhinges), GRAY, group=g_gear)
         for i, a in enumerate(arms):
             add(f"Arm{side}{i}", m(a), GRAY, group=g_gear)
