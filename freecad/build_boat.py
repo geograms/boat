@@ -201,11 +201,13 @@ def build_terrace(rails=True):
     fhw = P.DECK_FIELD_HW
     px, py = P.DECK_PANE
 
-    # 1. flexible laminates bonded flat on the deck
-    for i in range(P.DECK_PANELS):
-        lam.append(box(P.PANEL_L, P.PANEL_W, P.PANEL_T,
-                       (fx0 + 40 + i * (P.PANEL_L + 20), -P.PANEL_W / 2,
-                        z0 + 12)))
+    # 1. standard 500 W framed modules inside the air box, laid ACROSS
+    #    the field; positions come from params so they cannot drift
+    mod_l, mod_w, mod_t = P.MODULE_500
+    for (lx, ly) in P.deck_panel_xy():
+        lam.append(box(mod_w, mod_l, mod_t, (lx, ly, z0 + 12)))
+        for edge in (ly, ly + mod_l - 30):          # alu frame edges
+            lam.append(box(mod_w, 30, mod_t + 4, (lx, edge, z0 + 12)))
 
     # 2. perimeter kerb of the air box, with vent slots fore and aft
     kerb = box(fx1 - fx0 + 80, 2 * fhw + 80, P.AIRBOX_H,

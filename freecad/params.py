@@ -40,7 +40,7 @@ ROOF_STRUCT = 200        # sandwich depth of the cabin roof = terrace floor
 CABIN_CEIL_Z = CABIN_ROOF_Z - ROOF_STRUCT
 # deck build-up over the structural roof: bonded laminate, air box,
 # grid and glass. There is no lid and nothing lifts any more.
-DECK_BUILDUP = 4 + 60 + 55 + 12   # laminate + air box + grid + glass
+DECK_BUILDUP = 60 + 55 + 12   # air box (holds the module) + grid + glass
 CANOPY_OVERHANG = -20    # kept: the folded balcony clearance references it
 WIN_Z0, WIN_H = 1500, 600          # window band (taller with the new roof)
 # FEWER, BIGGER windows (Max): two picture windows per side instead of
@@ -347,9 +347,15 @@ RAIL_H = 1000
 LIFELINE_N = 2
 LIFELINE_D = 6
 
-# deck laminates: same flexible panel as everywhere else, bonded down
-DECK_PANELS = 5                    # 5 x 1700 x 1130 fits the field
-PANEL_W_PEAK = 430                 # W per laminate
+# Roof field: STANDARD 500 W FRAMED MODULES (Max) laid ACROSS the
+# field under the glass — 1934 x 1134 x 30, ~24 kg, the common 2026
+# 500 W format. They sit in the 60 mm air box with 30 mm to spare,
+# and being standard they are replaceable anywhere.
+MODULE_500 = (1934, 1134, 30)      # long side, short side, thickness
+MODULE_500_W = 500
+MODULE_500_KG = 24
+DECK_PANELS = 4                    # what actually fits — see deck_panel_xy()
+PANEL_W_PEAK = MODULE_500_W        # W per roof module
 GLASS_TRANSMISSION = 0.91          # low-iron laminated
 COOLING_GAIN = 1.05                # ventilated cells vs bonded
 
@@ -371,6 +377,20 @@ def glass_t_udl(span, q=None, sigma=None):
     q = DECK_LOAD_UDL if q is None else q
     sigma = DECK_GLASS_SIGMA if sigma is None else sigma
     return math.sqrt(0.287 * q * span * span / sigma)
+
+
+def deck_panel_xy():
+    """Positions of the roof modules, laid ACROSS the field (short side
+    along the boat, long side athwartships). ONE source of truth for
+    the geometry and for checks(), so a panel can never again be drawn
+    hanging off the end of the boat."""
+    mod_l, mod_w, _ = MODULE_500
+    fx0, fx1 = DECK_FIELD_X
+    pitch = mod_w + 40
+    n = min(DECK_PANELS, int((fx1 - fx0 - 40) // pitch))
+    run = n * pitch - 40
+    x0 = fx0 + (fx1 - fx0 - run) / 2
+    return [(x0 + i * pitch, -mod_l / 2) for i in range(n)]
 
 
 def deck_areas():
@@ -743,12 +763,22 @@ def checks(verbose=True):
     # deflection of the pane under the distributed load, alpha for a
     # simply supported square plate; limit span/300
     defl = 0.0443 * DECK_LOAD_UDL * pane_y ** 4 / (70000 * DECK_GLASS_T ** 3)
-    deck_kg = deck_mass()
+    deck_kg = deck_mass() + DECK_PANELS * MODULE_500_KG
     air_draft = CABIN_ROOF_Z + DECK_BUILDUP - WL_Z
     kwp_deck, kwp_balc, kwp_eff = solar_kwp()
     # four people hard to one side of the terrace vs the float righting
     m_heel_crew = 4 * 85 * 9.81 * (CABIN_W / 2 - 100) / 1e6      # kNm
 
+    mod_l, mod_w, mod_t = MODULE_500
+    lam = deck_panel_xy()
+    assert len(lam) == DECK_PANELS, \
+        f"only {len(lam)} of {DECK_PANELS} roof laminates fit the field"
+    for (lx, ly) in lam:
+        assert DECK_FIELD_X[0] <= lx and lx + mod_w <= DECK_FIELD_X[1], \
+            f"roof module at x {lx:.0f} runs off the field"
+        assert ly >= -DECK_FIELD_HW and ly + mod_l <= DECK_FIELD_HW, \
+            f"roof module spans y {ly:.0f}..{ly + mod_l:.0f} of " \
+            f"+/-{DECK_FIELD_HW}"
     assert DECK_PANE_NX * pane_x <= DECK_FIELD_X[1] - DECK_FIELD_X[0], \
         "glass panes do not fit the field lengthwise"
     assert DECK_PANE_NY * pane_y <= 2 * DECK_FIELD_HW, \
@@ -760,8 +790,9 @@ def checks(verbose=True):
         f"({t_point:.1f} needed)"
     assert defl <= pane_y / 300, \
         f"pane deflects {defl:.1f} mm, limit {pane_y / 300:.1f}"
-    assert AIRBOX_H >= 50, f"air box only {AIRBOX_H} mm — panels get cooked"
-    assert DECK_BUILDUP == PANEL_T + AIRBOX_H + DECK_FRAME_H + DECK_GLASS_T, \
+    assert AIRBOX_H >= mod_t + 20, \
+        f"air box {AIRBOX_H} too shallow for a {mod_t} mm framed module"
+    assert DECK_BUILDUP == AIRBOX_H + DECK_FRAME_H + DECK_GLASS_T, \
         "deck build-up does not add up"
     assert RAIL_H >= 1000, f"guardrail {RAIL_H} mm too low for a roof deck"
     assert interior_clear >= 1800, f"interior clear only {interior_clear}"
@@ -825,10 +856,13 @@ def checks(verbose=True):
               f"{DECK_PANE_NY} panes {pane_x}x{pane_y}, glass "
               f"{DECK_GLASS_T} mm (point load needs {t_point:.1f}, "
               f"UDL {t_udl:.1f}), deflection {defl:.1f} mm")
-        print(f"deck build-up   {DECK_BUILDUP} mm = laminate {PANEL_T} + "
-              f"air box {AIRBOX_H} + grid {DECK_FRAME_H} + glass "
-              f"{DECK_GLASS_T};  mass {deck_kg:.0f} kg, shading "
-              f"{shade * 100:.1f}%")
+        print(f"deck build-up   {DECK_BUILDUP} mm = air box {AIRBOX_H} "
+              f"(holds a {mod_t} mm module) + grid {DECK_FRAME_H} + glass "
+              f"{DECK_GLASS_T};  mass {deck_kg:.0f} kg incl. modules, "
+              f"shading {shade * 100:.1f}%")
+        print(f"roof modules    {DECK_PANELS} x standard {mod_l}x{mod_w} "
+              f"{MODULE_500_W} W framed, laid across, "
+              f"{DECK_PANELS * MODULE_500_KG} kg")
         print(f"deck loads      {DECK_LOAD_UDL * 1000:.1f} kN/m2 + "
               f"{DECK_LOAD_POINT / 1000:.1f} kN point; crew one side "
               f"{m_heel_crew:.1f} vs righting {m_right:.1f} kNm")

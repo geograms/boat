@@ -13,8 +13,8 @@ The cabin roof at z 2 400 is a 200 mm structural sandwich. On top of it:
 ```
    ▓▓▓▓▓▓  6+6 laminated heat-strengthened glass, anti-slip frit
    ──┬───  alu grid, 8 panes of 1200 × 1050, bolted to deck inserts
-     │ 60  VENTILATED AIR BOX — mesh slots fore and aft, drains
-   ░░┴░░░  flexible laminates, bonded flat
+     │ 60  VENTILATED AIR BOX — holds a 30 mm framed module,
+   ░░┴░░░  4 × STANDARD 500 W modules 1934 × 1134, laid across
    ██████  200 mm roof sandwich  ← carries every load
    ██████  cabin ceiling 2 200
 ```
@@ -23,8 +23,20 @@ The cabin roof at z 2 400 is a 200 mm structural sandwich. On top of it:
 never be touched, stepped on, or scuffed. The air box ventilates the
 cells, so they run cooler than laminates bonded straight to a deck.
 
-Total build-up **131 mm**, so the deck surface sits at 2 531, the air
-draft is **2 271** and the road height **3 013** against the 4 000 limit.
+Total build-up **127 mm**, so the deck surface sits at 2 531, the air
+draft is **2 267** and the road height **3 009** against the 4 000 limit.
+
+The roof panels are **standard 500 W framed modules** (1 934 × 1 134 ×
+30, ≈24 kg) rather than bonded laminates — Max's call, and the right
+one: they are the cheapest watt on the market, replaceable at any solar
+shop, and the 60 mm air box swallows their 30 mm frame with room to
+spare. They cost ≈72 kg more than flexible laminates would.
+
+Four of them fit the 4 800 × 2 100 field laid **across** the boat
+(1 134 along, 1 934 athwartships). `deck_panel_xy()` in params.py
+computes those positions and `checks()` asserts every module lies
+inside the field — after an earlier version drew five laminates at
+1 700 pitch and put the last two off the bow.
 
 ## 2. Why the pop-top was deleted
 
@@ -97,19 +109,20 @@ a dropped anchor are all inside the envelope.
 | removed | kg | added | kg |
 |---|---|---|---|
 | canopy slab + frame | 145 | glass, 10.1 m² × 30 kg/m² | 302 |
+| | | 4 × 500 W framed modules | 96 |
 | scissors (4 units) | 88 | alu grid + kerb | 35 |
 | drives + controller | 36 | seals, adhesive, fixings | 15 |
 | latches, gaskets, coaming | 12 | | |
 | solar side walls | 60 | | |
-| **total** | **341** | **total** | **352** |
+| **total** | **341** | **total** | **448** |
 
-**Net ≈ +11 kg.** This is not a weight saving — it is the same mass
-bought as fixed structure instead of mechanism.
+**Net ≈ +107 kg**, of which 96 is the choice of standard framed modules
+over bonded laminates. Not a weight saving — mass bought as fixed
+structure and replaceable parts instead of mechanism.
 
-Solar: **4.73 kWp nominal** (deck 5 laminates = 2.15, balconies 2.58)
-against 6.88 before; the four side-wall panels went with the raised
-roof that carried them. After glass transmission (91 %), frame shading
-(4.4 %) and the ventilation gain (+5 %), reckon **≈ 4.5 kWp effective**.
+Solar: **2.99 kWp nominal** — roof 4 × 500 W = 2.00, balconies
+6 × 165 W = 0.99. After glass transmission (91 %), frame shading
+(4.4 %) and the ventilation gain (+5 %), **≈ 2.82 kWp effective**.
 
 Two limits worth stating plainly:
 
@@ -153,8 +166,12 @@ plane, and the modules drop **into** the frame instead of onto it:
 
 **What it costs.** Giving 480 mm of the 1 200 mm width to a walkway,
 and using small standard modules rather than full-size laminates, takes
-the balconies from 2.58 kWp to **0.99 kWp**. System total is now
-**3.14 kWp nominal / 2.95 effective** — roughly 15–18 kWh on a good
+the balconies to **0.99 kWp**. A 500 W module is 1 134 mm wide and will
+not fit beside a walkway on a 1 200 mm balcony (1 134 + 480 = 1 614,
+and the fold height caps the span at 1 431) — so the balconies use the
+largest standard panel that does fit the 690 mm strip. System total is
+now
+**2.99 kWp nominal / 2.82 effective** — roughly 15–17 kWh on a good
 summer day against the 50 kWh bank.
 
 If the walkways are ever judged not worth it, the swap is
@@ -169,9 +186,9 @@ the balconies become panel surfaces you do not stand on, with only the
 | 8 × walk-on laminated panes 1200 × 1050, 6+6 HS, frit | 3 200 |
 | Alu grid, kerb, standoffs, inserts | 700 |
 | Gaskets, structural adhesive, fixings | 350 |
-| 5 flexible laminates (bonded, under the glass) | 1 750 |
+| 4 standard 500 W framed modules (under the glass) | 520 |
 | Stanchions, lifelines, sockets | 340 |
-| **Roof deck total** | **≈ 6 340** |
+| **Roof deck total** | **≈ 5 110** |
 
 | Balconies (both sides) | Est. |
 |---|---|
