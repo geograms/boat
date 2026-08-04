@@ -421,11 +421,15 @@ def build_balcony(fold_deg):
     rail = rail.fuse(posed(box(P.PASSAGE_X - 340 - P.BALC_X0, 40, 90,
                                (P.BALC_X0, P.PASSAGE_W - 40, P.BALC_T))))
     # diagonal brackets under the deck, back to the hull side
+    # under-deck braces: each must stop at the plate edge, so the wide
+    # section and the narrow passage get their own spans
     braces = []
-    for bx in (P.BALC_X0 + 250, (P.BALC_X0 + P.BALC_X1) / 2,
+    for bx in (P.PASSAGE_X + 300, (P.PASSAGE_X + P.BALC_X1) / 2,
                P.BALC_X1 - 250):
         braces.append(posed(rod((bx, 60, -20),
                                 (bx, P.BALC_SPAN - 120, -20), 55)))
+    braces.append(posed(rod((P.BALC_X0 + 260, 60, -20),
+                            (P.BALC_X0 + 260, P.PASSAGE_W - 90, -20), 55)))
     # support legs down onto the wheel-box lids (open pose only)
     if abs(fold_deg) < 10:
         leg_len = P.BALC_HINGE_Z - P.WHEELBOX_TOP_Z
