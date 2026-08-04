@@ -420,9 +420,10 @@ def build_drawbar(deployed):
 
 
 def build_wintergarden():
-    """Full curved plexiglass envelope: sheer line -> cabin sides ->
-    raked bow bubble. Lofted from consistently-ordered sections (the
-    plexiglass is bent in multiple planes, panel by panel)."""
+    """Full curved plexiglass envelope, fuller/rounder profile:
+    elliptical side curve with a gentle outward bulge (5 bends per
+    side), open top under the roof lid over the cabin, closed crown
+    around the raked bow bubble. Ruled loft = bent-panel build."""
     def gunw(x):
         st = P.STATIONS
         for i in range(len(st) - 1):
@@ -432,23 +433,31 @@ def build_wintergarden():
                         st[i][5] + t * (st[i + 1][5] - st[i][5]))
         return st[-1][1], st[-1][5]
 
-    def section(x, apex, thw):
+    def section(x, top_z, top_hw):
         gw, sz = gunw(x)
         gw -= P.WG_EDGE_INSET
-        shoulder = sz + (apex - sz) * 0.86
-        mid = (sz + apex) / 2
-        return wire([(x, 0, sz - 20), (x, -gw, sz), (x, -gw - 14, mid),
-                     (x, -thw, shoulder), (x, 0, apex),
-                     (x, thw, shoulder), (x, gw + 14, mid), (x, gw, sz)])
+        a = gw + 95                     # elliptical half-width w/ bulge
+        b_ = top_z - sz
+        side = []
+        for th in (20, 40, 60, 80):
+            yy = min(a * math.cos(math.radians(th)), gw + 60)
+            zz = sz + b_ * math.sin(math.radians(th))
+            side.append((yy, zz))
+        pts = [(x, 0, sz - 20), (x, -gw, sz)]
+        pts += [(x, -yy, zz) for yy, zz in side]
+        pts += [(x, -top_hw, top_z), (x, top_hw, top_z)]
+        pts += [(x, yy, zz) for yy, zz in reversed(side)]
+        pts += [(x, gw, sz)]
+        return wire(pts)
 
     wires = []
-    for x in (P.CABIN_X0, 2000, 3200, 4400, 5400, 6200):
-        wires.append(section(x, P.WG_APEX_CABIN, P.WG_TOP_HW))
-    for x, apex, f in ((6550, 1950, 0.80), (6850, 1700, 0.66),
-                       (7060, 1480, 0.5), (7180, 1360, 0.38)):
+    for x in (P.CABIN_X0, 1800, 2800, 3800, 4800, 5600, 6200):
+        wires.append(section(x, 2145, P.WG_TOP_HW))
+    for x, apex in ((6550, 1980), (6800, 1760), (7000, 1560),
+                    (7130, 1430), (7190, 1360)):
         gw, _ = gunw(x)
-        wires.append(section(x, apex, max((gw - P.WG_EDGE_INSET) * f, 110)))
-    return Part.makeLoft(wires, True, True)   # ruled: bent-panel look
+        wires.append(section(x, apex, max((gw - P.WG_EDGE_INSET) * 0.12, 50)))
+    return Part.makeLoft(wires, True, True)
 
 
 def build_main_jet():
