@@ -544,7 +544,7 @@ def build_tow(pose):
     return Part.makeCompound(parts)
 
 
-def build_aft_entry(rail_up=False):
+def build_aft_entry(rail_up=False, door_open=False):
     """Deep self-draining cockpit with side benches, storm door with
     1700 mm clear height, cantilevered rain porch (no deck posts —
     diagonal tubes to the wall), alternating-tread ladder hard against
@@ -584,15 +584,24 @@ def build_aft_entry(rail_up=False):
                          (x1 - 75, sgn * P.DOOR_HW - 35, P.DOOR_Z0)))
     parts.append(box(150, 2 * P.DOOR_HW + 70, 70,
                      (x1 - 75, -P.DOOR_HW - 35, P.DOOR_Z1 - 35)))
+    # sliding leaf: runs to PORT into a pocket under the ladder, so it
+    # never swings into the well. Closed it is pulled onto its gaskets
+    # by two cam levers (a slider seals as well as a hinged door only if
+    # it clamps — hence the cams, not just a track).
+    slide = -P.DOOR_SLIDE if door_open else 0
     dark.append(box(50, 2 * P.DOOR_HW - 40, P.DOOR_Z1 - P.DOOR_Z0 - 60,
-                    (x1 - 25, -P.DOOR_HW + 20, P.DOOR_Z0 + 30)))
+                    (x1 - 25, -P.DOOR_HW + 20 + slide, P.DOOR_Z0 + 30)))
     glass.append(box(20, 2 * P.DOOR_HW - 300, 800,
-                     (x1 - 40, -P.DOOR_HW + 150, P.DOOR_Z0 + 620)))
-    for dz in (0, 700):                                          # dogs
-        for sgn in (-1, 1):
-            parts.append(Part.makeCylinder(
-                26, 90, Vector(x1 - 40, sgn * (P.DOOR_HW - 60),
-                               P.DOOR_Z0 + 320 + dz), Vector(-1, 0, 0)))
+                     (x1 - 40, -P.DOOR_HW + 150 + slide, P.DOOR_Z0 + 620)))
+    parts.append(rod((x1 - 40, -P.DOOR_HW - P.DOOR_SLIDE - 40, P.DOOR_Z1 + 45),
+                     (x1 - 40, P.DOOR_HW + 40, P.DOOR_Z1 + 45), 55))  # track
+    parts.append(box(70, P.DOOR_SLIDE + 60, P.DOOR_Z1 - P.DOOR_Z0 + 40,
+                     (x1 - 95, -P.DOOR_HW - P.DOOR_SLIDE - 40,
+                      P.DOOR_Z0 - 20)))                             # pocket
+    for sgn in (-1, 1):                                             # cam levers
+        parts.append(Part.makeCylinder(
+            26, 110, Vector(x1 - 40, sgn * (P.DOOR_HW - 70) + slide,
+                            P.DOOR_Z0 + 620), Vector(-1, 0, 0)))
 
     # --- alternating-tread ladder, hard against the aft wall (67 deg).
     # Alternating treads are what make this angle walkable in 420 mm of
@@ -646,10 +655,33 @@ def build_aft_entry(rail_up=False):
                          P.LOCKER_Y0 + 15 + i * (P.LOCKER_Y1 - P.LOCKER_Y0) / 2,
                          P.LOCKER_Z0 + 30)))
 
-    # --- boarding steps out to the solar balconies, both sides
+    # --- comfortable route from the door out to the balcony walkways:
+    # a triangular corner landing at bench height turns the awkward
+    # climb into two easy steps, and a grab post bolted to the balcony
+    # frame gives a handhold right at the gate.
     for sgn in (-1, 1):
-        parts.append(box(P.GATE_X1 - P.GATE_X0, 200, 50,
-                         (P.GATE_X0, sgn * 1040 - 100, DECK_Z)))
+        tri = Part.Face(wire([(620, sgn * 380, P.LANDING_Z),
+                              (x1, sgn * 380, P.LANDING_Z),
+                              (x1, sgn * 1180, P.LANDING_Z),
+                              (620, sgn * 700, P.LANDING_Z)]))
+        parts.append(tri.extrude(Vector(0, 0, 55)))
+        parts.append(box(200, 480, 55,
+                         (x1 - 220, sgn * 700 - (480 if sgn < 0 else 0),
+                          (P.LANDING_Z + DECK_Z) / 2)))       # half step
+        parts.append(box(P.GATE_X1 - P.GATE_X0, 220, 50,
+                         (P.GATE_X0, sgn * 1090 - 110, DECK_Z)))
+        # grab post on the balcony frame + tie back into the cabin wall
+        parts.append(rod((P.GRAB_POST_X, sgn * P.GRAB_POST_Y, DECK_Z),
+                         (P.GRAB_POST_X, sgn * P.GRAB_POST_Y,
+                          DECK_Z + P.GRAB_POST_H), 65))
+        parts.append(rod((P.GRAB_POST_X, sgn * P.GRAB_POST_Y,
+                          DECK_Z + P.GRAB_POST_H),
+                         (P.CABIN_X0 - 30, sgn * (P.CABIN_W / 2 - 40),
+                          DECK_Z + P.GRAB_POST_H - 120), 55))
+        parts.append(rod((P.GRAB_POST_X, sgn * P.GRAB_POST_Y,
+                          DECK_Z + P.GRAB_POST_H),
+                         (P.GATE_X1, sgn * P.GRAB_POST_Y,
+                          DECK_Z + P.GRAB_POST_H), 55))
     return (Part.makeCompound(parts), Part.makeCompound(dark),
             Part.makeCompound(glass))
 
@@ -805,7 +837,8 @@ def build_mode(mode):
     add("Frame", build_frame(), (0.42, 0.44, 0.47))
     add("SternArch", build_tow(cfg["tow"]), (0.42, 0.44, 0.47))
     add("SternGear", build_stern_gear(), (0.55, 0.57, 0.6))
-    aft_s, aft_d, aft_g = build_aft_entry(cfg["lift"] > 0)
+    aft_s, aft_d, aft_g = build_aft_entry(cfg["lift"] > 0,
+                                          cfg["balc"] == 0)
     add("AftEntry", aft_s, WHITE)
     add("AftFittings", aft_d, (0.30, 0.32, 0.35))
     add("DoorGlass", aft_g, (0.5, 0.7, 0.8), 70)

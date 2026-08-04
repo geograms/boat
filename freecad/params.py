@@ -244,6 +244,9 @@ COCKPIT_WALL = 40
 BENCH_Z = 850                 # side benches: seat, and the step up to deck
 BENCH_DEPTH = 400
 DOOR_HW = 350
+DOOR_SLIDE = 760              # leaf slides to PORT into a pocket under
+                              # the ladder (i.e. to the right seen from
+                              # inside), so it never swings into the well
 DOOR_Z0, DOOR_Z1 = 550, 2100  # 150 sill; 1700 mm clear above the floor
 PORCH_X0, PORCH_X1 = 120, 820 # cantilevered, flashing seals it to the wall
 PORCH_HW = 700                # narrow: covers the well, clears the ladder
@@ -254,6 +257,13 @@ STAIR_Y0, STAIR_Y1 = -1200, -740   # port strip, to the LEFT of the door
 STAIR_X0, STAIR_X1 = 460, 880
 STAIR_STEPS = 8
 GATE_X0, GATE_X1 = 950, 1450   # sheer-rail gap: step out to the balconies
+# transition from the door out to the balcony walkways: a triangular
+# landing in each forward corner at bench height, and a grab post
+# bolted to the balcony frame at the gate
+LANDING_Z = 850
+GRAB_POST_X = 980
+GRAB_POST_Y = 1230
+GRAB_POST_H = 900
 # aft wall fit-out, seen from the cockpit: AC upper right, lockers below
 AC_Y0, AC_Y1 = 600, 1140
 AC_Z0, AC_Z1 = 1760, 2100

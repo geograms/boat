@@ -43,8 +43,12 @@ The living quarters stay sealed from every direction:
   aboard runs straight out; it can never pond against the door.
 - **Storm sill 180 mm** above that floor. Water has to rise 180 mm in
   an already-draining cockpit before it can even reach the threshold.
-- **Gasketed door** with four dogs (two per side), sealing against a
-  continuous frame — the same detail used on wheelhouse doors.
+- **Sliding gasketed door.** The leaf runs to port into a pocket
+  **under the ladder** (to the right as you look out from inside), so
+  it never swings into the well and never has to be held against the
+  wind. A slider only seals if it also clamps, so two **cam levers**
+  pull the leaf onto its gaskets when shut — the standard marine
+  sliding-door detail.
 - **Porch roof** over the whole cockpit, so rain never falls on the
   door while it is open. It is **cantilevered off the cabin wall on two
   diagonal tubes** — no posts standing on the deck, because nobody
@@ -95,10 +99,20 @@ so the balconies are **not** reached by walking along the sides. They
 are reached from the cockpit: both balconies start at x 900, level
 with the deck, right where the crew stands.
 
-- A **boarding gate** (x 950–1450) is left open in the sheer rail on
-  each side, with a threshold step plate.
-- Step out of the cockpit onto the side strip, through the gate, and
-  you are on the 1 200 mm-wide balcony walkway that runs the length of
-  the boat over the float.
-- In road mode the balconies fold up over the windows, so the gates
-  are simply unused.
+On **both sides**, the route out of the door is made walkable by three
+pieces:
+
+1. **Triangular corner landing** at bench height (850), filling the
+   forward corner of the well. It turns one awkward 750 mm climb into
+   two easy steps — floor 400 → landing 850 → deck 1150 — and gives
+   room to turn while carrying something.
+2. **Half step** at the outboard edge of the landing, then the
+   **boarding gate** (x 950–1450): a gap deliberately left in the sheer
+   rail with a threshold plate.
+3. **Grab post bolted to the balcony frame** at the gate, 900 mm tall,
+   tied back into the cabin wall and running forward along the
+   balcony edge — a handhold exactly where you step across.
+
+You then walk the 1 200 mm-wide balcony over the float for the whole
+length of the boat. In road trim the balconies fold up over the
+windows and the gates are simply unused.
