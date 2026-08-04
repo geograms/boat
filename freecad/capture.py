@@ -33,3 +33,5 @@ for mode in ("road", "launch", "harbor", "cruise", "anchor"):
         view.saveImage(f"{OUT}/{mode}_{name}.png", 2000, 1250, "White")
 print("shots done")
 os._exit(0)
+# NOTE: this script wipes shots/*.png first. Detail renders (access_*,
+# etc.) must be regenerated after it runs, not before.

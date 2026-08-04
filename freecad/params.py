@@ -220,7 +220,7 @@ ARCH_LEG = 1200
 ARCH_SEA_DEG = 65
 ARCH_LAND_DEG = -23.5
 ARCH_EXT = 800                # telescoping tongue stroke
-ARCH_TUBE = 95
+ARCH_TUBE = 130               # heavier section: reads as structure, not wire
 COUPLING_H = 430              # target coupling height above ground
 
 # ---- aft entry: sunken cockpit, storm door, porch, stairs ----
@@ -250,7 +250,7 @@ DOOR_SLIDE = 760              # leaf slides to PORT into a pocket under
 DOOR_Z0, DOOR_Z1 = 550, 2100  # 150 sill; 1700 mm clear above the floor
 PORCH_X0, PORCH_X1 = 120, 820 # cantilevered, flashing seals it to the wall
 PORCH_HW = 700                # narrow: covers the well, clears the ladder
-PORCH_T = 180
+PORCH_T = 120                 # thin slab + fascia lip: a deliberate lower roof
 PORCH_STRUT_Y = 620           # diagonal tubes to the wall — no deck posts
 # alternating-tread ladder, hard against the aft wall to save floor space
 STAIR_Y0, STAIR_Y1 = -1200, -740   # port strip, to the LEFT of the door
@@ -267,7 +267,7 @@ GRAB_POST_H = 900
 # aft wall fit-out, seen from the cockpit: AC upper right, lockers below
 AC_Y0, AC_Y1 = 600, 1140
 AC_Z0, AC_Z1 = 1760, 2100
-AC_DEPTH = 340
+AC_DEPTH = 170                # shallow and faired, not a bolted-on slab
 LOCKER_Y0, LOCKER_Y1 = 430, 1140
 LOCKER_Z0, LOCKER_Z1 = 950, 1720
 LOCKER_DEPTH = 300

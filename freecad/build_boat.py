@@ -522,6 +522,14 @@ def build_tow(pose):
                          (P.ARCH_PIVOT_X - 65, sgn * P.ARCH_PIVOT_Y - 140,
                           P.ARCH_PIVOT_Z - 115)))
     parts.append(rod((ax, -170, az), (ax, 170, az), P.ARCH_TUBE))
+    for sgn in (-1, 1):                       # root gussets
+        parts.append(Part.Face(wire([
+            (P.ARCH_PIVOT_X, sgn * P.ARCH_PIVOT_Y, P.ARCH_PIVOT_Z - 150),
+            (P.ARCH_PIVOT_X, sgn * P.ARCH_PIVOT_Y, P.ARCH_PIVOT_Z + 150),
+            (P.ARCH_PIVOT_X + (ax - P.ARCH_PIVOT_X) * 0.32,
+             sgn * (P.ARCH_PIVOT_Y + (170 - P.ARCH_PIVOT_Y) * 0.32),
+             P.ARCH_PIVOT_Z + (az - P.ARCH_PIVOT_Z) * 0.32)])).extrude(
+                 Vector(0, sgn * 22, 0)))
     if pose == "sea":
         # gantry fit-out: hanging beam, anchor sheave, nav-light post
         parts.append(rod((ax - 40, -520, az - 90), (ax - 40, 520, az - 90),
@@ -565,9 +573,16 @@ def build_aft_entry(rail_up=False, door_open=False):
                           P.COCKPIT_FLOOR)))
 
     # --- cantilevered porch: no posts, two diagonal tubes to the wall
+    pz = P.CABIN_ROOF_Z - P.PORCH_T
     parts.append(box(P.PORCH_X1 - P.PORCH_X0, 2 * P.PORCH_HW, P.PORCH_T,
-                     (P.PORCH_X0, -P.PORCH_HW,
-                      P.CABIN_ROOF_Z - P.PORCH_T)))
+                     (P.PORCH_X0, -P.PORCH_HW, pz)))
+    parts.append(box(70, 2 * P.PORCH_HW, 90, (P.PORCH_X0, -P.PORCH_HW,
+                                              pz - 90)))        # aft fascia
+    for sgn in (-1, 1):                                          # side fascia
+        parts.append(box(P.PORCH_X1 - P.PORCH_X0, 70,  90,
+                         (P.PORCH_X0, sgn * P.PORCH_HW - (70 if sgn > 0
+                                                          else 0),
+                          pz - 90)))
     for sgn in (-1, 1):
         parts.append(rod((P.PORCH_X0 + 90, sgn * P.PORCH_STRUT_Y,
                           P.CABIN_ROOF_Z - P.PORCH_T),
@@ -639,12 +654,17 @@ def build_aft_entry(rail_up=False, door_open=False):
             parts.append(rod((px, ry, pz), (px, ry, pz + 110), 60))
 
     # --- AC ventilator box (upper right) and lockers (rest of the wall)
-    dark.append(box(P.AC_DEPTH, P.AC_Y1 - P.AC_Y0, P.AC_Z1 - P.AC_Z0,
-                    (x1 - P.AC_DEPTH, P.AC_Y0, P.AC_Z0)))
-    for i in range(5):
-        parts.append(box(30, P.AC_Y1 - P.AC_Y0 - 80, 26,
-                         (x1 - P.AC_DEPTH - 15, P.AC_Y0 + 40,
-                          P.AC_Z0 + 50 + i * 58)))
+    ac = box(P.AC_DEPTH, P.AC_Y1 - P.AC_Y0, P.AC_Z1 - P.AC_Z0,
+             (x1 - P.AC_DEPTH, P.AC_Y0, P.AC_Z0))
+    try:
+        ac = ac.makeFillet(55, ac.Edges)          # faired into the wall
+    except Exception:
+        pass
+    parts.append(ac)
+    for i in range(6):                            # flush louvre blades
+        dark.append(box(16, P.AC_Y1 - P.AC_Y0 - 130, 30,
+                        (x1 - P.AC_DEPTH - 6, P.AC_Y0 + 65,
+                         P.AC_Z0 + 45 + i * 48)))
     parts.append(box(P.LOCKER_DEPTH, P.LOCKER_Y1 - P.LOCKER_Y0,
                      P.LOCKER_Z1 - P.LOCKER_Z0,
                      (x1 - P.LOCKER_DEPTH, P.LOCKER_Y0, P.LOCKER_Z0)))
