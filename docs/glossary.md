@@ -40,10 +40,12 @@ Shared language for the design. Geometry values live in
 - **Arm** — rigid welded steel member connecting the hull to a float.
   Made of straight segments cut and welded at angles that follow the
   hull cross-section, so it nests against the hull in road pose.
-- **Shoulder** — the arm's single pivot on the gunwale (longitudinal
-  axis). The whole arm swings ~71° outboard from road to water pose.
-- **Wrist** — the pivot at the arm tip where the float attaches; rolls
-  the float 90° between poses.
+- **Shoulder** — the arm's single pivot on the upper hull side
+  (longitudinal axis) — the ONLY moving joint in the whole hangar arm.
+  The rigid arm swings exactly 90° outboard from road to water pose.
+- **Wrist (static)** — the welded arm-to-float connection at the arm
+  tip. NOT a joint: the float is rigid on the arm; its roll follows
+  the shoulder swing 1:1 (90° swing = side-to-flat).
 - **Roll (float roll)** — the float's rotation about its own long axis:
   90° = on its side (road), 0° = flat on the water.
 - **Pose / mode** — a named configuration of all movable parts: `road`,

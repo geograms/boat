@@ -4,3 +4,4 @@ freecad/*.FCStd1
 export/
 __pycache__/
 *.pyc
+freecad/*.FCBak

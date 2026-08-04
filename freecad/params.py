@@ -42,20 +42,22 @@ PANEL_W = 1130
 PANEL_T = 4
 
 # ---- movable stabilizers = the hangar, fully under the hull on road ----
-# ONE rigid welded arm per station: straight segments cut at angles that
-# follow the hull cross-section (gunwale -> topside -> chine -> bilge ->
-# wrist at the float). Single shoulder pivot; the whole polyline swings
-# outboard as a rigid body. Wrist pivot rolls the float 90 deg:
-#   road:  float on its SIDE directly under the hull, roll 90
-#   water: float flat on the water, roll 0
-# Wheels are CASTER-mounted: stub axles PERPENDICULAR to the float deck.
-#   road:  axles horizontal -> wheel discs vertical, rolling; the wheel
-#          band shares the float's height band (shallow 630 mm stack)
-#   water: axles vertical -> wheels lie FLAT on the deck, boxed, dry
+# ONE FULLY RIGID welded arm per station (Max: no rotating parts in the
+# middle or at the float — straight segments cut at angles, welded with
+# gussets; the float attachment is static). The ONLY pivot is the
+# shoulder pin at the top, on the upper hull side. Because the float is
+# rigid on the arm, float roll is locked 1:1 to arm swing — so the
+# swing is EXACTLY 90 degrees:
+#   road (phi 0):    float on its SIDE flush under the hull, wheels
+#                    vertical and rolling (also the launch/harbor pose)
+#   water (phi 90):  float swung out and flat on the water, wheels
+#                    lying flat on the deck, dry
+# Launching happens IN the road configuration: drive in until the boat
+# floats off the wheels, then swing the arms out in deeper water.
 ARM_X = (1400, 5400)
-SH_Y, SH_Z = 1230, 1150            # shoulder pivot on the gunwale
+SH_Y, SH_Z = 1210, 760             # shoulder pin, upper hull side
 # arm polyline in ROAD pose, shoulder first, wrist (= float center) last
-ARM_POLY_ROAD = [(1230, 1150), (1195, 520), (1150, 220), (700, -88)]
+ARM_POLY_ROAD = [(1210, 760), (1170, 420), (1150, 150), (700, -88)]
 ARM_T = 100                        # segment tube section
 
 POD_ROAD = ARM_POLY_ROAD[-1]       # (700, -88): beveled float face sits FLUSH
@@ -72,21 +74,8 @@ def pod_at(phi_deg):
     return (SH_Y + vy * c - vz * s, SH_Z + vy * s + vz * c)
 
 
-def _solve_phi_water(target_z=250):
-    # pod z rises monotonically with phi beyond ~20 deg of swing
-    lo, hi = 25.0, 120.0
-    for _ in range(60):
-        mid = (lo + hi) / 2
-        if pod_at(mid)[1] < target_z:
-            lo = mid
-        else:
-            hi = mid
-    return (lo + hi) / 2
-
-
-PHI_WATER = _solve_phi_water()     # ~74.7 deg
-PHI_LAUNCH = 35
-POD_WATER = pod_at(PHI_WATER)      # ~(2519, 250)
+PHI_WATER = 90.0                   # exact, by rigid-arm construction
+POD_WATER = pod_at(PHI_WATER)      # (2058, 250)
 
 FLOAT_LEN = 6200
 FLOAT_W = 600                      # vertical extent when on its side
@@ -180,13 +169,14 @@ STERNPOD_LEN = 700
 # phi: arm swing (0 = road, PHI_WATER = floats on the water)
 # roll: float roll (90 = on its side / wheels vertical, 0 = flat)
 # balc: 90 folded up over the windows, 0 horizontal over the water
+# roll is NOT independent: rigid arm -> roll = 90 - phi
 MODES = {
-    "road":    dict(phi=0,          roll=90, balc=90, foil=0, drawbar=True,  lift=0),
-    "launch":  dict(phi=PHI_LAUNCH, roll=90, balc=90, foil=0, drawbar=False, lift=0),
-    "harbor":  dict(phi=0,          roll=90, balc=90, foil=0, drawbar=False, lift=0),
-    "cruise":  dict(phi=PHI_WATER,  roll=0,  balc=0,  foil=0, drawbar=False, lift=0),
-    "anchor":  dict(phi=PHI_WATER,  roll=0,  balc=0,  foil=0, drawbar=False, lift=CANOPY_LIFT),
-    "foiling": dict(phi=PHI_WATER,  roll=0,  balc=0,  foil=1, drawbar=False, lift=0),
+    "road":    dict(phi=0,         balc=90, foil=0, drawbar=True,  lift=0),
+    "launch":  dict(phi=0,         balc=90, foil=0, drawbar=False, lift=0),
+    "harbor":  dict(phi=0,         balc=90, foil=0, drawbar=False, lift=0),
+    "cruise":  dict(phi=PHI_WATER, balc=0,  foil=0, drawbar=False, lift=0),
+    "anchor":  dict(phi=PHI_WATER, balc=0,  foil=0, drawbar=False, lift=CANOPY_LIFT),
+    "foiling": dict(phi=PHI_WATER, balc=0,  foil=1, drawbar=False, lift=0),
 }
 
 

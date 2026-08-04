@@ -21,23 +21,28 @@ rubber fenders against harbour walls. No separate trailer exists.
 
 ## 3. Kinematics — why the wheels are casters
 
-Each float hangs on rigid welded arms (straight segments cut at angles
-that follow the hull cross-section) with a single shoulder pivot at the
-gunwale, plus a wrist pivot that rolls the float **90°** between poses:
+Each float hangs on FULLY RIGID welded arms (straight segments cut at
+angles that follow the hull cross-section, joined with welded gussets).
+The ONLY moving joint is the shoulder pin on the upper hull side — the
+mid-arm and the arm-to-float connection are static. Because the float
+is rigid on the arm, its roll is locked 1:1 to the swing, and the
+swing is exactly **90°**:
 
-- **Road / launch / harbour (roll 90°)** — the float lies on its SIDE,
+- **Road / launch / harbour (swing 0°)** — the float lies on its SIDE,
   pressed flush against the hull bottom (mating face beveled 12° to
   match the deadrise). The stub axles are then **horizontal → wheel
   discs vertical**, rolling correctly with a direct load path
   tire → axle → float structure → arm → hull. Under-keel stack is only
   465 mm; total road height 2.80 m.
-- **Cruise / anchor / foiling (roll 0°)** — the float sits flat on the
+- **Cruise / anchor / foiling (swing 90°)** — the float sits flat on the
   water. The axles are then **vertical → wheels lie FLAT on the float
   deck**, half-recessed in their wells under low covers, ~470 mm above
   the waterline. Minimal windage, nothing to snag.
 
-A wheel plane stays exactly vertical at both working roll angles; camber
-exists only mid-transition, when the wheels are unloaded.
+A wheel plane stays exactly vertical at both working poses; camber
+exists only mid-swing, when the wheels are unloaded. Launching happens
+in the road configuration: the boat drives in on its wheels until it
+floats free, then swings the arms out in deeper water.
 
 ## 4. Fender function
 

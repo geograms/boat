@@ -334,24 +334,22 @@ def build_arms(phi):
     pts = [rot(p) for p in P.ARM_POLY_ROAD]
     parts = []
     for ax in P.ARM_X:
-        # shoulder pin lug
+        # shoulder pin lug — the ONLY rotating joint
         parts.append(Part.makeCylinder(
             P.ARM_T / 2 + 30, P.ARM_T + 100,
             Vector(ax - (P.ARM_T + 100) / 2, P.SH_Y, P.SH_Z),
             Vector(1, 0, 0)))
-        # welded segments + angle-cut joints
+        # fully welded segments; angle-cut joints with gusset plates
         for a, b in zip(pts, pts[1:]):
             parts.append(rod((ax, a[0], a[1]), (ax, b[0], b[1]), P.ARM_T))
         for j in pts[1:-1]:
-            parts.append(Part.makeCylinder(
-                P.ARM_T / 2 + 18, P.ARM_T + 60,
-                Vector(ax - (P.ARM_T + 60) / 2, j[0], j[1]),
-                Vector(1, 0, 0)))
-        # wrist knuckle at the float center
-        parts.append(Part.makeCylinder(
-            P.ARM_T / 2 + 24, P.ARM_T + 60,
-            Vector(ax - (P.ARM_T + 60) / 2, pts[-1][0], pts[-1][1]),
-            Vector(1, 0, 0)))
+            parts.append(box(P.ARM_T + 40, 130, 130,
+                             (ax - (P.ARM_T + 40) / 2, j[0] - 65,
+                              j[1] - 65)))
+        # static welded foot plate at the float (no pivot)
+        parts.append(box(P.ARM_T + 80, 170, 60,
+                         (ax - (P.ARM_T + 80) / 2, pts[-1][0] - 85,
+                          pts[-1][1] - 30)))
     # hydraulic actuator: hull side to the mid-arm joint
     acts = []
     mid = pts[len(pts) // 2]
@@ -546,8 +544,9 @@ def build_mode(mode):
         add(f"Actuator{i}", ac, GRAY)
 
     pod = P.pod_at(cfg["phi"])
+    roll = 90 - cfg["phi"]          # rigid arm: roll locked to swing
     (fl, strips, forks, tires, rims, wboxes,
-     hatch, hydraulics, thruster) = build_float(pod, cfg["roll"])
+     hatch, hydraulics, thruster) = build_float(pod, roll)
     arms, acts = build_arms(cfg["phi"])
     bplate, bpanels, brail, bhinges = build_balcony(cfg["balc"])
     for side, mir in (("Stb", False), ("Port", True)):
