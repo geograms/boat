@@ -473,6 +473,21 @@ SETTEE_D = 620                     # seat depth = berth width
 BERTH_X = (2450, 4350)             # 1900 single berth each side
 TABLE_L, TABLE_W = 900, 700        # removable, drops to make a double
 TABLE_Z = 1050
+
+# BUNK on the PORT settee (Max), i.e. the side opposite the galley. A fixed two-tier bunk does not fit:
+# there are only 1290 mm between the lower berth and the deckhead, and a
+# real bunk wants 900 to sit under + 150 of structure + 600 over the
+# upper = 1650. So the upper berth FOLDS: hinged on the hull side, it
+# lies flat under the deckhead by day (settee gets its full 1290 back
+# and the window is unobstructed) and drops to 1550 at night.
+BUNK_SIDE = -1                     # -1 = port
+BUNK_BASE_Z = 1550                 # deployed: 640 clear below, 490 above
+BUNK_FRAME_T = 60
+BUNK_MATTRESS_T = 100
+BUNK_STOW_Z = 2080                 # folded flat under the deckhead
+BUNK_LEE_H = 400                   # lee cloth on the inboard edge
+BUNK_STEP_X = (2450, 2790)         # two fold-out treads at the aft end
+BUNK_STEP_Z = (1150, 1350)
 ELEC_X = (4350, 4700)              # inverter/charger/MPPT, wardrobe base
 
 WARDROBE_X = (4400, 4700)
@@ -725,6 +740,9 @@ def checks(verbose=True):
         BATT_BOX_H / 1e9
     water_vol = (TANK_BILGE_X[1] - TANK_BILGE_X[0]) * 2 * TANK_BILGE_HW * \
         TANK_BILGE_H / 1e6                                   # litres
+    bunk_below = BUNK_BASE_Z - (SOLE_Z + SEAT_H + 110)
+    bunk_above = CABIN_CEIL_Z - (BUNK_BASE_Z + BUNK_FRAME_T + BUNK_MATTRESS_T)
+    bunk_len = BERTH_X[1] - BERTH_X[0]
     bed_stow_clear = BED_UP_Z - SOLE_Z
     bed_travel = BED_UP_Z - BED_DOWN_Z
     bed_head = CABIN_CEIL_Z - (BED_DOWN_Z + BED_FRAME_T + MATTRESS_T)
@@ -746,6 +764,15 @@ def checks(verbose=True):
     assert water_vol >= WATER_L, \
         f"bilge tank {water_vol:.0f} L < {WATER_L} L"
     assert MATTRESS_L <= 2 * IN_HW - 100, "bed too long for the beam"
+    assert bunk_below >= 600, f"only {bunk_below} mm under the upper bunk"
+    assert bunk_above >= 450, f"only {bunk_above} mm over the upper bunk"
+    assert bunk_len >= 1850, f"upper bunk {bunk_len} mm too short"
+    assert BUNK_STOW_Z + BUNK_FRAME_T <= CABIN_CEIL_Z, \
+        "stowed bunk fouls the deckhead"
+    # stowed it sits over the SETTEE, never over the aisle where people
+    # stand — so it costs sitting headroom, not standing headroom
+    assert BUNK_STOW_Z - (SOLE_Z + SEAT_H + 110) >= 1000, \
+        "stowed bunk too low over the settee to sit under"
     assert bed_travel >= 1200, f"bed lift travel only {bed_travel}"
     assert bed_head >= 900, f"only {bed_head} mm over the mattress in bed"
     assert BED_UP_Z + BED_FRAME_T + MATTRESS_T <= CABIN_CEIL_Z, \
@@ -852,6 +879,9 @@ def checks(verbose=True):
               f"{aisle_w:.0f}, passage {passage_w:.0f}, heads "
               f"{heads_area:.2f} m2, berths 2 x {berth_l:.0f} + "
               f"{MATTRESS_L}x{MATTRESS_W} double")
+        print(f"bunk (stbd)     upper berth {bunk_len}x{SETTEE_D}, base "
+              f"{BUNK_BASE_Z}: {bunk_below} clear below, {bunk_above} above; "
+              f"folds flat to {BUNK_STOW_Z} under the deckhead")
         print(f"bed lift        {MATTRESS_L}x{MATTRESS_W} athwartships, "
               f"travel {bed_travel} mm, {bed_stow_clear} clear under it "
               f"stowed, {bed_head} over the mattress made up")

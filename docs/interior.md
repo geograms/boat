@@ -36,7 +36,7 @@ trade against another. Two rules shaped the plan:
 | Zone | Contents |
 |---|---|
 | **Service 1 450** | heads to port, galley to starboard, **780 mm corridor** straight in from the door |
-| **Dinette 2 000** | two settees 1 900 × 620 that are also **single berths**, removable table between them |
+| **Dinette 2 000** | two settees 1 900 × 620 that are also **single berths**, removable table between them; the **port** settee carries a fold-down **upper bunk** |
 | **Wardrobes 300** | one full-height wardrobe each side, 880 mm passage between |
 | **Sleeping 1 500** | **elevating** athwartships double, **1 900 × 1 400** |
 
@@ -63,6 +63,30 @@ shower riser forward, the whole floor drains to a sump. Sliding door
 into the corridor, wall cabinet above the WC to the ceiling. It is a
 wetroom rather than a separate shower box because at this size a
 separate cubicle would cost the corridor.
+
+## 4a. The bunk (port settee)
+
+Max wants the port settee to be a bunk bed. A **fixed** two-tier bunk
+does not fit and the numbers say so plainly: there are **1 290 mm**
+between the lower berth cushion (910) and the deckhead (2 200), while a
+real bunk wants 900 to sit under + 150 of structure + 600 over the
+upper = **1 650**.
+
+So the upper berth **folds**. Hinged on the hull side, it lies flat
+under the deckhead by day and drops to 1 550 at night:
+
+| | |
+|---|---|
+| upper berth | 1 900 × 620, base 1 550, mattress top 1 710 |
+| clear below (deployed) | **640 mm** |
+| clear above (deployed) | **490 mm** |
+| stowed | flat at 2 080, giving the settee its full 1 290 back |
+| access | two fold-out treads at the aft end |
+| fall protection | lee cloth 400 mm on the inboard edge |
+
+Deployed it crosses the bottom third of the port picture window — at
+night, which is when it is deployed, that costs nothing. Folded up by
+day the window is completely clear.
 
 ## 4b. The elevating bed
 

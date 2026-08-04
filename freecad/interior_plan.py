@@ -128,8 +128,19 @@ bx0, bx1 = P.BERTH_X
 for sy in (-1, 1):
     y_out, y_in = sy * HW, sy * (HW - P.SETTEE_D)
     rect(ax, bx0, bx1, min(y_out, y_in), max(y_out, y_in), SOFT)
-    lbl(ax, (bx0 + bx1) / 2, (y_out + y_in) / 2,
-        f"SETTEE  /  SINGLE BERTH  {bx1 - bx0} × {P.SETTEE_D}", 9)
+    if sy == P.BUNK_SIDE:
+        lbl(ax, (bx0 + bx1) / 2, (y_out + y_in) / 2,
+            f"SETTEE  /  LOWER BERTH  {bx1 - bx0} × {P.SETTEE_D}\n"
+            "UPPER BUNK OVER (folds to the deckhead)", 9)
+        rect(ax, bx0, bx1, min(y_out, y_in), max(y_out, y_in), SOFT,
+             hidden=True, alpha=0.0)
+        rect(ax, P.BUNK_STEP_X[0], P.BUNK_STEP_X[1],
+             min(y_in, y_in - sy * 260), max(y_in, y_in - sy * 260),
+             "#f0e6cd")
+        lbl(ax, sum(P.BUNK_STEP_X) / 2, y_in - sy * 130, "steps", 7.5)
+    else:
+        lbl(ax, (bx0 + bx1) / 2, (y_out + y_in) / 2,
+            f"SETTEE  /  SINGLE BERTH  {bx1 - bx0} × {P.SETTEE_D}", 9)
 tx0 = (bx0 + bx1 - P.TABLE_L) / 2
 rect(ax, tx0, tx0 + P.TABLE_L, -P.TABLE_W / 2, P.TABLE_W / 2, "#f0e6cd")
 lbl(ax, (bx0 + bx1) / 2, 0,
@@ -295,6 +306,29 @@ section(axB, "B–B  dinette  (looking forward)", [
     (HW - P.SHELF_DEPTH, HW, P.SHELF_Z[0], P.SHELF_Z[1], "shelf", JOIN,
      False),
 ], note="the window band 1500–2100 is kept clear on both sides")
+_bs = P.BUNK_SIDE
+axB.add_patch(Rectangle((min(_bs * HW, _bs * (HW - P.SETTEE_D)),
+                         P.BUNK_BASE_Z), P.SETTEE_D,
+                        P.BUNK_FRAME_T + P.BUNK_MATTRESS_T, fc=SOFT,
+                        ec=INK, lw=1.2, zorder=5))
+axB.text(_bs * (HW - P.SETTEE_D / 2), P.BUNK_BASE_Z + 90, "upper bunk",
+         ha="center", va="center", fontsize=8, zorder=6)
+axB.add_patch(Rectangle((min(_bs * HW, _bs * (HW - P.SETTEE_D)),
+                         P.BUNK_STOW_Z), P.SETTEE_D,
+                        P.BUNK_FRAME_T + P.BUNK_MATTRESS_T, fc=SOFT,
+                        ec=HID, ls=(0, (5, 3)), lw=1.5, alpha=0.5, zorder=5))
+axB.text(_bs * (HW - P.SETTEE_D / 2), P.BUNK_STOW_Z + 220,
+         "folded to the deckhead", ha="center", fontsize=7.5, color=HID,
+         fontweight="bold")
+axB.annotate("", (_bs * (HW - P.SETTEE_D) - _bs * 90,
+                  P.SOLE_Z + P.SEAT_H + 110),
+             (_bs * (HW - P.SETTEE_D) - _bs * 90, P.BUNK_BASE_Z),
+             arrowprops=dict(arrowstyle="<->", color=DIM, lw=1.1))
+axB.text(_bs * (HW - P.SETTEE_D) - _bs * 250,
+         (P.SOLE_Z + P.SEAT_H + 110 + P.BUNK_BASE_Z) / 2,
+         f"{P.BUNK_BASE_Z - P.SOLE_Z - P.SEAT_H - 110}", rotation=90,
+         ha="center", va="center", color=DIM, fontsize=8.5,
+         fontweight="bold")
 for sy in (-1, 1):
     axB.add_patch(Rectangle((sy * HW - (46 if sy > 0 else 0), P.WIN_Z0), 46,
                             P.WIN_H, fc=GLASS, ec="#4b7c99", lw=1.2,

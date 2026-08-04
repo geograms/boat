@@ -826,9 +826,10 @@ def build_stern_gear():
 
 
 BED_DOWN = True          # module flag so a render script can hoist the bed
+BUNK_DOWN = True         # upper bunk deployed (False = folded to the deckhead)
 
 
-def build_interior(bed_down=None):
+def build_interior(bed_down=None, bunk_down=None):
     """Fit-out of the 5300 x 2280 cabin. Returns
     (joinery, soft, appliances, tanks_and_batteries, glass)."""
     S, C = P.SOLE_Z, P.CABIN_CEIL_Z
@@ -918,6 +919,33 @@ def build_interior(bed_down=None):
                            min(y_out, y_out - sy * P.SHELF_DEPTH),
                            max(y_out, y_out - sy * P.SHELF_DEPTH),
                            *P.SHELF_Z))
+    # ---- UPPER BUNK over the starboard settee (folds to the deckhead)
+    sy = P.BUNK_SIDE
+    y_out = sy * HW
+    y_in = sy * (HW - P.SETTEE_D)
+    by0, by1 = min(y_out, y_in), max(y_out, y_in)
+    bz = P.BUNK_BASE_Z if bunk_down else P.BUNK_STOW_Z
+    joinery.append(blk(bx0, bx1, by0, by1, bz, bz + P.BUNK_FRAME_T))
+    soft.append(blk(bx0 + 20, bx1 - 20, by0 + 20, by1 - 20,
+                    bz + P.BUNK_FRAME_T,
+                    bz + P.BUNK_FRAME_T + P.BUNK_MATTRESS_T))
+    # hinge line on the hull side, and the two struts that hold it level
+    glass.append(rod((bx0, y_out - sy * 30, bz + P.BUNK_FRAME_T / 2),
+                     (bx1, y_out - sy * 30, bz + P.BUNK_FRAME_T / 2), 40))
+    if bunk_down:
+        for fx in (bx0 + 200, bx1 - 200):
+            glass.append(rod((fx, y_in, bz + P.BUNK_FRAME_T),
+                             (fx, y_out - sy * 60, C - 40), 26))
+        # lee cloth along the inboard edge
+        soft.append(blk(bx0 + 60, bx1 - 60, y_in - sy * 18, y_in,
+                        bz + P.BUNK_FRAME_T,
+                        bz + P.BUNK_FRAME_T + P.BUNK_LEE_H))
+        # two fold-out treads to climb up at the aft end
+        for k, sz in enumerate(P.BUNK_STEP_Z):
+            joinery.append(blk(P.BUNK_STEP_X[0], P.BUNK_STEP_X[1],
+                               min(y_in, y_in - sy * 260),
+                               max(y_in, y_in - sy * 260), sz, sz + 40))
+
     # removable table on a floor socket
     joinery.append(blk((bx0 + bx1 - P.TABLE_L) / 2,
                        (bx0 + bx1 + P.TABLE_L) / 2,
@@ -951,6 +979,8 @@ def build_interior(bed_down=None):
     # a lever/crank socket drives it by hand if the power is off.
     if bed_down is None:
         bed_down = BED_DOWN
+    if bunk_down is None:
+        bunk_down = BUNK_DOWN
     bz = P.BED_DOWN_Z if bed_down else P.BED_UP_Z
     joinery.append(blk(bdx0 + 40, bdx0 + 40 + P.MATTRESS_W,
                        -P.MATTRESS_L / 2 - 60, P.MATTRESS_L / 2 + 60,
