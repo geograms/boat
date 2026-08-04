@@ -304,24 +304,9 @@ def gallery(pdf):
                           ("low", "low, from the water")):
             shots.append((f"freecad/shots/beauty/{mode}_{v}.png",
                           f"{label} — {vlabel}"))
+    # drawings only after them: no orthographic renders, they read as
+    # cutaways rather than as a boat seen from outside
     shots += [
-        ("freecad/shots/cruise_iso.png", "cruise — trimaran, floats out"),
-        ("freecad/shots/cruise_side.png", "cruise — side"),
-        ("freecad/shots/cruise_bow.png", "cruise — bow"),
-        ("freecad/shots/cruise_aft.png", "cruise — stern"),
-        ("freecad/shots/road_iso.png", "road — folded, towed stern-first"),
-        ("freecad/shots/road_side.png", "road — side"),
-        ("freecad/shots/road_bow.png", "road — bow"),
-        ("freecad/shots/road_aft.png", "road — stern"),
-        ("freecad/shots/harbor_iso.png", "harbour — jack-up stance"),
-        ("freecad/shots/harbor_side.png", "harbour — side"),
-        ("freecad/shots/launch_iso.png", "launch — driving down the slipway"),
-        ("freecad/shots/launch_side.png", "launch — side"),
-        ("freecad/shots/anchor_iso.png", "anchor"),
-        ("freecad/shots/anchor_side.png", "anchor — side"),
-        ("freecad/shots/interior_iso.png", "interior — fit-out"),
-        ("freecad/shots/interior_top.png", "interior — plan"),
-        ("freecad/shots/interior_side.png", "interior — side elevation"),
         ("docs/images/general_arrangement.png", "general arrangement"),
         ("docs/images/interior_plan.png", "interior layout sheet"),
         ("docs/images/roof_deck.png", "roof deck build-up"),

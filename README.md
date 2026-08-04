@@ -11,7 +11,7 @@ Parametric CAD in FreeCAD (Python-scripted); every legal, structural
 and hydrostatic constraint is asserted in code, so a dimension cannot
 drift without the build failing.
 
-![cruise](freecad/shots/cruise_iso.png)
+![cruise](freecad/shots/beauty/cruise_bow_quarter.png)
 
 ---
 
@@ -98,13 +98,25 @@ They are the plates at the front of the PDF gallery.
 
 | Mode | What it is | Renders |
 |---|---|---|
-| `road` | floats folded under the hull, balconies up over the windows, towed stern-first | [iso](freecad/shots/road_iso.png) · [side](freecad/shots/road_side.png) · [bow](freecad/shots/road_bow.png) · [aft](freecad/shots/road_aft.png) |
-| `launch` | driving itself down the slipway on six wheels | [iso](freecad/shots/launch_iso.png) · [side](freecad/shots/launch_side.png) · [bow](freecad/shots/launch_bow.png) · [aft](freecad/shots/launch_aft.png) |
-| `harbor` | jack-up: floats carry the boat, keel awash, tyres as rolling quay fenders | [iso](freecad/shots/harbor_iso.png) · [side](freecad/shots/harbor_side.png) · [bow](freecad/shots/harbor_bow.png) · [aft](freecad/shots/harbor_aft.png) |
-| `cruise` | trimaran, floats out, balconies down | [iso](freecad/shots/cruise_iso.png) · [side](freecad/shots/cruise_side.png) · [bow](freecad/shots/cruise_bow.png) · [aft](freecad/shots/cruise_aft.png) |
-| `anchor` | lying to the stern anchor | [iso](freecad/shots/anchor_iso.png) · [side](freecad/shots/anchor_side.png) · [bow](freecad/shots/anchor_bow.png) · [aft](freecad/shots/anchor_aft.png) |
+| `road` | floats folded under the hull, balconies up over the windows, towed stern-first | [bow qtr](freecad/shots/beauty/road_bow_quarter.png) · [stern qtr](freecad/shots/beauty/road_stern_quarter.png) · [beam](freecad/shots/beauty/road_beam.png) · [above](freecad/shots/beauty/road_drone.png) · [low](freecad/shots/beauty/road_low.png) |
+| `launch` | driving itself down the slipway on six wheels | [bow qtr](freecad/shots/beauty/launch_bow_quarter.png) · [stern qtr](freecad/shots/beauty/launch_stern_quarter.png) · [beam](freecad/shots/beauty/launch_beam.png) · [above](freecad/shots/beauty/launch_drone.png) · [low](freecad/shots/beauty/launch_low.png) |
+| `harbor` | jack-up: floats carry the boat, keel awash, tyres as rolling quay fenders | [bow qtr](freecad/shots/beauty/harbor_bow_quarter.png) · [stern qtr](freecad/shots/beauty/harbor_stern_quarter.png) · [beam](freecad/shots/beauty/harbor_beam.png) · [above](freecad/shots/beauty/harbor_drone.png) · [low](freecad/shots/beauty/harbor_low.png) |
+| `cruise` | trimaran, floats out, balconies down | [bow qtr](freecad/shots/beauty/cruise_bow_quarter.png) · [stern qtr](freecad/shots/beauty/cruise_stern_quarter.png) · [beam](freecad/shots/beauty/cruise_beam.png) · [above](freecad/shots/beauty/cruise_drone.png) · [low](freecad/shots/beauty/cruise_low.png) |
+| `anchor` | lying to the stern anchor | [bow qtr](freecad/shots/beauty/anchor_bow_quarter.png) · [stern qtr](freecad/shots/beauty/anchor_stern_quarter.png) · [beam](freecad/shots/beauty/anchor_beam.png) · [above](freecad/shots/beauty/anchor_drone.png) · [low](freecad/shots/beauty/anchor_low.png) |
 
-![road](freecad/shots/road_iso.png)
+![cruise, bow quarter](freecad/shots/beauty/cruise_bow_quarter.png)
+
+![cruise, stern quarter](freecad/shots/beauty/cruise_stern_quarter.png)
+
+![road, bow quarter](freecad/shots/beauty/road_bow_quarter.png)
+
+![road, beam on](freecad/shots/beauty/road_beam.png)
+
+![harbour, low from the water](freecad/shots/beauty/harbor_low.png)
+
+![launch, from above](freecad/shots/beauty/launch_drone.png)
+
+![anchor, stern quarter](freecad/shots/beauty/anchor_stern_quarter.png)
 
 ![general arrangement](docs/images/general_arrangement.png)
 
@@ -144,8 +156,6 @@ Sized for full building-code deck loads: 2 kN/m² plus 2 kN on a
 **Interior** — heads, galley, dinette that sleeps two, elevating double
 bed forward, fold-down bunk to port; batteries and water low and
 amidships. → [docs/interior.md](docs/interior.md)
-
-![interior iso](freecad/shots/interior_iso.png)
 
 **Tow and stern gear** — a wide A-arch on the transom pin-locks into a
 sea gantry or an extensible drawbar; the 2 t electric self-recovery
@@ -242,12 +252,11 @@ freecad/            the model — the source of truth
   params.py         ALL dimensions, kinematics, checks() asserts
   build_boat.py     geometry builders -> boat_<mode>.FCStd
   view.sh           build + open in the FreeCAD GUI
-  capture.py        wipes shots/, re-renders every configuration
-  interior_shots.py interior renders
+  beauty_shots.py   perspective photo-reference renders -> shots/beauty/
   ga_drawing.py     dimensioned general-arrangement sheet
   interior_plan.py  interior sheet: plan + stowage plan + sections
   roof_cards.py     roof-deck spec cards
-  shots/            current renders (regenerated, never stale)
+  shots/beauty/     the renders (perspective, exterior, never stale)
 docs/
   *.md              per-system design studies (table above)
   images/           dimensioned spec cards and drawings
@@ -260,8 +269,7 @@ drafts/             original concept PDF + STL sketch
 
 ```sh
 ./freecad/view.sh                              # open in the GUI
-~/bin/FreeCAD.AppImage freecad/capture.py      # regenerate all renders
-~/bin/FreeCAD.AppImage freecad/interior_shots.py
+~/bin/FreeCAD.AppImage freecad/beauty_shots.py # regenerate all renders
 python3 freecad/ga_drawing.py                  # arrangement sheet
 python3 freecad/interior_plan.py               # interior sheet
 python3 freecad/roof_cards.py                  # roof spec cards
