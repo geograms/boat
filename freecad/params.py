@@ -161,18 +161,15 @@ def keel_z_at(x):
             return STATIONS[i][3] + t * (STATIONS[i + 1][3] - STATIONS[i][3])
     return STATIONS[-1][3]
 
-# ---- winter garden: single molded curved plexiglass over the foredeck ----
-# Wraps from the cabin roof front edge down to the bow deck: a glazed
-# conservatory where the foredeck becomes an all-weather sitting area.
-# [x, half_width, apex_z, edge_z] — half_width tracks the gunwale line
-# minus 40 mm so the glass sits right at the boat edge (bubble effect)
-WG_SECTIONS = [
-    [6200, 1096, 2150, 1195],
-    [6550,  985, 1950, 1225],
-    [6850,  866, 1690, 1250],
-    [7060,  586, 1470, 1292],
-    [7180,  390, 1350, 1310],
-]
+# ---- winter garden: full curved plexiglass envelope ----
+# One molded piece covering the WHOLE habitation area: bottom edge at
+# the sheer line (where the hull starts), rising over the cabin sides
+# to just under the roof-lid edge, wrapping the raked bow bubble down
+# to the foredeck. The solar roof lid caps the top opening, so the
+# pop-top still lifts through it.
+WG_APEX_CABIN = 2210     # glass crown over the cabin (roof lid above)
+WG_TOP_HW = 1195         # glass meets the roof-lid edge here
+WG_EDGE_INSET = 30       # bottom edge inset from the gunwale line
 
 # ---- drawbar + stern pod ----
 DRAWBAR_LEN = 1600
