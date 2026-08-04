@@ -99,6 +99,11 @@ so the balconies are **not** reached by walking along the sides. They
 are reached from the cockpit: both balconies start at x 900, level
 with the deck, right where the crew stands.
 
+The balcony panel itself now runs **aft to the transom**, but only as a
+**540 mm passage** — it flares to the full 1 200 mm deck at the cabin
+wall. A passage is all that is needed back there; widening it would
+only add weight, windage and folded height for no use.
+
 On **both sides**, the route out of the door is made walkable by three
 pieces:
 

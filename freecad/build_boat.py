@@ -395,19 +395,31 @@ def build_balcony(fold_deg):
         s.Placement = place.multiply(s.Placement)
         return s
 
-    plate = posed(box(L, P.BALC_SPAN, P.BALC_T, (P.BALC_X0, 0, 0)))
-    # 3 BIFACIAL modules: active laminate on both faces of the plate
+    # plate outline: a narrow passage aft, flaring to the full deck at
+    # the cabin wall. Only a walkway is needed back there — widening it
+    # would just add weight and windage.
+    out = wire([(P.BALC_X0, 0, 0), (P.BALC_X0, P.PASSAGE_W, 0),
+                (P.PASSAGE_X - 340, P.PASSAGE_W + 40, 0),
+                (P.PASSAGE_X - 40, P.BALC_SPAN - 120, 0),
+                (P.PASSAGE_X, P.BALC_SPAN, 0),
+                (P.BALC_X1, P.BALC_SPAN, 0), (P.BALC_X1, 0, 0)])
+    plate = posed(Part.Face(out).extrude(Vector(0, 0, P.BALC_T)))
+    # 3 BIFACIAL modules, on the wide section only
     panels = []
-    gx = (L - 3 * P.PANEL_L) / 4
+    wide = P.BALC_X1 - P.PASSAGE_X
+    gx = (wide - 3 * P.PANEL_L) / 4
     for i in range(3):
-        px = P.BALC_X0 + gx + i * (P.PANEL_L + gx)
+        px = P.PASSAGE_X + gx + i * (P.PANEL_L + gx)
         py = (P.BALC_SPAN - P.PANEL_W) / 2
         panels.append(posed(box(P.PANEL_L, P.PANEL_W, P.PANEL_T,
                                 (px, py, P.BALC_T))))           # front face
         panels.append(posed(box(P.PANEL_L, P.PANEL_W, P.PANEL_T,
                                 (px, py, -P.PANEL_T))))         # rear face
-    # outboard edge rail
-    rail = posed(box(L, 40, 90, (P.BALC_X0, P.BALC_SPAN - 40, P.BALC_T)))
+    # outboard edge rail: follows the passage, then the wide deck
+    rail = posed(box(P.BALC_X1 - P.PASSAGE_X, 40, 90,
+                     (P.PASSAGE_X, P.BALC_SPAN - 40, P.BALC_T)))
+    rail = rail.fuse(posed(box(P.PASSAGE_X - 340 - P.BALC_X0, 40, 90,
+                               (P.BALC_X0, P.PASSAGE_W - 40, P.BALC_T))))
     # diagonal brackets under the deck, back to the hull side
     braces = []
     for bx in (P.BALC_X0 + 250, (P.BALC_X0 + P.BALC_X1) / 2,
@@ -680,16 +692,19 @@ def build_aft_entry(rail_up=False, door_open=False):
     # climb into two easy steps, and a grab post bolted to the balcony
     # frame gives a handhold right at the gate.
     for sgn in (-1, 1):
-        tri = Part.Face(wire([(620, sgn * 380, P.LANDING_Z),
-                              (x1, sgn * 380, P.LANDING_Z),
-                              (x1, sgn * 1180, P.LANDING_Z),
-                              (620, sgn * 700, P.LANDING_Z)]))
+        # wedge landing at bench height along the outboard edge of the
+        # well, then a half step up to deck level and straight out
+        # through the gate onto the balcony — no detour.
+        tri = Part.Face(wire([(P.GATE_X0, sgn * 380, P.LANDING_Z),
+                              (P.GATE_X1, sgn * 380, P.LANDING_Z),
+                              (P.GATE_X1, sgn * 1180, P.LANDING_Z),
+                              (P.GATE_X0, sgn * 1180, P.LANDING_Z)]))
         parts.append(tri.extrude(Vector(0, 0, 55)))
-        parts.append(box(200, 480, 55,
-                         (x1 - 220, sgn * 700 - (480 if sgn < 0 else 0),
+        parts.append(box(P.GATE_X1 - P.GATE_X0, 300, 55,
+                         (P.GATE_X0, sgn * 880 - (300 if sgn < 0 else 0),
                           (P.LANDING_Z + DECK_Z) / 2)))       # half step
-        parts.append(box(P.GATE_X1 - P.GATE_X0, 220, 50,
-                         (P.GATE_X0, sgn * 1090 - 110, DECK_Z)))
+        parts.append(box(P.GATE_X1 - P.GATE_X0, 260, 50,
+                         (P.GATE_X0, sgn * 1200 - 130, DECK_Z)))
         # grab post on the balcony frame + tie back into the cabin wall
         parts.append(rod((P.GRAB_POST_X, sgn * P.GRAB_POST_Y, DECK_Z),
                          (P.GRAB_POST_X, sgn * P.GRAB_POST_Y,

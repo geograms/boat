@@ -119,7 +119,11 @@ MOTOR_BAY_L = 800
 MOTOR_BAY_W = 400
 
 # ---- solar balcony: bifacial shutters / walkable water deck ----
-BALC_X0, BALC_X1 = 900, 6200
+BALC_X0, BALC_X1 = 100, 6200   # runs aft to the transom so the
+                               # walkway meets the cockpit directly
+PASSAGE_W = 540                # aft section is a narrow PASSAGE, not deck:
+PASSAGE_X = 900                # it widens to the full balcony only from
+                               # the cabin wall forward
 BALC_SPAN = 1200
 BALC_T = 40
 BALC_HINGE_Y = 1200                # folded outer face 1256 <= 1275
@@ -256,12 +260,14 @@ PORCH_STRUT_Y = 620           # diagonal tubes to the wall — no deck posts
 STAIR_Y0, STAIR_Y1 = -1200, -740   # port strip, to the LEFT of the door
 STAIR_X0, STAIR_X1 = 460, 880
 STAIR_STEPS = 8
-GATE_X0, GATE_X1 = 950, 1450   # sheer-rail gap: step out to the balconies
+GATE_X0, GATE_X1 = 200, 800    # sheer-rail gap right beside the
+                               # cockpit: step straight out of the
+                               # door onto the balcony walkway
 # transition from the door out to the balcony walkways: a triangular
 # landing in each forward corner at bench height, and a grab post
 # bolted to the balcony frame at the gate
 LANDING_Z = 850
-GRAB_POST_X = 980
+GRAB_POST_X = 520
 GRAB_POST_Y = 1230
 GRAB_POST_H = 900
 # aft wall fit-out, seen from the cockpit: AC upper right, lockers below
@@ -277,7 +283,7 @@ LOCKER_DEPTH = 300
 # point and the boat hauls itself out even with no wheel grip.
 # Anchor: stern roller on the gantry leg, rode to the same drum family.
 WINCH_PULL_KG = 2000          # 4500 lb class, 12/24 V
-WINCH_POS = (330, -980, 1265)   # on the port deck strip, clear of the door
+WINCH_POS = (60, -880, 1265)    # hard aft, clear of the boarding gate
 ANCHOR_ROLLER = (-140, 0, 1150)
 
 # ---- stern pod ----
