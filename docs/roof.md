@@ -111,20 +111,20 @@ a dropped anchor are all inside the envelope.
 | removed | kg | added | kg |
 |---|---|---|---|
 | canopy slab + frame | 145 | glass, 10.1 m² × 30 kg/m² | 302 |
-| | | 4 × 500 W framed modules | 96 |
+| | | 4 × 500 W framed modules | 108 |
 | scissors (4 units) | 88 | alu grid + kerb | 35 |
 | drives + controller | 36 | seals, adhesive, fixings | 15 |
 | latches, gaskets, coaming | 12 | | |
 | solar side walls | 60 | | |
-| **total** | **341** | **total** | **448** |
+| **total** | **341** | **total** | **460** |
 
 **Net ≈ +107 kg**, of which 96 is the choice of standard framed modules
 over bonded laminates. Not a weight saving — mass bought as fixed
 structure and replaceable parts instead of mechanism.
 
-Solar: **4.00 kWp nominal** — roof 4 × 500 W = 2.00, balconies
-4 × 500 W = 2.00. After glass transmission (91 %), frame shading
-(4.4 %) and the ventilation gain (+5 %), **≈ 3.83 kWp effective**.
+Solar: **4.40 kWp nominal** — roof 4 × 500 W = 2.00, balconies
+6 × 400 W bifacial = 2.40. After glass transmission (91 %), frame shading
+(4.4 %) and the ventilation gain (+5 %), **≈ 4.35 kWp effective** (the bifacial rear gain roughly cancels the glass and frame losses).
 
 Two limits worth stating plainly:
 
@@ -136,8 +136,22 @@ Two limits worth stating plainly:
 
 ## 6. The solar balconies — full-width standard panels
 
-The balconies carry the **same standard 500 W modules as the roof**:
-1 934 × 1 134, recessed into an aluminium ladder frame, **2 per side**.
+The balconies carry **400 W BIFACIAL modules**, 1 722 × 1 134,
+recessed into an aluminium ladder frame, **3 per side**.
+
+Two datasheet facts decided this. A 400 W panel is the 54-cell format
+at **1 722 × 1 134 × 30, ~21 kg**; a 500 W is **1 961 × 1 134 × 30,
+~27 kg**. Those 239 mm are exactly what lets **three** fit the 5 300 mm
+balcony run (3 × 1 722 + gaps = 5 246) where only two 500 W would go —
+so the smaller panel gives *more* power per side: 1.2 kW against 1.0.
+
+**Bifacial on the sides** (Max): the rear face earns its keep here in a
+way it never could on the roof. Folded up over the windows in road and
+harbour trim both faces see daylight, and deployed flat over the water
+the back face picks up the surface reflection — reckon +5 %.
+
+The roof keeps the 500 W panel, because there the constraint is the
+2 100 mm field width and a 1 961 mm module lies across it happily.
 
 Max's first requirement here was a side walkway, and the geometry gave
 a hard answer: a 500 W module is 1 134 mm wide, the balcony span is
@@ -159,10 +173,10 @@ cockpit and the aft passage already give access.
 | | |
 |---|---|
 | frame | aluminium box 25 × 40 × 3 ladder, cross rails at 740 |
-| modules | **2 standard 500 W panels per side**, recessed |
+| modules | **3 × 400 W bifacial per side**, 1 722 × 1 134, recessed |
 | walked on | the **540 mm aft passage only** — the panels are not a deck |
 | folded thickness | **48 mm** of the 75 available |
-| mass | ≈ 134 kg per side |
+| mass | ≈ 149 kg per side |
 
 The folded assembly is what the road limit sees, which is why the
 modules still drop **into** the frame rather than onto it.
@@ -180,7 +194,7 @@ modules still drop **into** the frame rather than onto it.
 
 | Balconies (both sides) | Est. |
 |---|---|
-| 4 × standard 500 W framed modules | 520 |
+| 6 × 400 W bifacial framed modules | 660 |
 | Alu ladder frames, hinges, brackets | 900 |
 | Anti-slip tread on the aft passages | 140 |
-| **Balcony total** | **≈ 1 560** |
+| **Balcony total** | **≈ 1 700** |

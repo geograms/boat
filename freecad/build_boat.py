@@ -500,7 +500,7 @@ def build_balcony(fold_deg):
     # ---- standard 500 W modules, recessed into the full deck width
     gy = (P.BALC_SPAN - mw) / 2
     for i in range(P.BALC_MODULES):
-        px = P.BALC_MODULE_X0 + i * (ml + 60)
+        px = P.BALC_MODULE_X0 + i * (ml + P.BALC_MODULE_GAP)
         panels.append(posed(box(ml, mw, mt, (px, gy, d - mt))))
         for edge in (gy, gy + mw - 35):            # alu module frame
             panels.append(posed(box(ml, 35, mt + 4, (px, edge, d - mt - 2))))

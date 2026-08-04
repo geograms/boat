@@ -51,12 +51,24 @@ WINDOWS = [(2500, 1800), (4900, 1200)]      # (x0, length)
 WIN_PIER = 600                     # solid pillar between the two openings
 PORTHOLE = (1500, 1780, 360)       # service zone: light + ventilation
 
-# THE standard panel used everywhere on the boat: a common 2026-format
-# 500 W framed module, 1934 x 1134 x 30, ~24 kg. Standardised and cheap,
-# so it can be replaced at any solar shop for the life of the boat.
-MODULE_500 = (1934, 1134, 30)      # long side, short side, thickness
+# Real catalogue modules (datasheets checked, not estimated):
+#   ROOF  — 500 W mono, Trina Vertex N class: 1961 x 1134 x 30, 27 kg.
+#           Its 1961 long side fits the 2100 mm field width lying
+#           athwartships, so four cover the roof.
+#   SIDES — 400 W BIFACIAL (Max), Photonic Universe / Longi class:
+#           1722 x 1134 x 30, 21 kg. 239 mm shorter than the 500 W, and
+#           that is exactly what lets THREE fit each balcony instead of
+#           two. Bifacial earns its keep here: folded up over the
+#           windows in road and harbour trim both faces see daylight,
+#           and deployed over the water the back face picks up the
+#           surface reflection.
+MODULE_500 = (1961, 1134, 30)      # long side, short side, thickness
 MODULE_500_W = 500
-MODULE_500_KG = 24
+MODULE_500_KG = 27
+MODULE_BIFACIAL = (1722, 1134, 30)
+MODULE_BIFACIAL_W = 400
+MODULE_BIFACIAL_KG = 21
+BIFACIAL_GAIN = 1.05               # rear-face yield, deployed over water
 
 # legacy flexible-laminate footprint, still used for the float strips
 PANEL_L = 1700
@@ -157,14 +169,15 @@ BALC_T = 40                    # ladder-frame depth; modules drop INTO it
 # so the assembly may be at most 75 mm thick before the 2550 mm road
 # limit bites — which is why the modules still drop INTO the ladder
 # frame rather than onto it.
-MODULE_STD = MODULE_500        # same standard 500 W panel as the roof
-MODULE_W_PEAK_STD = MODULE_500_W
-MODULE_KG = MODULE_500_KG
+MODULE_STD = MODULE_BIFACIAL   # 400 W bifacial: three fit each side
+MODULE_W_PEAK_STD = MODULE_BIFACIAL_W
+MODULE_KG = MODULE_BIFACIAL_KG
 BALC_WALK_W = 0                # no side walkway any more
 BALC_PANEL_W = 1160            # the full span carries the module
 BALC_TREAD_T = 3               # tread remains on the aft passage only
-BALC_MODULE_X0 = 950
-BALC_MODULES = 2               # per side: 2 x 1934 fits the 5300 deck
+BALC_MODULE_X0 = 920
+BALC_MODULES = 3               # per side: 3 x 1722 + gaps = 5246
+BALC_MODULE_GAP = 40
 BALC_FRAME_RAIL = (25, 40, 3)  # alu box: b, h, wall
 BALC_FRAME_PITCH = 740         # cross rails: module ends + mid support
 BALC_FOLDED_T = BALC_T + 8     # frame depth + module lip + tread proud
@@ -408,7 +421,8 @@ def solar_kwp():
     deck = DECK_PANELS * PANEL_W_PEAK / 1000
     balc = 2 * BALC_MODULES * MODULE_W_PEAK_STD / 1000
     _, _, _, shade = deck_areas()
-    eff = deck * GLASS_TRANSMISSION * (1 - shade) * COOLING_GAIN + balc
+    eff = deck * GLASS_TRANSMISSION * (1 - shade) * COOLING_GAIN + \
+        balc * BIFACIAL_GAIN
     return deck, balc, eff
 
 
@@ -655,7 +669,8 @@ def checks(verbose=True):
         "walkway + panel strip wider than the balcony"
     assert BALC_MODULE_X0 >= PASSAGE_X - 50, \
         "balcony modules must start at the wide deck, not in the passage"
-    assert BALC_MODULE_X0 + BALC_MODULES * (ml + 60) <= BALC_X1, \
+    assert BALC_MODULE_X0 + BALC_MODULES * ml + \
+        (BALC_MODULES - 1) * BALC_MODULE_GAP <= BALC_X1, \
         f"{BALC_MODULES} modules do not fit the deck length"
     # tow arch: coupling height on the road, protection reach at sea
     cpl_x, cpl_z = arch_coupling()
