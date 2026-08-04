@@ -81,8 +81,12 @@ def hull_sections(inner=False):
 
 
 def build_hull():
-    shell = loft_sections(hull_sections()).cut(
-        loft_sections(hull_sections(inner=True)))
+    outer = loft_sections(hull_sections())
+    shell = outer.cut(loft_sections(hull_sections(inner=True)))
+    # deck plate closes the top over the whole length (the sheer rises
+    # forward, so the extra height forward becomes a bow bulwark)
+    shell = shell.fuse(outer.common(
+        box(P.LOA + 400, 3200, 60, (-200, -1600, DECK_Z - 60))))
     shell = shell.cut(plan_prism(       # cabin-footprint deck opening
         [(P.CABIN_X0 + 50, -P.CABIN_W / 2 + 70),
          (P.CABIN_X1 - 50, -P.CABIN_W / 2 + 70),
@@ -411,11 +415,79 @@ def build_balcony(fold_deg):
 # ---------------------------------------------------------------
 # Bow hydrofoil, drawbar, stern pod
 # ---------------------------------------------------------------
-def build_drawbar(deployed):
-    tip = ((P.LOA + P.DRAWBAR_LEN, 0, P.GROUND_Z + P.COUPLING_H)
-           if deployed else (7050, 0, 1900))
-    parts = [rod((6500, s * 430, 900), tip, 90) for s in (-1, 1)]
-    parts.append(Part.makeSphere(80, Vector(*tip)))
+def build_frame():
+    """External steel space frame (docs/structure.md): two sheer rails,
+    transverse cross-beams through the float-arm shoulder pins, posts,
+    bow ring carrying the tow arch, stern ring. All concentrated loads
+    land here instead of on the hull skin."""
+    def gunw(x):
+        st = P.STATIONS
+        for i in range(len(st) - 1):
+            if st[i][0] <= x <= st[i + 1][0]:
+                t = (x - st[i][0]) / (st[i + 1][0] - st[i][0])
+                return st[i][1] + t * (st[i + 1][1] - st[i][1])
+        return st[-1][1]
+
+    parts = []
+    rail_x = [100, 600, 1400, 2400, 3400, 4400, 5400, 6200, 6600]
+    for sgn in (-1, 1):
+        pts = [(x, sgn * (gunw(x) - P.FRAME_RAIL_INSET), P.SH_Z + 390)
+               for x in rail_x]
+        pts.append((P.ARCH_PIVOT_X, sgn * P.ARCH_PIVOT_Y, P.ARCH_PIVOT_Z))
+        for a, b_ in zip(pts, pts[1:]):
+            parts.append(rod(a, b_, P.FRAME_TUBE))
+    # cross-beams straight through both shoulder pins + posts up to rails
+    for bx in P.FRAME_BEAM_X:
+        parts.append(rod((bx, -P.SH_Y, P.SH_Z), (bx, P.SH_Y, P.SH_Z),
+                         P.FRAME_BEAM))
+        for sgn in (-1, 1):
+            parts.append(rod((bx, sgn * P.SH_Y, P.SH_Z),
+                             (bx, sgn * (gunw(bx) - P.FRAME_RAIL_INSET),
+                              P.SH_Z + 390), P.FRAME_TUBE - 20))
+    # bow ring (tow-arch pivots) and stern ring
+    parts.append(rod((P.ARCH_PIVOT_X, -P.ARCH_PIVOT_Y, P.ARCH_PIVOT_Z),
+                     (P.ARCH_PIVOT_X, P.ARCH_PIVOT_Y, P.ARCH_PIVOT_Z),
+                     P.FRAME_BEAM))
+    parts.append(rod((120, -(gunw(120) - P.FRAME_RAIL_INSET), P.SH_Z + 390),
+                     (120, gunw(120) - P.FRAME_RAIL_INSET, P.SH_Z + 390),
+                     P.FRAME_BEAM))
+    return Part.makeCompound(parts)
+
+
+def build_tow(pose):
+    """Tow arch: bow protection bar (sea) / extensible drawbar (land).
+    Pin-locked in both positions, like the float arms."""
+    deg = P.ARCH_SEA_DEG if pose == "sea" else P.ARCH_LAND_DEG
+    ax, az = P.arch_apex(deg)
+    parts = []
+    for sgn in (-1, 1):                       # legs, pivot -> apex yoke
+        parts.append(rod((P.ARCH_PIVOT_X, sgn * P.ARCH_PIVOT_Y,
+                          P.ARCH_PIVOT_Z), (ax, sgn * 130, az), P.ARCH_TUBE))
+        parts.append(Part.makeCylinder(       # pivot boss + lock-pin ears
+            P.ARCH_TUBE / 2 + 26, 150,
+            Vector(P.ARCH_PIVOT_X, sgn * P.ARCH_PIVOT_Y - 75,
+                   P.ARCH_PIVOT_Z), Vector(0, 1, 0)))
+        parts.append(box(120, 40, 220,
+                         (P.ARCH_PIVOT_X - 60, sgn * P.ARCH_PIVOT_Y - 130,
+                          P.ARCH_PIVOT_Z - 110)))
+    parts.append(rod((ax, -130, az), (ax, 130, az), P.ARCH_TUBE))
+    if pose == "sea":
+        # rub bar across the front: this is what hits the dock, not the hull
+        parts.append(rod((ax + 60, -430, az - 120), (ax + 60, 430, az - 120),
+                         P.ARCH_TUBE + 30))
+        for sgn in (-1, 1):
+            parts.append(rod((ax, sgn * 130, az),
+                             (ax + 60, sgn * 430, az - 120), P.ARCH_TUBE - 20))
+        parts.append(rod((ax, 0, az), (ax + 60, 0, az - 120), 70))
+    else:
+        cx, cz = P.arch_coupling()
+        parts.append(rod((ax, 0, az), (cx, 0, cz), P.ARCH_TUBE - 10))
+        for sgn in (-1, 1):                   # A-frame triangulation
+            parts.append(rod((ax, sgn * 130, az),
+                             ((ax + cx) / 2, 0, (az + cz) / 2),
+                             P.ARCH_TUBE - 35))
+        parts.append(Part.makeSphere(80, Vector(cx, 0, cz)))
+        parts.append(box(70, 150, 150, (cx - 220, -75, cz - 40)))
     return Part.makeCompound(parts)
 
 
@@ -546,7 +618,8 @@ def build_mode(mode):
         for i, r in enumerate(rims):
             add(f"Rim{side}{i}", m(r), STEEL, group=g_gear)
 
-    add("Drawbar", build_drawbar(cfg["drawbar"]), GRAY)
+    add("Frame", build_frame(), (0.42, 0.44, 0.47))
+    add("TowArch", build_tow(cfg["tow"]), (0.42, 0.44, 0.47))
     add("MainJet", build_main_jet(), (0.8, 0.65, 0.2))
     add("WinterGarden", build_wintergarden(), (0.75, 0.88, 0.92), 70)
 

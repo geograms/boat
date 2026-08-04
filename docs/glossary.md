@@ -60,6 +60,23 @@ Shared language for the design. Geometry values live in
 - **Bevel (mating face)** — the 12° flat machined/molded on each float
   so it sits flush on the hull bottom in road pose (zero dead space).
 
+## Structure (details in [structure.md](structure.md))
+
+- **Exoskeleton (space frame)** — external welded steel frame carrying
+  every concentrated load (float arms, balconies, tow, fenders) so the
+  hull skin only sees distributed water pressure.
+- **Sheer rail (chassis rail)** — the frame's main longitudinal tube
+  running the full length just inside the gunwale.
+- **Cross-beam** — transverse frame tube passing straight through both
+  float-arm shoulder pins; carries a float's load rail-to-rail.
+- **Bow ring / stern ring** — the frame's end frames; the bow ring
+  carries the tow-arch pivots, the stern ring the main waterjet.
+- **Tow arch** — one A-arch at the stem, pin-locked in two poses:
+  raised as a **collision bar** (sea) or swung down with a telescoping
+  tongue as the **drawbar** (land).
+- **Bulwark** — the raised sheer forward of the cabin standing above
+  the closed foredeck plate.
+
 ## Wheels & drive (details in [wheels.md](wheels.md))
 
 - **Caster mounting** — wheels on stub axles perpendicular to the float

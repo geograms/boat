@@ -171,9 +171,40 @@ WG_APEX_CABIN = 2210     # glass crown over the cabin (roof lid above)
 WG_TOP_HW = 1195         # glass meets the roof-lid edge here
 WG_EDGE_INSET = 30       # bottom edge inset from the gunwale line
 
-# ---- drawbar + stern pod ----
-DRAWBAR_LEN = 1600
-COUPLING_H = 430
+# ---- exoskeleton: external steel space frame ----
+# Everything mounts on the frame, not the hull skin: float-arm shoulder
+# pins, balcony hinges, tow arch, fenders. The hull then only carries
+# hydrostatic pressure and its own distributed loads.
+#   - 2 sheer rails (chassis rails) running the full length at the
+#     gunwale, tube 110
+#   - transverse CROSS-BEAMS at the arm stations at exactly SH_Z, so
+#     each float's load passes rail-to-rail through one beam instead of
+#     into the hull side
+#   - posts tying cross-beam ends up to the rails
+#   - bow ring (carries the tow arch pivots) + stern ring (jet, platform)
+FRAME_TUBE = 110
+FRAME_BEAM = 130
+FRAME_RAIL_INSET = 40         # rails sit just inside the gunwale line
+FRAME_BEAM_X = (1400, 3400, 5400)
+
+# ---- tow arch: bow protection bar <-> extensible drawbar ----
+# One A-arch on transverse pivots at the bow ring, pin-locked in two
+# positions (same principle as the float arms):
+#   SEA  +55 deg: arch stands up and forward of the stem — takes the
+#                 hit in a collision, doubles as pulpit/anchor gantry
+#   LAND -25 deg: arch swings down-forward, telescoping tongue extends
+#                 and pins out to the car coupling
+ARCH_PIVOT_X = 7150   # at the stem: clear of the hull and the glass
+ARCH_PIVOT_Y = 420    # ~85 mm proud of the hull surface there
+ARCH_PIVOT_Z = 860
+ARCH_LEG = 950
+ARCH_SEA_DEG = 55
+ARCH_LAND_DEG = -27
+ARCH_EXT = 1000               # telescoping tongue stroke
+ARCH_TUBE = 95
+COUPLING_H = 430              # target coupling height above ground
+
+# ---- stern pod ----
 STERNPOD_DIA = 300
 STERNPOD_LEN = 700
 
@@ -182,12 +213,26 @@ STERNPOD_LEN = 700
 # balc: 90 folded up over the windows, 0 horizontal over the water
 # roll is NOT independent: rigid arm -> roll = 90 - phi
 MODES = {
-    "road":    dict(phi=0,         balc=90, drawbar=True,  lift=0),
-    "launch":  dict(phi=0,         balc=90, drawbar=False, lift=0),
-    "harbor":  dict(phi=0,         balc=90, drawbar=False, lift=0),
-    "cruise":  dict(phi=PHI_WATER, balc=0,  drawbar=False, lift=0),
-    "anchor":  dict(phi=PHI_WATER, balc=0,  drawbar=False, lift=CANOPY_LIFT),
+    "road":    dict(phi=0,         balc=90, tow="land", lift=0),
+    "launch":  dict(phi=0,         balc=90, tow="land", lift=0),
+    "harbor":  dict(phi=0,         balc=90, tow="sea",  lift=0),
+    "cruise":  dict(phi=PHI_WATER, balc=0,  tow="sea",  lift=0),
+    "anchor":  dict(phi=PHI_WATER, balc=0,  tow="sea",  lift=CANOPY_LIFT),
 }
+
+
+def arch_apex(deg):
+    """Tow-arch apex (x, z) at a given leg angle from horizontal."""
+    r = math.radians(deg)
+    return (ARCH_PIVOT_X + ARCH_LEG * math.cos(r),
+            ARCH_PIVOT_Z + ARCH_LEG * math.sin(r))
+
+
+def arch_coupling():
+    """Coupling ball (x, z) with the tongue fully extended, land pose."""
+    ax, az = arch_apex(ARCH_LAND_DEG)
+    r = math.radians(ARCH_LAND_DEG)
+    return (ax + ARCH_EXT * math.cos(r), az + ARCH_EXT * math.sin(r))
 
 
 def naca_pts(chord, t=0.12, n=20):
@@ -271,6 +316,14 @@ def checks(verbose=True):
     assert BALC_HINGE_Z + BALC_SPAN <= CABIN_ROOF_Z + CANOPY_THICK + 50, \
         "folded balcony sticks above the canopy"
     assert 100 <= box_gap <= 450, f"balcony leg length odd: {box_gap}"
+    # tow arch: coupling height on the road, protection reach at sea
+    cpl_x, cpl_z = arch_coupling()
+    cpl_h = cpl_z - GROUND_Z
+    sea_x, sea_z = arch_apex(ARCH_SEA_DEG)
+    assert 380 <= cpl_h <= 480, f"coupling height {cpl_h:.0f} mm off-spec"
+    assert cpl_x - LOA <= 2000, f"drawbar overhang {cpl_x - LOA:.0f} too long"
+    assert sea_x > LOA + 250, "protection arch not proud of the stem"
+    assert 2 * ARCH_PIVOT_Y + ARCH_TUBE <= 2550, "tow arch wider than road"
     # jack-up stance equilibrium
     jack_d = FLOAT_W * BOAT_MASS / (2 * reserve_kg)      # submerged depth
     harbor_wl = (POD_ROAD[1] - FLOAT_W / 2) + jack_d     # ~0 = keel awash
@@ -303,6 +356,8 @@ def checks(verbose=True):
         print(f"balcony legs    {box_gap:.0f} mm down to the wheel boxes")
         print(f"waterjets       3 x {JET_POWER_W} W, grid top "
               f"{WL_Z - grid_top:.0f} mm under WL, face v {face_v:.2f} m/s")
+        print(f"tow arch       sea apex {sea_x - LOA:.0f} mm proud of stem, "
+              f"land coupling {cpl_h:.0f} mm high, overhang {cpl_x - LOA:.0f}")
         print(f"jack-up stance  floats {jack_frac * 100:.0f}% deep, "
               f"keel {-harbor_wl:.0f} mm above water (awash), "
               f"pontoon GM ~{gm_est:.1f} m")
