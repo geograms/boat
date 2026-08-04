@@ -89,6 +89,13 @@ and finishes with a fuller battery than it started. In spring or autumn
 
 ## 3. The five configurations
 
+Photo-reference renders — perspective camera, natural eye heights,
+interior hidden and glazing closed so nothing reads as a cutaway — live
+in `freecad/shots/beauty/`: five viewpoints per mode (bow quarter,
+stern quarter, beam on, from above, low from the water), 2 800 × 1 750.
+They are the plates at the front of the PDF gallery.
+
+
 | Mode | What it is | Renders |
 |---|---|---|
 | `road` | floats folded under the hull, balconies up over the windows, towed stern-first | [iso](freecad/shots/road_iso.png) · [side](freecad/shots/road_side.png) · [bow](freecad/shots/road_bow.png) · [aft](freecad/shots/road_aft.png) |

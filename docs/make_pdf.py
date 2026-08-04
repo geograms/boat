@@ -291,7 +291,20 @@ def render(md, pdf):
 
 def gallery(pdf):
     """Every render and drawing, one per page, after the text."""
-    shots = [
+    shots = []
+    for mode, label in (("cruise", "cruise — trimaran, floats out"),
+                        ("road", "road — folded, towed stern-first"),
+                        ("harbor", "harbour — jack-up stance"),
+                        ("launch", "launch — on the slipway"),
+                        ("anchor", "anchor")):
+        for v, vlabel in (("bow_quarter", "bow quarter"),
+                          ("stern_quarter", "stern quarter"),
+                          ("beam", "beam on"),
+                          ("drone", "from above"),
+                          ("low", "low, from the water")):
+            shots.append((f"freecad/shots/beauty/{mode}_{v}.png",
+                          f"{label} — {vlabel}"))
+    shots += [
         ("freecad/shots/cruise_iso.png", "cruise — trimaran, floats out"),
         ("freecad/shots/cruise_side.png", "cruise — side"),
         ("freecad/shots/cruise_bow.png", "cruise — bow"),
