@@ -120,9 +120,9 @@ a dropped anchor are all inside the envelope.
 over bonded laminates. Not a weight saving — mass bought as fixed
 structure and replaceable parts instead of mechanism.
 
-Solar: **2.99 kWp nominal** — roof 4 × 500 W = 2.00, balconies
-6 × 165 W = 0.99. After glass transmission (91 %), frame shading
-(4.4 %) and the ventilation gain (+5 %), **≈ 2.82 kWp effective**.
+Solar: **4.00 kWp nominal** — roof 4 × 500 W = 2.00, balconies
+4 × 500 W = 2.00. After glass transmission (91 %), frame shading
+(4.4 %) and the ventilation gain (+5 %), **≈ 3.83 kWp effective**.
 
 Two limits worth stating plainly:
 
@@ -132,52 +132,38 @@ Two limits worth stating plainly:
    and the ventilated box help; barefoot at midday will still be
    unpleasant.
 
-## 6. The solar balconies — same problem, different answer
+## 6. The solar balconies — full-width standard panels
 
-The side balconies must be walkable too, and Max wants **standard
-framed modules** there: standardised, cheap, and replaceable at any
-solar shop in ten years' time.
+The balconies carry the **same standard 500 W modules as the roof**:
+1 934 × 1 134, recessed into an aluminium ladder frame, **2 per side**.
 
-**The roof's trick does not transfer.** Folded up against the cabin for
-the road, the balcony assembly may be at most **75 mm thick** before
-the 2 550 mm width limit bites. A walking surface *over* the panels
-needs module 35 + air gap 40 + tread 30 = **105 mm**. It does not fit.
-
-So on the balcony the walkway goes **beside** the panels, in the same
-plane, and the modules drop **into** the frame instead of onto it:
+Max's first requirement here was a side walkway, and the geometry gave
+a hard answer: a 500 W module is 1 134 mm wide, the balcony span is
+1 200, and the fold height caps that span at 1 431 — so a walkway
+(480 mm) and a full-size module cannot share the deck. Offered the
+trade, he **dropped the walkway**: the balconies went from 0.99 to
+**2.00 kWp**, which is worth more than side decks nobody needs when the
+cockpit and the aft passage already give access.
 
 ```
-   PLAN of one balcony              SECTION (folded thickness 48 mm)
-   +-------------------------+       |<-- 480 -->|<--- 690 --->|
-   | ///// walkway 480 ///// |      .............................
-   +---+-----+-----+-----+---+      | tread 3   | module 35 in  |
-   |   | mod | mod | mod |   |      +----- 40 mm alu ladder ----+
-   +---+-----+-----+-----+---+
-     3 x 1480 x 670 standard panels    hinge <- 1200 -> outer edge
+   PLAN of one balcony                SECTION (folded 48 mm)
+   +--------------------------+        |<------ 1160 ------>|
+   |  module   |   module     |       ...........................
+   |  1934x1134|   1934x1134  |       |  module 35 recessed     |
+   +--------------------------+       +--- 40 mm alu ladder ----+
+    passage 540 aft, tread only
 ```
 
 | | |
 |---|---|
 | frame | aluminium box 25 × 40 × 3 ladder, cross rails at 740 |
-| walkway | 480 mm of perforated anti-slip alu tread, full length |
-| modules | **3 standard 1 480 × 670 framed panels per side, 165 W** |
+| modules | **2 standard 500 W panels per side**, recessed |
+| walked on | the **540 mm aft passage only** — the panels are not a deck |
 | folded thickness | **48 mm** of the 75 available |
-| mass | ≈ 141 kg per side |
+| mass | ≈ 134 kg per side |
 
-**What it costs.** Giving 480 mm of the 1 200 mm width to a walkway,
-and using small standard modules rather than full-size laminates, takes
-the balconies to **0.99 kWp**. A 500 W module is 1 134 mm wide and will
-not fit beside a walkway on a 1 200 mm balcony (1 134 + 480 = 1 614,
-and the fold height caps the span at 1 431) — so the balconies use the
-largest standard panel that does fit the 690 mm strip. System total is
-now
-**2.99 kWp nominal / 2.82 effective** — roughly 15–17 kWh on a good
-summer day against the 50 kWh bank.
-
-If the walkways are ever judged not worth it, the swap is
-straightforward: full-width 1 130 mm modules restore **+1.6 kWp** and
-the balconies become panel surfaces you do not stand on, with only the
-540 mm aft passage walkable.
+The folded assembly is what the road limit sees, which is why the
+modules still drop **into** the frame rather than onto it.
 
 ## 7. Cost sketch (2026, EUR)
 
@@ -192,7 +178,7 @@ the balconies become panel surfaces you do not stand on, with only the
 
 | Balconies (both sides) | Est. |
 |---|---|
-| 6 × standard 165 W framed modules | 480 |
+| 4 × standard 500 W framed modules | 520 |
 | Alu ladder frames, hinges, brackets | 900 |
-| Perforated anti-slip tread, 6 m² | 420 |
-| **Balcony total** | **≈ 1 800** |
+| Anti-slip tread on the aft passages | 140 |
+| **Balcony total** | **≈ 1 560** |

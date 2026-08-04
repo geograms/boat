@@ -19,7 +19,7 @@ hydrostatic constraint is asserted in code.
 | Wheels | 6 × 205/70 R15 all-terrain, in-float hydraulic drive |
 | Floats | 6.2 m, ~1.55 t reserve each (82 %), righting SF ≈ 4.5 |
 | Water beam | 4.72 m (trimaran), floats fold flush under hull on road |
-| Solar | roof: 4 standard 500 W modules under walk-on glass; balconies: 6 standard 165 W modules — 2.99 kWp nominal / ~2.8 effective |
+| Solar | 8 × standard 500 W framed modules — 4 on the roof under walk-on glass, 4 on the balconies — 4.00 kWp nominal / ~3.8 effective |
 | Structure | external steel frame (ladder loop) carries all arm/balcony/tow loads — nothing crosses the cabin |
 | Tow | stern-first; A-arch pin-locked: sea gantry / extensible drawbar, +100 kg tongue |
 | Stern gear | 2 t electric self-recovery winch + anchor on a transom roller |
@@ -28,7 +28,7 @@ hydrostatic constraint is asserted in code.
 | Cabin | 5.3 × 2.28 m inside, 1.85 m clear headroom |
 | Interior | heads with shower, galley (fridge/freezer tower, washer), dinette that sleeps 2, athwartships double; batteries + water under the settees |
 | Roof deck | walk-on glass over a ventilated air box: 8 laminated panes on an alu grid, panels bonded underneath — no moving parts |
-| Side balconies | walkable too: 480 mm anti-slip walkway beside standard framed modules recessed into an alu ladder frame, 48 mm folded |
+| Side balconies | full-width 500 W modules recessed into an alu ladder frame, 48 mm folded; the 540 mm aft passage is the walked route |
 
 ## The five configurations
 

@@ -51,8 +51,14 @@ WINDOWS = [(2500, 1800), (4900, 1200)]      # (x0, length)
 WIN_PIER = 600                     # solid pillar between the two openings
 PORTHOLE = (1500, 1780, 360)       # service zone: light + ventilation
 
-# ONE panel footprint everywhere: FLEXIBLE laminates (~430 W, ~6 kg,
-# bifacial on the balconies)
+# THE standard panel used everywhere on the boat: a common 2026-format
+# 500 W framed module, 1934 x 1134 x 30, ~24 kg. Standardised and cheap,
+# so it can be replaced at any solar shop for the life of the boat.
+MODULE_500 = (1934, 1134, 30)      # long side, short side, thickness
+MODULE_500_W = 500
+MODULE_500_KG = 24
+
+# legacy flexible-laminate footprint, still used for the float strips
 PANEL_L = 1700
 PANEL_W = 1130
 PANEL_T = 4
@@ -141,24 +147,24 @@ PASSAGE_X = 900                # it widens to the full balcony only from
 BALC_SPAN = 1200
 BALC_T = 40                    # ladder-frame depth; modules drop INTO it
 
-# WALKABLE balcony (Max): people must be able to walk the side decks,
-# and the panels there are STANDARD FRAMED MODULES — standardised,
-# cheap, and replaceable at any solar shop years from now.
+# FULL-WIDTH balcony panels (Max, after seeing what a walkway costs):
+# the side decks give up walking so that a 1134 mm 500 W module fits
+# across the whole 1200 mm span. The aft PASSAGE_W strip stays as the
+# route out of the cockpit; forward of the cabin wall the balcony is a
+# panel surface you do not stand on.
 #
 # The folded balcony stands vertically against the cabin on the road,
-# so the whole assembly may be at most 55 mm thick before the 2550 mm
-# road limit bites. That single number rules out the roof's trick of
-# putting a walking surface OVER the panels (module 35 + gap 40 +
-# tread 30 = 105 mm). So the walkway sits BESIDE the panels, in the
-# same plane, and the modules drop into the frame rather than onto it.
-MODULE_STD = (1480, 670, 35)   # a standard 165 W framed panel
-MODULE_W_PEAK_STD = 165
-MODULE_KG = 11.5
-BALC_WALK_W = 480              # inboard walkway strip, anti-slip tread
-BALC_PANEL_W = 690             # outboard strip: module + clearance
-BALC_TREAD_T = 3               # perforated anti-slip alu sheet
-BALC_MODULE_X0 = 1000
-BALC_MODULES = 3               # per side, along the wide deck
+# so the assembly may be at most 75 mm thick before the 2550 mm road
+# limit bites — which is why the modules still drop INTO the ladder
+# frame rather than onto it.
+MODULE_STD = MODULE_500        # same standard 500 W panel as the roof
+MODULE_W_PEAK_STD = MODULE_500_W
+MODULE_KG = MODULE_500_KG
+BALC_WALK_W = 0                # no side walkway any more
+BALC_PANEL_W = 1160            # the full span carries the module
+BALC_TREAD_T = 3               # tread remains on the aft passage only
+BALC_MODULE_X0 = 950
+BALC_MODULES = 2               # per side: 2 x 1934 fits the 5300 deck
 BALC_FRAME_RAIL = (25, 40, 3)  # alu box: b, h, wall
 BALC_FRAME_PITCH = 740         # cross rails: module ends + mid support
 BALC_FOLDED_T = BALC_T + 8     # frame depth + module lip + tread proud
@@ -347,13 +353,6 @@ RAIL_H = 1000
 LIFELINE_N = 2
 LIFELINE_D = 6
 
-# Roof field: STANDARD 500 W FRAMED MODULES (Max) laid ACROSS the
-# field under the glass — 1934 x 1134 x 30, ~24 kg, the common 2026
-# 500 W format. They sit in the 60 mm air box with 30 mm to spare,
-# and being standard they are replaceable anywhere.
-MODULE_500 = (1934, 1134, 30)      # long side, short side, thickness
-MODULE_500_W = 500
-MODULE_500_KG = 24
 DECK_PANELS = 4                    # what actually fits — see deck_panel_xy()
 PANEL_W_PEAK = MODULE_500_W        # W per roof module
 GLASS_TRANSMISSION = 0.91          # low-iron laminated
@@ -654,11 +653,14 @@ def checks(verbose=True):
         f"folded balcony {BALC_FOLDED_T} mm thick, only {balc_free:.0f} free"
     assert mt < BALC_T, \
         f"module {mt} mm must recess into the {BALC_T} mm frame, not sit on it"
-    assert BALC_WALK_W >= 450, f"balcony walkway only {BALC_WALK_W} mm"
+    assert BALC_WALK_W == 0 or BALC_WALK_W >= 450, \
+        f"balcony walkway {BALC_WALK_W} mm is neither absent nor usable"
     assert mw + 20 <= BALC_PANEL_W, \
         f"module {mw} does not fit the {BALC_PANEL_W} panel strip"
     assert BALC_WALK_W + BALC_PANEL_W + BALC_FRAME_RAIL[0] <= BALC_SPAN, \
         "walkway + panel strip wider than the balcony"
+    assert BALC_MODULE_X0 >= PASSAGE_X - 50, \
+        "balcony modules must start at the wide deck, not in the passage"
     assert BALC_MODULE_X0 + BALC_MODULES * (ml + 60) <= BALC_X1, \
         f"{BALC_MODULES} modules do not fit the deck length"
     # tow arch: coupling height on the road, protection reach at sea

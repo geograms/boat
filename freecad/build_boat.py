@@ -490,13 +490,15 @@ def build_balcony(fold_deg):
         s.Placement = place.multiply(s.Placement)
         return s
 
-    ml, mw, mt = P.MODULE_STD
+    ml, mw, mt = P.MODULE_STD          # the standard 500 W panel
     d = P.BALC_T
     frame, panels, tread, rail = [], [], [], []
 
-    # ---- ladder frame: two long rails + cross rails at the module ends
+    # ---- ladder frame: long rails at both edges, cross rails at the
+    #      module ends. No walkway strip any more: the modules run the
+    #      full width of the deck.
     b, h, wall = P.BALC_FRAME_RAIL
-    for fy in (0, P.BALC_WALK_W, P.BALC_SPAN - b):
+    for fy in (0, P.BALC_SPAN - b):
         frame.append(posed(box(P.BALC_X1 - P.PASSAGE_X + 40, b, h,
                                (P.PASSAGE_X - 40, fy, 0))))
     nx = int((P.BALC_X1 - P.PASSAGE_X) / P.BALC_FRAME_PITCH) + 1
@@ -504,7 +506,8 @@ def build_balcony(fold_deg):
         fx = P.PASSAGE_X + i * P.BALC_FRAME_PITCH
         if fx <= P.BALC_X1:
             frame.append(posed(box(b, P.BALC_SPAN, h, (fx, 0, 0))))
-    # narrow aft passage: frame only, all walkway
+    # narrow aft passage: frame plus tread — this is the only part of
+    # the balcony anyone walks on
     frame.append(posed(box(P.PASSAGE_X - P.BALC_X0, b, h,
                            (P.BALC_X0, 0, 0))))
     frame.append(posed(box(P.PASSAGE_X - P.BALC_X0, b, h,
@@ -514,20 +517,15 @@ def build_balcony(fold_deg):
                               (P.BALC_X0 + i * (P.PASSAGE_X - P.BALC_X0) / 2,
                                0, 0))))
 
-    # ---- standard framed modules, recessed into the outboard strip
-    gy = P.BALC_WALK_W + b + (P.BALC_PANEL_W - mw) / 2
+    # ---- standard 500 W modules, recessed into the full deck width
+    gy = (P.BALC_SPAN - mw) / 2
     for i in range(P.BALC_MODULES):
         px = P.BALC_MODULE_X0 + i * (ml + 60)
         panels.append(posed(box(ml, mw, mt, (px, gy, d - mt))))
-        # the alu module frame reads as a lip round the laminate
-        panels.append(posed(box(ml, 35, mt + 4, (px, gy, d - mt - 2))))
-        panels.append(posed(box(ml, 35, mt + 4, (px, gy + mw - 35,
-                                                 d - mt - 2))))
+        for edge in (gy, gy + mw - 35):            # alu module frame
+            panels.append(posed(box(ml, 35, mt + 4, (px, edge, d - mt - 2))))
 
-    # ---- walkway: perforated anti-slip tread over the inboard strip
-    tread.append(posed(box(P.BALC_X1 - P.PASSAGE_X + 40, P.BALC_WALK_W,
-                           P.BALC_TREAD_T,
-                           (P.PASSAGE_X - 40, 0, d - P.BALC_TREAD_T))))
+    # ---- tread on the aft passage only
     tread.append(posed(box(P.PASSAGE_X - P.BALC_X0, P.PASSAGE_W,
                            P.BALC_TREAD_T,
                            (P.BALC_X0, 0, d - P.BALC_TREAD_T))))
