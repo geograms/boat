@@ -17,8 +17,10 @@ STATIONS = [
     [4200, 1250, 1136,   0, 230, 1150],
     [5400, 1227, 1102,  20, 240, 1160],
     [6300, 1125,  977, 120, 300, 1200],
-    [6900,  886,  704, 300, 420, 1260],
-    [7200,  398,  250, 520, 600, 1320],
+    [6700, 1010,  830, 210, 370, 1240],
+    [7000,  770,  580, 350, 470, 1285],
+    [7130,  520,  350, 450, 550, 1310],
+    [7200,  110,   65, 560, 640, 1330],   # fine rounded stem, no flat face
 ]
 
 def full_section(st):
@@ -195,7 +197,7 @@ FRAME_BEAM_X = (1400, 3400, 5400)
 #   LAND -25 deg: arch swings down-forward, telescoping tongue extends
 #                 and pins out to the car coupling
 ARCH_PIVOT_X = 7150   # at the stem: clear of the hull and the glass
-ARCH_PIVOT_Y = 420    # ~85 mm proud of the hull surface there
+ARCH_PIVOT_Y = 350    # ~30 mm proud of the hull surface at the stem
 ARCH_PIVOT_Z = 860
 ARCH_LEG = 950
 ARCH_SEA_DEG = 55

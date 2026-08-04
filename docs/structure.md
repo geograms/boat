@@ -81,12 +81,21 @@ SEA (protection)                LAND (tow)
   triangle in plan — it takes the sideways loads of a collision and
   the yaw loads of towing without needing a big single-shear pivot.
 
-## 3. Foredeck closed
+## 3. Bow: closed and faired
 
-The deck plate now closes the top of the hull over its whole length
+Two fixes, one cause. The hull used to end at a **flat 800 mm-wide
+stem face** — it read as a hole in renders and it was a bluff plate
+being pushed through the water for no reason. The bow now tapers over
+four extra stations to a **220 mm rounded stem bar**: a proper
+spoon-shaped barge entry, full above the waterline for interior volume,
+fine at the waterline for wave-making. Displacement is unchanged
+(1 970 kg at WL 260).
+
+The deck plate also closes the top of the hull over its whole length
 (the sheer rises forward, so the extra height forward reads as a bow
-**bulwark**). No open cavity at the bow; the foredeck under the winter
-garden is a usable, sealed floor.
+**bulwark**). The only things now breaking the bow surface are the two
+tow-arch pivot brackets, which must be outside by definition — they
+stand ~30 mm proud of the shell at the stem.
 
 ## 4. Cost sketch (2026, EUR)
 
