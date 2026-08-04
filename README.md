@@ -19,7 +19,7 @@ hydrostatic constraint is asserted in code.
 | Floats | 6.2 m, ~1.55 t reserve each (82 %), righting SF ≈ 4.5 |
 | Water beam | 5.06 m (trimaran), floats fold flush under hull on road |
 | Solar | 12 flexible laminates (1700×1130), ~5.2 kWp; balcony panels bifacial |
-| Structure | external steel exoskeleton carries all arm/balcony/tow loads |
+| Structure | external steel frame (ladder loop) carries all arm/balcony/tow loads — nothing crosses the cabin |
 | Tow | A-arch, pin-locked: bow collision bar (sea) / extensible drawbar (land) |
 | Propulsion | 3 × 2 kW flush-intake waterjets (weed-proof), differential steering |
 | Cabin | 5.3 × 2.4 m, 1.8 m headroom; pop-top roof = chillout deck at anchor |

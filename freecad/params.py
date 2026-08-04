@@ -177,17 +177,28 @@ WG_EDGE_INSET = 30       # bottom edge inset from the gunwale line
 # Everything mounts on the frame, not the hull skin: float-arm shoulder
 # pins, balcony hinges, tow arch, fenders. The hull then only carries
 # hydrostatic pressure and its own distributed loads.
-#   - 2 sheer rails (chassis rails) running the full length at the
-#     gunwale, tube 110
-#   - transverse CROSS-BEAMS at the arm stations at exactly SH_Z, so
-#     each float's load passes rail-to-rail through one beam instead of
-#     into the hull side
-#   - posts tying cross-beam ends up to the rails
-#   - bow ring (carries the tow arch pivots) + stern ring (jet, platform)
-FRAME_TUBE = 110
-FRAME_BEAM = 130
-FRAME_RAIL_INSET = 40         # rails sit just inside the gunwale line
-FRAME_BEAM_X = (1400, 3400, 5400)
+# STRICTLY EXTERNAL — nothing crosses the living volume. Two hard
+# constraints make this the only possible layout:
+#   * only ~73 mm of width is left outboard of the hull at shoulder
+#     height before the 2550 mm road limit
+#   * the folded floats fill the whole underside from x 300 to 6500
+# so transverse ties are possible ONLY at the ends. The frame is a
+# LADDER LOOP IN PLAN:
+#   - 2 chassis rails at shoulder height, half-recessed into the
+#     topsides (they read as a heavy rubbing wale) — carry the float
+#     arm pins
+#   - 2 sheer rails on the side-deck strip outside the cabin wall —
+#     carry the solar balcony hinges
+#   - external straps tying chassis to sheer rail at each arm station
+#   - bow tie (tow-arch pivots) and stern tie (waterjet) close the loop
+# Torsion is carried by the loop plus the hull shell acting as a shear
+# box, which a monocoque hull does well — unlike point loads.
+FRAME_TUBE = 100              # chassis rail
+FRAME_SHEER_TUBE = 90
+FRAME_BEAM = 130              # end ties
+FRAME_RAIL_BURY = 25          # chassis rail half-buried in the topside
+FRAME_SHEER_INSET = 60        # sheer rail inset from the gunwale line
+FRAME_STRAP_X = (1400, 3400, 5400)
 
 # ---- tow arch: bow protection bar <-> extensible drawbar ----
 # One A-arch on transverse pivots at the bow ring, pin-locked in two

@@ -416,10 +416,11 @@ def build_balcony(fold_deg):
 # Bow hydrofoil, drawbar, stern pod
 # ---------------------------------------------------------------
 def build_frame():
-    """External steel space frame (docs/structure.md): two sheer rails,
-    transverse cross-beams through the float-arm shoulder pins, posts,
-    bow ring carrying the tow arch, stern ring. All concentrated loads
-    land here instead of on the hull skin."""
+    """EXTERNAL space frame (docs/structure.md). Nothing crosses the
+    living volume: two chassis rails half-buried in the topsides at
+    shoulder height, two sheer rails on the side-deck strip, external
+    straps between them at the arm stations, and transverse ties only
+    at bow and stern — the only places the folded floats leave free."""
     def gunw(x):
         st = P.STATIONS
         for i in range(len(st) - 1):
@@ -428,29 +429,50 @@ def build_frame():
                 return st[i][1] + t * (st[i + 1][1] - st[i][1])
         return st[-1][1]
 
+    def hw(x, z):
+        st = P.STATIONS
+        for i in range(len(st) - 1):
+            if st[i][0] <= x <= st[i + 1][0]:
+                t = (x - st[i][0]) / (st[i + 1][0] - st[i][0])
+                yc = st[i][2] + t * (st[i + 1][2] - st[i][2])
+                yg = st[i][1] + t * (st[i + 1][1] - st[i][1])
+                zc = st[i][4] + t * (st[i + 1][4] - st[i][4])
+                zs = st[i][5] + t * (st[i + 1][5] - st[i][5])
+                return yc + (z - zc) / (zs - zc) * (yg - yc)
+        return st[-1][2]
+
     parts = []
-    rail_x = [100, 600, 1400, 2400, 3400, 4400, 5400, 6200, 6600]
+    xs = [250, 900, 1400, 2400, 3400, 4400, 5400, 6200, 6700, 7000]
     for sgn in (-1, 1):
-        pts = [(x, sgn * (gunw(x) - P.FRAME_RAIL_INSET), P.SH_Z + 390)
-               for x in rail_x]
-        pts.append((P.ARCH_PIVOT_X, sgn * P.ARCH_PIVOT_Y, P.ARCH_PIVOT_Z))
-        for a, b_ in zip(pts, pts[1:]):
-            parts.append(rod(a, b_, P.FRAME_TUBE))
-    # cross-beams straight through both shoulder pins + posts up to rails
-    for bx in P.FRAME_BEAM_X:
-        parts.append(rod((bx, -P.SH_Y, P.SH_Z), (bx, P.SH_Y, P.SH_Z),
-                         P.FRAME_BEAM))
-        for sgn in (-1, 1):
-            parts.append(rod((bx, sgn * P.SH_Y, P.SH_Z),
-                             (bx, sgn * (gunw(bx) - P.FRAME_RAIL_INSET),
-                              P.SH_Z + 390), P.FRAME_TUBE - 20))
-    # bow ring (tow-arch pivots) and stern ring
+        chassis = [(x, sgn * (hw(x, P.SH_Z) - P.FRAME_RAIL_BURY), P.SH_Z)
+                   for x in xs]
+        sheer = [(x, sgn * (gunw(x) - P.FRAME_SHEER_INSET), P.CABIN_BASE_Z)
+                 for x in xs]
+        for a, c in zip(chassis, chassis[1:]):
+            parts.append(rod(a, c, P.FRAME_TUBE))
+        for a, c in zip(sheer, sheer[1:]):
+            parts.append(rod(a, c, P.FRAME_SHEER_TUBE))
+        # external straps tying the two rails, on the outside of the skin
+        for sx in P.FRAME_STRAP_X:
+            parts.append(rod(
+                (sx, sgn * (hw(sx, P.SH_Z) - P.FRAME_RAIL_BURY), P.SH_Z),
+                (sx, sgn * (gunw(sx) - P.FRAME_SHEER_INSET), P.CABIN_BASE_Z),
+                P.FRAME_TUBE - 25))
+            parts.append(Part.makeCylinder(     # shoulder-pin boss
+                P.FRAME_TUBE / 2 + 30, 190,
+                Vector(sx - 95, sgn * P.SH_Y - 95, P.SH_Z), Vector(0, 1, 0)))
+    # transverse ties: only where the folded floats leave the underside free
+    parts.append(rod((250, -(hw(250, P.SH_Z) - P.FRAME_RAIL_BURY), P.SH_Z),
+                     (250, hw(250, P.SH_Z) - P.FRAME_RAIL_BURY, P.SH_Z),
+                     P.FRAME_BEAM))
     parts.append(rod((P.ARCH_PIVOT_X, -P.ARCH_PIVOT_Y, P.ARCH_PIVOT_Z),
                      (P.ARCH_PIVOT_X, P.ARCH_PIVOT_Y, P.ARCH_PIVOT_Z),
                      P.FRAME_BEAM))
-    parts.append(rod((120, -(gunw(120) - P.FRAME_RAIL_INSET), P.SH_Z + 390),
-                     (120, gunw(120) - P.FRAME_RAIL_INSET, P.SH_Z + 390),
-                     P.FRAME_BEAM))
+    for sgn in (-1, 1):                          # bow tie into the rails
+        parts.append(rod((7000, sgn * (hw(7000, P.SH_Z) - P.FRAME_RAIL_BURY),
+                          P.SH_Z),
+                         (P.ARCH_PIVOT_X, sgn * P.ARCH_PIVOT_Y,
+                          P.ARCH_PIVOT_Z), P.FRAME_TUBE))
     return Part.makeCompound(parts)
 
 

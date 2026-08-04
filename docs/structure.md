@@ -13,31 +13,50 @@ balconies hang off the gunwale, the tow puts the whole 2 t through the
 bow. A GRP/plywood hull skin hates point loads — it wants distributed
 pressure.
 
-So the loads never touch the skin. An external steel space frame
-carries them, and the hull is left to do only what a hull is good at:
-resist water pressure and carry its own distributed weight.
+So the loads never touch the skin. An external steel frame carries
+them, and the hull is left to do only what a hull is good at: resist
+water pressure and carry its own distributed weight.
+
+**The frame is strictly outside — nothing crosses the living volume.**
+Two hard constraints force the layout, and it is worth stating them
+because they rule out the obvious answer (transverse cross-beams
+through the boat at shoulder height):
+
+1. At shoulder height the hull is already 1 202 mm half-width, so only
+   **73 mm** is left outboard before the 2 550 mm road limit.
+2. The folded floats fill the **entire underside from x 300 to 6 500**.
+
+So a transverse member amidships can go neither through the boat (it
+would eat the cabin), nor outboard (too wide), nor underneath (floats).
+Transverse ties are therefore possible **only at the two ends**, and
+the frame becomes a **ladder loop in plan**:
 
 ```
-                 sheer rail (both sides, full length)
-   ┌═══════════════════════════════════════════════┐
-   ║   post          post           post           ║   ← bow ring
-   ║    │             │              │             ║     (tow pivots)
-   ╠════╪═════════════╪══════════════╪═════════════╣
-   ║  ══╪══         ══╪══          ══╪══           ║   ← CROSS-BEAMS at
-   ║ shoulder      shoulder       shoulder         ║     the shoulder pins
-   └═══════════════════════════════════════════════┘
-     stern ring                    x 1400 / 3400 / 5400
+   PLAN VIEW                              SECTION (amidships)
+   ┌──────────────────────────────┐        ▁▁▁▁▁▁▁▁▁▁▁
+   │ ◄── sheer rail (side deck)   │       │  cabin    │  ← nothing
+ ══╪══════════════════════════════╪══     │  (clear)  │    crosses
+   │ ◄── chassis rail (topside)   │       ├───────────┤
+   └──────────────────────────────┘     ══╡hull      ╞══ ← rails half
+   stern tie              bow tie         │           │    buried in
+   (transom)              (tow pivots)    └───┬───┬───┘    the topsides
+                                            float float
 ```
 
 **Members**
 
 | Member | Section | Job |
 |---|---|---|
-| 2 × sheer rail | ⌀110 tube, full length, 40 mm inside the gunwale | main chassis rails; carry balcony hinges, fenders, deck edge |
-| 3 × cross-beam | ⌀130 tube, at z 760 spanning y ±1210 | each passes **straight through both shoulder pins**, so a float's load goes rail-to-rail, not into the hull side |
-| 4 × post | ⌀90 tube | tie cross-beam ends up to the rails |
-| bow ring | ⌀130 tube | carries the tow-arch pivots at the stem |
-| stern ring | ⌀130 tube | transom tie, main waterjet and platform mounts |
+| 2 × chassis rail | ⌀100 tube at z 760, half-buried in the topsides (reads as a heavy rubbing wale) | carries the float-arm shoulder pins; outer edge 1 227 mm |
+| 2 × sheer rail | ⌀90 tube on the side-deck strip outside the cabin wall | carries the solar balcony hinges, fenders; outer edge 1 235 mm |
+| 6 × strap | ⌀75 tube, external, at the arm stations | ties chassis rail to sheer rail on the outside of the skin |
+| bow tie | ⌀130 tube at the stem | closes the loop, carries the tow-arch pivots |
+| stern tie | ⌀130 tube at the transom | closes the loop, carries the main waterjet |
+
+**Torsion**: taken by the plan-view loop plus the hull shell acting as
+a shear box — which a monocoque hull does very well. What a hull skin
+does *badly* is exactly what the frame now absorbs: concentrated point
+loads.
 
 **What bolts to it**: float-arm shoulder pins (cross-beams), solar
 balcony hinges (rails), tow arch (bow ring), quay fender rails

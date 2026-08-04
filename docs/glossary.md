@@ -65,10 +65,15 @@ Shared language for the design. Geometry values live in
 - **Exoskeleton (space frame)** — external welded steel frame carrying
   every concentrated load (float arms, balconies, tow, fenders) so the
   hull skin only sees distributed water pressure.
-- **Sheer rail (chassis rail)** — the frame's main longitudinal tube
-  running the full length just inside the gunwale.
-- **Cross-beam** — transverse frame tube passing straight through both
-  float-arm shoulder pins; carries a float's load rail-to-rail.
+- **Chassis rail** — the frame's main longitudinal tube at shoulder
+  height, half-buried in the topsides (reads as a rubbing wale);
+  carries the float-arm pins.
+- **Sheer rail** — the frame's second longitudinal tube on the side-deck
+  strip outside the cabin wall; carries the balcony hinges.
+- **Ladder loop** — the frame's plan-view shape: two side rails closed
+  by ties at bow and stern only. Transverse members amidships are
+  impossible (no width outboard, floats underneath, cabin inside), so
+  the loop plus the hull shell carries torsion.
 - **Bow ring / stern ring** — the frame's end frames; the bow ring
   carries the tow-arch pivots, the stern ring the main waterjet.
 - **Tow arch** — one A-arch at the stem, pin-locked in two poses:
