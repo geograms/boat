@@ -66,39 +66,67 @@ balcony hinges (rails), tow arch (bow ring), quay fender rails
 before the hull, and the hull can be repaired or even replaced inside
 it. It is also the natural earth/bonding path for the 48 V system.
 
-## 2. Tow arch — one part, two jobs
+## 2. Stern arch — the boat tows stern-first
 
-A single A-arch on transverse pivots at the stem, pin-locked in two
-positions exactly like the float arms:
+The tow moved to the **transom**, and that one decision made three
+other things fall into place. A single wide A-arch pivots on the stern
+tie, pin-locked in two positions like the float arms:
 
 | Pose | Leg angle | Where it sits | Function |
 |---|---|---|---|
-| **SEA** | +55° | apex 495 mm proud of the stem, 318 mm above the sheer | **collision bar** — the first thing to touch a dock, a lock wall or a log; also pulpit rail and anchor gantry |
-| **LAND** | −27° | apex swung down-forward, tongue telescoped out | **drawbar** — coupling 457 mm above the ground, 1 687 mm ahead of the transom |
+| **SEA** | +65° | apex 567 mm aft of the transom, 1 588 mm above the waterline | **gantry** — anchor sheave, winch fairlead, nav-light post, davit points |
+| **LAND** | −23.5° | swung down-aft, tongue telescoped out | **drawbar** — coupling 445 mm above the ground, 1 894 mm aft of the transom |
 
 ```
-SEA (protection)                LAND (tow)
-        ╱▔▔╲  ← rub bar
-       ╱    ╲                    pivot
-      ╱      ╲                     ●╲
-  ┌──●────────●──┐             ┌────╲──┐
-  │   bow ring   │             │      ╲╲___tongue___● coupling
-  │    hull      │             │  hull    (telescopes, pinned)
+SEA (gantry)                      LAND (tow, stern-first)
+    ╔═══════╗ ← anchor sheave
+    ║       ║                     pivot
+     ╲     ╱                       ╱●
+  ┌───●───●───┐              ┌────╱──┐
+  │   hull    │        ●____╱╱ hull  │   ← car this side
+  │           │      coupling (telescopes, pinned)
 ```
 
-- **Extensible**: the tongue telescopes ~1 000 mm inside the apex yoke
-  and pins out; multiple pin holes = adjustable coupling height, the
-  standard trailer trick.
-- **Pin-locked**, not powered: two lock holes in each pivot boss (sea
-  and land), plus the tongue pins. Same discipline as the float arms —
-  the load path in each pose is a pinned triangle, not a hydraulic
-  cylinder.
-- **Geometry check** (asserted): pivots sit 34 mm proud of the hull at
-  the stem and the legs pass ~390 mm below the winter-garden glass
-  edge, so nothing fouls the glass or the hull in either pose.
-- **Why an arch and not a bar**: two legs converging to an apex is a
-  triangle in plan — it takes the sideways loads of a collision and
-  the yaw loads of towing without needing a big single-shear pivot.
+**Why the stern is the right end**
+
+- **Ramp logic becomes consistent.** The winch (below) pulls toward a
+  ramp-top anchor point, so the boat comes out **stern-first** — and
+  the car then hooks to the same end. No turning around, no
+  reconfiguration between winching out and hitching up.
+- **The bow stays clean.** The rounded stem and the winter-garden dome
+  are the hydrodynamic and the pretty end; no drawbar, no coupling, no
+  brackets. Bow protection is now a **fixed external stem band** —
+  part of the frame, no moving parts.
+- **At sea the arch finally earns its keep.** A bow bumper was doing
+  little (the tyres already fender the sides); a stern gantry carries
+  the anchor, the winch lead, lights and davits — real daily use.
+
+**The catch, and the fix.** Towing from the stern reverses the balance:
+with the wheels where they were, the coupling load went **−123 kg**
+(lifting the hitch — dangerous). The wheel group therefore moved
+**573 mm forward** to world x 1 873 / 3 573 / 5 273, putting the CG
+between coupling and axle again: **+100 kg down** on the ball,
+asserted in `checks()` at 60–130 kg.
+
+- **Extensible**: the tongue telescopes 800 mm inside the apex yoke and
+  pins out; extra pin holes give adjustable coupling height.
+- **Pin-locked**, not powered: two lock holes per pivot boss plus the
+  tongue pins — a pinned triangle in each pose.
+
+## 2b. Stern gear: winch and anchor
+
+- **Electric winch**, 2 t (4 500 lb) class, 12/24 V, mounted on the
+  stern tie with a fairlead through the transom. Purpose: **self-
+  recovery on slippery ramps**. Algae-covered concrete can drop tyre
+  friction to ~0.2, below the 0.18 needed for a 15 % ramp with no
+  margin; the winch takes a line to a ramp-top eye or the car and the
+  boat hauls itself out regardless of grip. Same drum also serves as a
+  kedge winch.
+- **Anchor** on a roller at the transom under the gantry sheave: shank
+  and plough stow against the roller, rode runs to the drum. Anchoring
+  from the stern suits this boat — the winter garden and the terrace
+  face forward, so lying stern-to the wind keeps the view and the
+  breeze where people sit.
 
 ## 3. Bow: closed and faired
 

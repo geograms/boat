@@ -90,7 +90,9 @@ FLOAT_X = sum(ARM_X) / 2
 WHEEL_DIA = 668
 WHEEL_W = 205
 HUB_DIA = 390
-WHEEL_XS = (-2100, -400, 1300)     # world x 1300/3000/4700, 6 wheels
+WHEEL_XS = (-1527, 173, 1873)      # world x 1873/3573/5273, 6 wheels
+                                   # (centroid forward of the CG so the
+                                   #  STERN coupling gets +100 kg down)
 AXLE_STANDOFF = -15                # disc recessed; rim stays inside 2550
 WHEEL_DROP = 60                    # axle dropped so wheels, not floats, touch ground
 
@@ -200,22 +202,34 @@ FRAME_RAIL_BURY = 25          # chassis rail half-buried in the topside
 FRAME_SHEER_INSET = 60        # sheer rail inset from the gunwale line
 FRAME_STRAP_X = (1400, 3400, 5400)
 
-# ---- tow arch: bow protection bar <-> extensible drawbar ----
-# One A-arch on transverse pivots at the bow ring, pin-locked in two
+# ---- STERN arch: sea gantry <-> extensible drawbar ----
+# The boat tows STERN-FIRST, so the arch lives on the transom. One
+# A-arch on transverse pivots on the stern tie, pin-locked in two
 # positions (same principle as the float arms):
-#   SEA  +55 deg: arch stands up and forward of the stem — takes the
-#                 hit in a collision, doubles as pulpit/anchor gantry
-#   LAND -25 deg: arch swings down-forward, telescoping tongue extends
-#                 and pins out to the car coupling
-ARCH_PIVOT_X = 7150   # at the stem: clear of the hull and the glass
-ARCH_PIVOT_Y = 350    # ~30 mm proud of the hull surface at the stem
-ARCH_PIVOT_Z = 860
-ARCH_LEG = 950
-ARCH_SEA_DEG = 55
-ARCH_LAND_DEG = -27
-ARCH_EXT = 1000               # telescoping tongue stroke
+#   SEA  +65 deg: wide gantry standing above the transom — carries the
+#                 anchor roller, winch fairlead, nav lights, davits
+#   LAND -23.5 deg: swings down-aft, telescoping tongue pins out to
+#                 the car coupling
+# The bow keeps a FIXED rub bar (the frame's bow tie) — no moving part
+# at the pretty end, and the rounded stem stays clean.
+BOAT_LCG = 3300               # longitudinal centre of gravity estimate
+ARCH_PIVOT_X = -60            # just aft of the transom, on the stern tie
+ARCH_PIVOT_Y = 950
+ARCH_PIVOT_Z = 760
+ARCH_LEG = 1200
+ARCH_SEA_DEG = 65
+ARCH_LAND_DEG = -23.5
+ARCH_EXT = 800                # telescoping tongue stroke
 ARCH_TUBE = 95
 COUPLING_H = 430              # target coupling height above ground
+
+# ---- stern gear: electric winch + anchor ----
+# Winch: self-recovery on slippery ramps — pull to a ramp-top anchor
+# point and the boat hauls itself out even with no wheel grip.
+# Anchor: stern roller on the gantry leg, rode to the same drum family.
+WINCH_PULL_KG = 2000          # 4500 lb class, 12/24 V
+WINCH_POS = (150, 0, 1010)
+ANCHOR_ROLLER = (-140, 0, 1150)
 
 # ---- stern pod ----
 STERNPOD_DIA = 300
@@ -235,9 +249,9 @@ MODES = {
 
 
 def arch_apex(deg):
-    """Tow-arch apex (x, z) at a given leg angle from horizontal."""
+    """Stern-arch apex (x, z); the arch extends AFT (-x)."""
     r = math.radians(deg)
-    return (ARCH_PIVOT_X + ARCH_LEG * math.cos(r),
+    return (ARCH_PIVOT_X - ARCH_LEG * math.cos(r),
             ARCH_PIVOT_Z + ARCH_LEG * math.sin(r))
 
 
@@ -245,7 +259,14 @@ def arch_coupling():
     """Coupling ball (x, z) with the tongue fully extended, land pose."""
     ax, az = arch_apex(ARCH_LAND_DEG)
     r = math.radians(ARCH_LAND_DEG)
-    return (ax + ARCH_EXT * math.cos(r), az + ARCH_EXT * math.sin(r))
+    return (ax - ARCH_EXT * math.cos(r), az + ARCH_EXT * math.sin(r))
+
+
+def tongue_load_kg():
+    """Download on the car's coupling (positive = pressing down)."""
+    axle = sum(FLOAT_X + d for d in WHEEL_XS) / len(WHEEL_XS)
+    cx, _ = arch_coupling()
+    return BOAT_MASS * (BOAT_LCG - axle) / (cx - axle)
 
 
 def naca_pts(chord, t=0.12, n=20):
@@ -333,10 +354,13 @@ def checks(verbose=True):
     cpl_x, cpl_z = arch_coupling()
     cpl_h = cpl_z - GROUND_Z
     sea_x, sea_z = arch_apex(ARCH_SEA_DEG)
+    tongue = tongue_load_kg()
     assert 380 <= cpl_h <= 480, f"coupling height {cpl_h:.0f} mm off-spec"
-    assert cpl_x - LOA <= 2000, f"drawbar overhang {cpl_x - LOA:.0f} too long"
-    assert sea_x > LOA + 250, "protection arch not proud of the stem"
-    assert 2 * ARCH_PIVOT_Y + ARCH_TUBE <= 2550, "tow arch wider than road"
+    assert -cpl_x <= 2100, f"drawbar overhang aft {-cpl_x:.0f} too long"
+    assert 60 <= tongue <= 130, f"tongue load {tongue:.0f} kg off-spec"
+    assert sea_x < -300, "sea gantry not clear aft of the transom"
+    assert sea_z > WL_Z + 1200, "gantry too low to hang an anchor"
+    assert 2 * ARCH_PIVOT_Y + ARCH_TUBE <= 2550, "stern arch wider than road"
     # jack-up stance equilibrium
     jack_d = FLOAT_W * BOAT_MASS / (2 * reserve_kg)      # submerged depth
     harbor_wl = (POD_ROAD[1] - FLOAT_W / 2) + jack_d     # ~0 = keel awash
@@ -369,8 +393,10 @@ def checks(verbose=True):
         print(f"balcony legs    {box_gap:.0f} mm down to the wheel boxes")
         print(f"waterjets       3 x {JET_POWER_W} W, grid top "
               f"{WL_Z - grid_top:.0f} mm under WL, face v {face_v:.2f} m/s")
-        print(f"tow arch       sea apex {sea_x - LOA:.0f} mm proud of stem, "
-              f"land coupling {cpl_h:.0f} mm high, overhang {cpl_x - LOA:.0f}")
+        print(f"stern arch      gantry {-sea_x:.0f} mm aft of transom, "
+              f"{sea_z - WL_Z:.0f} above WL")
+        print(f"stern tow       coupling {cpl_h:.0f} mm high, overhang aft "
+              f"{-cpl_x:.0f} mm, tongue load {tongue:+.0f} kg")
         print(f"jack-up stance  floats {jack_frac * 100:.0f}% deep, "
               f"keel {-harbor_wl:.0f} mm above water (awash), "
               f"pontoon GM ~{gm_est:.1f} m")

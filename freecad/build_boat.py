@@ -462,54 +462,84 @@ def build_frame():
                 P.FRAME_TUBE / 2 + 30, 190,
                 Vector(sx - 95, sgn * P.SH_Y - 95, P.SH_Z), Vector(0, 1, 0)))
     # transverse ties: only where the folded floats leave the underside free
-    parts.append(rod((250, -(hw(250, P.SH_Z) - P.FRAME_RAIL_BURY), P.SH_Z),
-                     (250, hw(250, P.SH_Z) - P.FRAME_RAIL_BURY, P.SH_Z),
-                     P.FRAME_BEAM))
+    r250 = hw(250, P.SH_Z) - P.FRAME_RAIL_BURY
+    parts.append(rod((250, -r250, P.SH_Z), (250, r250, P.SH_Z), P.FRAME_BEAM))
+    # stern: pivot brackets for the tow/gantry arch, aft of the transom
     parts.append(rod((P.ARCH_PIVOT_X, -P.ARCH_PIVOT_Y, P.ARCH_PIVOT_Z),
                      (P.ARCH_PIVOT_X, P.ARCH_PIVOT_Y, P.ARCH_PIVOT_Z),
                      P.FRAME_BEAM))
-    for sgn in (-1, 1):                          # bow tie into the rails
-        parts.append(rod((7000, sgn * (hw(7000, P.SH_Z) - P.FRAME_RAIL_BURY),
-                          P.SH_Z),
+    for sgn in (-1, 1):
+        parts.append(rod((250, sgn * r250, P.SH_Z),
                          (P.ARCH_PIVOT_X, sgn * P.ARCH_PIVOT_Y,
                           P.ARCH_PIVOT_Z), P.FRAME_TUBE))
+    # bow: fixed external stem band — the collision protection now that
+    # the arch has moved aft. No moving parts at the pretty end.
+    r7000 = hw(7000, P.SH_Z) - P.FRAME_RAIL_BURY
+    for sgn in (-1, 1):
+        parts.append(rod((7000, sgn * r7000, P.SH_Z),
+                         (7150, sgn * 330, 800), P.FRAME_TUBE))
+        parts.append(rod((7150, sgn * 330, 800), (7215, 0, 840),
+                         P.FRAME_TUBE))
     return Part.makeCompound(parts)
 
 
 def build_tow(pose):
-    """Tow arch: bow protection bar (sea) / extensible drawbar (land).
-    Pin-locked in both positions, like the float arms."""
+    """STERN arch: sea gantry (anchor roller, winch fairlead, lights) /
+    extensible drawbar for stern-first towing. Pin-locked both ways."""
     deg = P.ARCH_SEA_DEG if pose == "sea" else P.ARCH_LAND_DEG
     ax, az = P.arch_apex(deg)
     parts = []
     for sgn in (-1, 1):                       # legs, pivot -> apex yoke
         parts.append(rod((P.ARCH_PIVOT_X, sgn * P.ARCH_PIVOT_Y,
-                          P.ARCH_PIVOT_Z), (ax, sgn * 130, az), P.ARCH_TUBE))
-        parts.append(Part.makeCylinder(       # pivot boss + lock-pin ears
-            P.ARCH_TUBE / 2 + 26, 150,
-            Vector(P.ARCH_PIVOT_X, sgn * P.ARCH_PIVOT_Y - 75,
+                          P.ARCH_PIVOT_Z), (ax, sgn * 170, az), P.ARCH_TUBE))
+        parts.append(Part.makeCylinder(       # pivot boss + lock-pin ear
+            P.ARCH_TUBE / 2 + 26, 160,
+            Vector(P.ARCH_PIVOT_X, sgn * P.ARCH_PIVOT_Y - 80,
                    P.ARCH_PIVOT_Z), Vector(0, 1, 0)))
-        parts.append(box(120, 40, 220,
-                         (P.ARCH_PIVOT_X - 60, sgn * P.ARCH_PIVOT_Y - 130,
-                          P.ARCH_PIVOT_Z - 110)))
-    parts.append(rod((ax, -130, az), (ax, 130, az), P.ARCH_TUBE))
+        parts.append(box(130, 40, 230,
+                         (P.ARCH_PIVOT_X - 65, sgn * P.ARCH_PIVOT_Y - 140,
+                          P.ARCH_PIVOT_Z - 115)))
+    parts.append(rod((ax, -170, az), (ax, 170, az), P.ARCH_TUBE))
     if pose == "sea":
-        # rub bar across the front: this is what hits the dock, not the hull
-        parts.append(rod((ax + 60, -430, az - 120), (ax + 60, 430, az - 120),
-                         P.ARCH_TUBE + 30))
+        # gantry fit-out: hanging beam, anchor sheave, nav-light post
+        parts.append(rod((ax - 40, -520, az - 90), (ax - 40, 520, az - 90),
+                         P.ARCH_TUBE - 15))
         for sgn in (-1, 1):
-            parts.append(rod((ax, sgn * 130, az),
-                             (ax + 60, sgn * 430, az - 120), P.ARCH_TUBE - 20))
-        parts.append(rod((ax, 0, az), (ax + 60, 0, az - 120), 70))
+            parts.append(rod((ax, sgn * 170, az), (ax - 40, sgn * 520,
+                                                   az - 90), 60))
+        parts.append(Part.makeCylinder(70, 90, Vector(ax - 40, -45, az - 90),
+                                       Vector(0, 1, 0)))     # anchor sheave
+        parts.append(rod((ax, 0, az), (ax, 0, az + 260), 55))  # light post
     else:
         cx, cz = P.arch_coupling()
         parts.append(rod((ax, 0, az), (cx, 0, cz), P.ARCH_TUBE - 10))
         for sgn in (-1, 1):                   # A-frame triangulation
-            parts.append(rod((ax, sgn * 130, az),
+            parts.append(rod((ax, sgn * 170, az),
                              ((ax + cx) / 2, 0, (az + cz) / 2),
                              P.ARCH_TUBE - 35))
         parts.append(Part.makeSphere(80, Vector(cx, 0, cz)))
-        parts.append(box(70, 150, 150, (cx - 220, -75, cz - 40)))
+        parts.append(box(70, 150, 150, (cx + 150, -75, cz - 40)))
+    return Part.makeCompound(parts)
+
+
+def build_stern_gear():
+    """Electric self-recovery winch + stern anchor on its roller."""
+    wx, wy, wz = P.WINCH_POS
+    parts = [box(420, 260, 230, (wx - 210, wy - 130, wz - 115))]   # housing
+    parts.append(Part.makeCylinder(85, 300, Vector(wx, wy - 150, wz),
+                                   Vector(0, 1, 0)))               # drum
+    parts.append(box(60, 300, 190, (wx - 260, wy - 150, wz - 95)))  # fairlead
+    parts.append(Part.makeCylinder(55, 120, Vector(wx - 300, wy - 60, wz),
+                                   Vector(0, 1, 0)))               # roller
+    ax_, ay, az_ = P.ANCHOR_ROLLER
+    parts.append(Part.makeCylinder(60, 200, Vector(ax_, ay - 100, az_),
+                                   Vector(0, 1, 0)))               # bow roller
+    parts.append(rod((ax_, ay, az_), (ax_ - 220, ay, az_ - 620), 55))  # shank
+    for sgn in (-1, 1):                                            # flukes
+        parts.append(rod((ax_ - 220, ay, az_ - 620),
+                         (ax_ - 120, sgn * 240, az_ - 780), 45))
+        parts.append(rod((ax_ - 220, ay, az_ - 620),
+                         (ax_ - 350, sgn * 150, az_ - 700), 40))
     return Part.makeCompound(parts)
 
 
@@ -641,7 +671,8 @@ def build_mode(mode):
             add(f"Rim{side}{i}", m(r), STEEL, group=g_gear)
 
     add("Frame", build_frame(), (0.42, 0.44, 0.47))
-    add("TowArch", build_tow(cfg["tow"]), (0.42, 0.44, 0.47))
+    add("SternArch", build_tow(cfg["tow"]), (0.42, 0.44, 0.47))
+    add("SternGear", build_stern_gear(), (0.55, 0.57, 0.6))
     add("MainJet", build_main_jet(), (0.8, 0.65, 0.2))
     add("WinterGarden", build_wintergarden(), (0.75, 0.88, 0.92), 70)
 

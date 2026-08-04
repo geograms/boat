@@ -76,9 +76,14 @@ Shared language for the design. Geometry values live in
   the loop plus the hull shell carries torsion.
 - **Bow ring / stern ring** — the frame's end frames; the bow ring
   carries the tow-arch pivots, the stern ring the main waterjet.
-- **Tow arch** — one A-arch at the stem, pin-locked in two poses:
-  raised as a **collision bar** (sea) or swung down with a telescoping
-  tongue as the **drawbar** (land).
+- **Stern arch** — one wide A-arch on the transom, pin-locked in two
+  poses: raised as a **gantry** (anchor sheave, winch fairlead, lights)
+  at sea, or swung down-aft with a telescoping tongue as the
+  **drawbar** on land. The boat tows stern-first.
+- **Stem band** — the fixed external frame loop around the bow; the
+  collision protection now that the arch lives aft.
+- **Self-recovery winch** — 2 t electric winch on the stern tie; hauls
+  the boat up a slipway when tyre grip alone is not enough.
 - **Bulwark** — the raised sheer forward of the cabin standing above
   the closed foredeck plate.
 
