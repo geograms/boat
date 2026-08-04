@@ -77,6 +77,9 @@ Shared language for the design. Geometry values live in
   nosed treads; the only thing that fits the aft deck's 720 mm run.
 - **Boarding gate** — the gap left in the sheer rail (x 950–1450) with
   a threshold step, where you cross from the cockpit onto a balcony.
+- **Folding handrail** — the ladder's single outboard rail; raised only
+  when the roof terrace is in use, folded flat onto the stringer
+  otherwise.
 
 ## Structure (details in [structure.md](structure.md))
 

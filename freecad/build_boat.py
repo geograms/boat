@@ -544,9 +544,10 @@ def build_tow(pose):
     return Part.makeCompound(parts)
 
 
-def build_aft_entry():
+def build_aft_entry(rail_up=False):
     """Companionway door, rain porch, stairs to the roof terrace, AC
-    ventilator box and cockpit lockers on the aft wall."""
+    ventilator box and cockpit lockers on the aft wall. The single
+    outboard handrail is raised only when the terrace is in use."""
     parts, glass, dark = [], [], []
     x0, x1 = P.COCKPIT_X0, P.COCKPIT_X1
     # --- porch roof (top flush with the terrace) + posts + flashing
@@ -599,14 +600,25 @@ def build_aft_entry():
                          (tx, P.STAIR_Y0 + 30, tz - 42)))
         parts.append(rod((tx, P.STAIR_Y0 + 30, tz - 21),
                          (tx, P.STAIR_Y1 - 30, tz - 21), 42))
-    for sy in (P.STAIR_Y0 + 40, P.STAIR_Y1 - 40):           # handrails
-        parts.append(rod((sx0, sy, z0), (sx0, sy, z0 + 950), 60))
-        parts.append(rod((sx1, sy, z1), (sx1, sy, z1 + 950), 60))
-        parts.append(rod((sx0, sy, z0 + 950), (sx1, sy, z1 + 950), 55))
-        parts.append(rod((sx1, sy, z1 + 950),
-                         (sx1 + 420, sy, z1 + 950), 55))     # terrace grab
-        parts.append(rod((sx1 + 420, sy, z1 + 950),
-                         (sx1 + 420, sy, z1), 55))
+    # ONE folding handrail, on the OUTBOARD side only. It is needed
+    # solely when the roof terrace is in use, so it folds flat onto the
+    # stringer the rest of the time and takes no space.
+    ry = P.STAIR_Y0 + 45
+    if rail_up:
+        parts.append(rod((sx0, ry, z0), (sx0, ry, z0 + 950), 60))
+        parts.append(rod((sx1, ry, z1), (sx1, ry, z1 + 950), 60))
+        parts.append(rod((sx0, ry, z0 + 950), (sx1, ry, z1 + 950), 55))
+        parts.append(rod((sx1, ry, z1 + 950),
+                         (sx1 + 420, ry, z1 + 950), 55))      # terrace grab
+        parts.append(rod((sx1 + 420, ry, z1 + 950),
+                         (sx1 + 420, ry, z1), 55))
+    else:                                    # folded flat along the ladder
+        parts.append(rod((sx0 - 40, ry, z0 + 90), (sx1 + 30, ry, z1 + 90),
+                         55))
+        for px in (sx0, sx1):
+            pz = z0 + (px - sx0) / (sx1 - sx0) * (z1 - z0)
+            parts.append(rod((px, ry, pz), (px, ry, pz + 110), 60))
+
     # --- AC ventilator box (upper right) and lockers (rest of the wall)
     dark.append(box(P.AC_DEPTH, P.AC_Y1 - P.AC_Y0, P.AC_Z1 - P.AC_Z0,
                     (x1 - P.AC_DEPTH, P.AC_Y0, P.AC_Z0)))
@@ -782,7 +794,7 @@ def build_mode(mode):
     add("Frame", build_frame(), (0.42, 0.44, 0.47))
     add("SternArch", build_tow(cfg["tow"]), (0.42, 0.44, 0.47))
     add("SternGear", build_stern_gear(), (0.55, 0.57, 0.6))
-    aft_s, aft_d, aft_g = build_aft_entry()
+    aft_s, aft_d, aft_g = build_aft_entry(cfg["lift"] > 0)
     add("AftEntry", aft_s, WHITE)
     add("AftFittings", aft_d, (0.30, 0.32, 0.35))
     add("DoorGlass", aft_g, (0.5, 0.7, 0.8), 70)

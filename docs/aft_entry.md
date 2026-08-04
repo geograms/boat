@@ -64,10 +64,17 @@ Standing in the cockpit facing forward:
 720 mm of run for 1 000 mm of rise is a **ship's ladder (54°)**, not a
 staircase — the aft deck simply has no more length. It is detailed as
 a proper ladder rather than pretending otherwise: two stringers on
-edge, seven nosed treads let into them, handrails on **both** sides
-(the inboard side overlooks the footwell), each returning onto the
-terrace as a grab rail. The ladder rises through a cut-out in the
-porch roof and lands flush on the terrace.
+edge, seven nosed treads let into them. The ladder rises through a
+cut-out in the porch roof and lands flush on the terrace.
+
+**One folding handrail, outboard only.** The rail is needed solely
+when the roof terrace is in use, so it does not stand permanently in
+the way: a single rail on the **outboard (port) side** raises when the
+pop-top is up — posts at both ends, and a return that carries on as a
+grab rail along the terrace edge — and folds flat onto the stringer
+the rest of the time, taking no space in road, harbour or cruise
+trim. The inboard side needs no rail: it faces the cabin wall, and the
+footwell drop beside it is only 530 mm.
 
 If a gentler stair is ever wanted, the only way is to hang it along
 the cabin side over a solar balcony (1 300 mm of run → 37°) — at the
