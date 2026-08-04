@@ -38,9 +38,10 @@ CABIN_BASE_Z = 1150
 CABIN_ROOF_Z = 2400
 ROOF_STRUCT = 200        # sandwich depth of the cabin roof = terrace floor
 CABIN_CEIL_Z = CABIN_ROOF_Z - ROOF_STRUCT
-CANOPY_THICK = 180
-CANOPY_LIFT = 1900       # Max: stand up on the terrace under the canopy
-CANOPY_OVERHANG = -20    # canopy 2360: fits 2 rows of panels, clears shutters
+# deck build-up over the structural roof: bonded laminate, air box,
+# grid and glass. There is no lid and nothing lifts any more.
+DECK_BUILDUP = 4 + 60 + 55 + 12   # laminate + air box + grid + glass
+CANOPY_OVERHANG = -20    # kept: the folded balcony clearance references it
 WIN_Z0, WIN_H = 1500, 600          # window band (taller with the new roof)
 # FEWER, BIGGER windows (Max): two picture windows per side instead of
 # six small ones — one over the whole saloon, one over the bed. They
@@ -288,57 +289,93 @@ LOCKER_Y0, LOCKER_Y1 = 430, 1140
 LOCKER_Z0, LOCKER_Z1 = 950, 1720
 LOCKER_DEPTH = 300
 
-# ---- pop-top roof: scissor lift, plug-in bars, solar side walls ----
-# The pop-top shelters the ROOF TERRACE, it never opens the living
-# quarters — the cabin ceiling underneath stays a sealed structural
-# deck. Raised, the canopy stands 1900 mm over the terrace floor so
-# people walk under it.
-#
-# Mechanism (Max's choice): SCISSORS on the terrace, four units, one
-# per corner, arms lying fore-and-aft along the terrace edge, each with
-# its own electric actuator (encoder-synced). Single stage on purpose —
-# half the pin joints of a double scissor, and every joint is a
-# corrosion site. Stowed, the whole mechanism is sealed inside the
-# gasketed lid cavity, so it only meets weather at anchor.
-SCISSOR_ARM = 2000                 # pinned at mid-length: h = ARM*sin(th)
-SCISSOR_ARM_T = 40                 # arm section thickness (stack height)
-SCISSOR_WELL = 100                 # recessed well in the terrace floor
-SCISSOR_STOW_DEG = 3.5             # parked angle: h 122, span 1996
-SCISSOR_X = (1700, 5400)           # unit centres, fore and aft
-SCISSOR_Y = 900                    # +/- : under the canopy edge beams
-SCISSOR_CHAN_W = 90                # drained, open-bottom slider channel
-ACT_FORCE_N = 6000                 # IP69K washdown actuator, 24 V
-ACT_STROKE = 1450                  # >= slider travel 1378
-ACT_SPEED = 5.5                    # mm/s -> ~4 min full travel
-
-CANOPY_MASS = 180                  # kg: sandwich slab, frame, 6 laminates
-CANOPY_CROWN = 40                  # crown so rain runs to the gutter
-CANOPY_SKIRT = 90                  # skirt drops over the coaming
-COAMING_H = 60                     # gasket lands here, above any puddle
-GASKET_D = 25                      # EPDM bulb, compressed by the latches
-LATCH_N = 8                        # over-centre draw latches, storm/road
+# ---- roof terrace: WALK-ON GLASS DECK over a ventilated air box ----
+# The pop-top lift is gone (see docs/roof.md for why: the scissor
+# breakout force is W/tan(theta), which blows up as the arms go flat,
+# and four salt-exposed mechanisms had to carry a 7.7 kN gale uplift).
+# Max's replacement has NO MOVING PARTS: flexible laminates bonded flat
+# on the roof sandwich, and a framed walk-on glass lid 60 mm above them.
+# People walk on the glass; the panels can never be touched, and the
+# air box ventilates the cells so they run cooler than bonded ones.
+DECK_FIELD_X = (1000, 5800)        # PV field on the terrace, 4800 long
+DECK_FIELD_HW = 1050               # +/- : 2100 wide
+DECK_PANE = (1200, 1050)           # 8 panes, 4 x 2 — fewest seals
+DECK_PANE_NX, DECK_PANE_NY = 4, 2
+DECK_GLASS_T = 12                  # 6+6 heat-strengthened laminated, SGP
+DECK_GLASS_KG_M2 = 2.5 * DECK_GLASS_T
+DECK_GLASS_SIGMA = 35.0            # N/mm2 design stress, heat-strengthened
+DECK_LOAD_UDL = 0.002              # N/mm2 = 2 kN/m2, building code
+DECK_LOAD_POINT = 2000             # N on a 50x50 patch, building code
+DECK_LOAD_PATCH_R = 28             # mm, equivalent radius of the patch
+AIRBOX_H = 60                      # ventilated gap, laminate to glass
+DECK_FRAME_W = 25                  # grid bar seen in plan -> shading
+DECK_FRAME_H = 55
+DECK_FRAME_KG_M = 1.4
+DECK_VENT_H = 25                   # mesh slots fore and aft of the box
 TERRACE_TOERAIL = 80
-TERRACE_SCUPPER = 60               # corner drains: wells never hold water
+TERRACE_SCUPPER = 60               # corner drains
 
-# plug-in bars (Max's idea): they take uplift and racking, carry the
-# lifelines, and are the frame the solar side walls clip into
+# guardrail: the old plug-in bar sockets stay, but the bars are now
+# 1000 mm stanchions with two lifelines, removable for the road
 BAR_D = 50
 BAR_T = 3
-BAR_XS = (1150, 2883, 4617, 6150)  # 4 sockets per side -> 3 bays
+BAR_XS = (1150, 2883, 4617, 6150)
 BAR_Y = 1120                       # inside the toe rail
-TIE_ROD_D = 16                     # 2 diagonals per side, forward bays
+RAIL_H = 1000
+LIFELINE_N = 2
+LIFELINE_D = 6
 
-# side walls: FLEXIBLE laminates on light tube frames (Max: lighter
-# than rigid panels, and they generate). Aft bay stays open for the
-# ladder, so 3 bays per side are framed and 2 of them carry a panel.
-SIDEPANEL_BAYS = 3
-SIDEPANEL_FRAME_T = 25
-SIDEPANEL_MASS = 10                # kg per framed panel
+# deck laminates: same flexible panel as everywhere else, bonded down
+DECK_PANELS = 5                    # 5 x 1700 x 1130 fits the field
+PANEL_W_PEAK = 430                 # W per laminate
+GLASS_TRANSMISSION = 0.91          # low-iron laminated
+COOLING_GAIN = 1.05                # ventilated cells vs bonded
 
-WIND_DESIGN_KN = 25                # canopy may stay up to here
-WIND_SURVIVE_KN = 50               # pins + latches sized for this
-WIND_PANEL_KN = 20                 # side walls come off above this
-CP_NET = 1.5                       # EN 1991-1-4 free-standing canopy
+
+def glass_t_required(span, P=None, sigma=None):
+    """Thickness a walk-on pane needs for the concentrated load — the
+    case that governs. Stress spreads locally, so it depends on the LOG
+    of the span: halving the pane barely thins the glass."""
+    P = DECK_LOAD_POINT if P is None else P
+    sigma = DECK_GLASS_SIGMA if sigma is None else sigma
+    nu, r0 = 0.23, DECK_LOAD_PATCH_R
+    k = (3 * P / (2 * math.pi)) * ((1 + nu) * math.log(2 * span /
+                                                       (math.pi * r0)) + 0.5)
+    return math.sqrt(k / sigma)
+
+
+def glass_t_udl(span, q=None, sigma=None):
+    """Thickness for the distributed load — quadratic in the span."""
+    q = DECK_LOAD_UDL if q is None else q
+    sigma = DECK_GLASS_SIGMA if sigma is None else sigma
+    return math.sqrt(0.287 * q * span * span / sigma)
+
+
+def deck_areas():
+    """(field m2, glass m2, frame bar metres, frame shading fraction)."""
+    fx = DECK_FIELD_X[1] - DECK_FIELD_X[0]
+    fy = 2 * DECK_FIELD_HW
+    field = fx * fy / 1e6
+    bars = (DECK_PANE_NX + 1) * fy + (DECK_PANE_NY + 1) * fx
+    shade = 1 - (1 - DECK_FRAME_W / DECK_PANE[0]) * \
+        (1 - DECK_FRAME_W / DECK_PANE[1])
+    return field, field, bars / 1000, shade
+
+
+def deck_mass():
+    """kg of the whole walk-on deck: glass, frame, seals and fixings."""
+    field, glass, bars, _ = deck_areas()
+    return glass * DECK_GLASS_KG_M2 + bars * DECK_FRAME_KG_M + 15
+
+
+def solar_kwp():
+    """(deck kWp, balcony kWp, effective kWp after glass and shading)."""
+    deck = DECK_PANELS * PANEL_W_PEAK / 1000
+    balc = 6 * PANEL_W_PEAK / 1000
+    _, _, _, shade = deck_areas()
+    eff = deck * GLASS_TRANSMISSION * (1 - shade) * COOLING_GAIN + balc
+    return deck, balc, eff
+
 
 # ---- interior ----
 # 5300 x 2280 of floor and 1850 of height. Four zones, aft to forward:
@@ -458,45 +495,7 @@ MODES = {
     "harbor":  dict(phi=0,         balc=90, tow="sea",  lift=0),
     "cruise":  dict(phi=PHI_WATER, balc=0,  tow="sea",  lift=0),
     "anchor":  dict(phi=PHI_WATER, balc=0,  tow="sea",  lift=0),
-    # roof up: only at anchor or alongside, never underway
-    "terrace": dict(phi=PHI_WATER, balc=0,  tow="sea",  lift=CANOPY_LIFT,
-                    walls=True),
 }
-
-
-def scissor_geom(lift):
-    """Single-stage scissor pinned at mid-arm. Returns the pose and the
-    load the actuator sees at that height:
-        (angle deg, horizontal span, slider travel from stowed,
-         actuator push N)
-    Height h = ARM*sin(theta), span = ARM*cos(theta). The push needed to
-    drive the slider is W/(2*tan(theta)) — huge near flat, which is why
-    the units are sized on breakout, not on weight."""
-    h = max(lift, SCISSOR_ARM * math.sin(math.radians(SCISSOR_STOW_DEG)))
-    th = math.asin(min(h / SCISSOR_ARM, 1.0))
-    span = SCISSOR_ARM * math.cos(th)
-    span0 = SCISSOR_ARM * math.cos(math.radians(SCISSOR_STOW_DEG))
-    w = CANOPY_MASS * 9.81 / 4                 # per unit
-    push = w / (2 * math.tan(th))
-    return math.degrees(th), span, span0 - span, push
-
-
-def canopy_z(lift):
-    """Underside of the canopy for a given lift."""
-    return CABIN_ROOF_Z + lift
-
-
-def wind_pressure(kn):
-    """Dynamic pressure (Pa) for a wind speed in knots."""
-    v = kn * 0.5144
-    return 0.5 * 1.25 * v * v
-
-
-def canopy_uplift_N(kn):
-    """Net wind load on the raised canopy (N), up or down."""
-    area = (CABIN_X1 - CABIN_X0 + 2 * CANOPY_OVERHANG) * \
-           (CABIN_W + 2 * CANOPY_OVERHANG) / 1e6
-    return wind_pressure(kn) * area * CP_NET
 
 
 def arch_apex(deg):
@@ -571,7 +570,7 @@ def checks(verbose=True):
     road_width = 2 * max(HULL_BEAM / 2, wheel_outer, float_outer_road,
                          BALC_HINGE_Y + BALC_T + 2 * PANEL_T + 12,
                          GATE_PLATE_Y)            # gate threshold plate
-    road_height = CABIN_ROOF_Z + CANOPY_THICK - GROUND_Z
+    road_height = CABIN_ROOF_Z + DECK_BUILDUP - GROUND_Z
     track = 2 * wheel_disc_y
     # water: floats flat, wheels flat on deck
     water_beam = 2 * (POD_WATER[0] + FLOAT_W / 2)
@@ -599,8 +598,8 @@ def checks(verbose=True):
     assert m_right / m_heel >= 3, f"righting SF {m_right / m_heel:.1f}"
     assert BALC_HINGE_Y >= CABIN_W / 2 + CANOPY_OVERHANG + 15, \
         "folded balcony hits the canopy"
-    assert BALC_HINGE_Z + BALC_SPAN <= CABIN_ROOF_Z + CANOPY_THICK + 50, \
-        "folded balcony sticks above the canopy"
+    assert BALC_HINGE_Z + BALC_SPAN <= CABIN_ROOF_Z + DECK_BUILDUP + 50, \
+        "folded balcony sticks above the roof deck"
     assert 100 <= box_gap <= 450, f"balcony leg length odd: {box_gap}"
     # tow arch: coupling height on the road, protection reach at sea
     cpl_x, cpl_z = arch_coupling()
@@ -695,44 +694,44 @@ def checks(verbose=True):
     assert DINETTE_X[1] <= WARDROBE_X[0] and HEADS_X[1] <= DINETTE_X[0], \
         "interior zones overlap"
 
-    # pop-top roof: scissor kinematics, actuator sizing, wind, stability
-    th_up, span_up, travel, push_up = scissor_geom(CANOPY_LIFT)
-    _, _, _, push_break = scissor_geom(0)          # breakout, near flat
-    stow_h = SCISSOR_ARM * math.sin(math.radians(SCISSOR_STOW_DEG)) \
-        + 2 * SCISSOR_ARM_T
-    cavity = SCISSOR_WELL + CANOPY_THICK
-    terrace_clear = CANOPY_LIFT
-    air_draft_up = CABIN_ROOF_Z + CANOPY_LIFT + CANOPY_THICK - WL_Z
+    # roof terrace: walk-on glass deck, no moving parts
     interior_clear = CABIN_CEIL_Z - 350                    # sole at 350
-    up_design = canopy_uplift_N(WIND_DESIGN_KN)
-    up_survive = canopy_uplift_N(WIND_SURVIVE_KN)
-    raise_min = travel / ACT_SPEED / 60
-    # CG rise from the raised gear: canopy + scissors + bars + walls
-    up_mass = CANOPY_MASS + 4 * 22 + 4 * 9 + 25 + 6 * SIDEPANEL_MASS
-    up_z = (CABIN_ROOF_Z + CANOPY_LIFT / 2 - WL_Z) / 1000
-    cg_rise = up_mass * (up_z - 1.0) / (BOAT_MASS + up_mass)
-    # side walls fitted: heeling moment vs the pontoon righting moment
-    wall_area = SIDEPANEL_BAYS * 1.733 * 1.9
-    m_heel_walls = wind_pressure(WIND_PANEL_KN) * wall_area * 1.3 * \
-        (CABIN_ROOF_Z + CANOPY_LIFT / 2 - WL_Z) / 1e6      # kNm
+    field, glass_area, bar_m, shade = deck_areas()
+    pane_x, pane_y = DECK_PANE
+    t_point = glass_t_required(max(pane_x, pane_y))
+    t_udl = glass_t_udl(max(pane_x, pane_y))
+    # deflection of the pane under the distributed load, alpha for a
+    # simply supported square plate; limit span/300
+    defl = 0.0443 * DECK_LOAD_UDL * pane_y ** 4 / (70000 * DECK_GLASS_T ** 3)
+    deck_kg = deck_mass()
+    air_draft = CABIN_ROOF_Z + DECK_BUILDUP - WL_Z
+    kwp_deck, kwp_balc, kwp_eff = solar_kwp()
+    # four people hard to one side of the terrace vs the float righting
+    m_heel_crew = 4 * 85 * 9.81 * (CABIN_W / 2 - 100) / 1e6      # kNm
 
-    assert stow_h <= cavity, \
-        f"scissor stows {stow_h:.0f} mm, cavity only {cavity}"
-    assert travel <= ACT_STROKE, \
-        f"slider travels {travel:.0f} mm, actuator stroke {ACT_STROKE}"
-    assert push_break <= ACT_FORCE_N, \
-        f"breakout {push_break:.0f} N over the {ACT_FORCE_N} N actuator"
-    assert span_up + SCISSOR_CHAN_W <= CABIN_X1 - CABIN_X0, \
-        "scissor span does not fit the terrace"
-    assert terrace_clear >= 1900, f"terrace headroom {terrace_clear}"
+    assert DECK_PANE_NX * pane_x <= DECK_FIELD_X[1] - DECK_FIELD_X[0], \
+        "glass panes do not fit the field lengthwise"
+    assert DECK_PANE_NY * pane_y <= 2 * DECK_FIELD_HW, \
+        "glass panes do not fit the field across"
+    assert DECK_FIELD_HW + 150 <= CABIN_W / 2, \
+        "no walking margin outboard of the glass"
+    assert DECK_GLASS_T >= t_point, \
+        f"glass {DECK_GLASS_T} mm under the {DECK_LOAD_POINT} N point load " \
+        f"({t_point:.1f} needed)"
+    assert defl <= pane_y / 300, \
+        f"pane deflects {defl:.1f} mm, limit {pane_y / 300:.1f}"
+    assert AIRBOX_H >= 50, f"air box only {AIRBOX_H} mm — panels get cooked"
+    assert DECK_BUILDUP == PANEL_T + AIRBOX_H + DECK_FRAME_H + DECK_GLASS_T, \
+        "deck build-up does not add up"
+    assert RAIL_H >= 1000, f"guardrail {RAIL_H} mm too low for a roof deck"
     assert interior_clear >= 1800, f"interior clear only {interior_clear}"
-    assert up_survive / 4 <= 2500, \
-        f"survival uplift {up_survive / 4:.0f} N/corner over the pin rating"
-    assert cg_rise <= 0.35, f"raised gear lifts the CG {cg_rise:.2f} m"
-    assert m_heel_walls <= 0.25 * m_right, \
-        f"side walls heel {m_heel_walls:.1f} kNm vs righting {m_right:.1f}"
-    assert MODES["road"]["lift"] == 0 and MODES["cruise"]["lift"] == 0, \
-        "roof must be latched down on the road and underway"
+    assert m_heel_crew <= 0.3 * m_right, \
+        f"crew on one side heels {m_heel_crew:.1f} vs righting {m_right:.1f}"
+    assert shade <= 0.08, f"frame shades {shade * 100:.0f}% of the field"
+    # the roof must stay a fixed structure — nothing to seize in a gale
+    assert not any(k in globals() for k in
+                   ("SCISSOR_ARM", "CANOPY_LIFT", "ACT_FORCE_N")), \
+        "a lifting roof crept back in"
     grid_top = POD_WATER[1] + JET_Z_LOCAL + JET_GRID_H / 2
     assert grid_top <= WL_Z - 40, \
         f"intake grids not submerged enough: top {grid_top}"
@@ -778,18 +777,20 @@ def checks(verbose=True):
               f" -> +{int_sinkage:.0f} mm draft")
         print(f"cabin inside    {interior_clear:.0f} mm clear "
               f"({CABIN_ROOF_Z} outside, {ROOF_STRUCT} roof structure)")
-        print(f"pop-top         lift {CANOPY_LIFT}, scissor {th_up:.1f} deg, "
-              f"span {span_up:.0f}, slider {travel:.0f} mm, "
-              f"{raise_min:.1f} min")
-        print(f"roof actuators  4 x {ACT_FORCE_N} N, breakout "
-              f"{push_break:.0f} N, holding {push_up:.0f} N, "
-              f"stows {stow_h:.0f} mm in a {cavity} mm cavity")
-        print(f"roof wind       {up_design / 1000:.1f} kN at "
-              f"{WIND_DESIGN_KN} kn ({up_design / 4:.0f} N/corner), "
-              f"{up_survive / 1000:.1f} kN at {WIND_SURVIVE_KN} kn on the pins")
-        print(f"roof raised     air draft {air_draft_up:.0f} mm above WL, "
-              f"CG +{cg_rise * 1000:.0f} mm, walls heel "
-              f"{m_heel_walls:.1f} vs righting {m_right:.1f} kNm")
+        print(f"roof deck       {field:.1f} m2 field, {DECK_PANE_NX}x"
+              f"{DECK_PANE_NY} panes {pane_x}x{pane_y}, glass "
+              f"{DECK_GLASS_T} mm (point load needs {t_point:.1f}, "
+              f"UDL {t_udl:.1f}), deflection {defl:.1f} mm")
+        print(f"deck build-up   {DECK_BUILDUP} mm = laminate {PANEL_T} + "
+              f"air box {AIRBOX_H} + grid {DECK_FRAME_H} + glass "
+              f"{DECK_GLASS_T};  mass {deck_kg:.0f} kg, shading "
+              f"{shade * 100:.1f}%")
+        print(f"deck loads      {DECK_LOAD_UDL * 1000:.1f} kN/m2 + "
+              f"{DECK_LOAD_POINT / 1000:.1f} kN point; crew one side "
+              f"{m_heel_crew:.1f} vs righting {m_right:.1f} kNm")
+        print(f"solar           deck {kwp_deck:.2f} + balcony {kwp_balc:.2f} "
+              f"= {kwp_deck + kwp_balc:.2f} kWp nominal, {kwp_eff:.2f} "
+              f"effective;  air draft {air_draft:.0f} mm")
         print(f"jack-up stance  floats {jack_frac * 100:.0f}% deep, "
               f"keel {-harbor_wl:.0f} mm above water (awash), "
               f"pontoon GM ~{gm_est:.1f} m")

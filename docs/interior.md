@@ -79,8 +79,7 @@ platform **hoists to the deckhead**:
 
 **Mechanism.** Four stainless cables, one at each corner, all wound on
 **one shaft** running under the deckhead — a single shaft is what
-guarantees the corners stay level, exactly as it does on the pop-top's
-scissors. The shaft turns through a **worm gearbox**, which is
+guarantees the corners stay level. The shaft turns through a **worm gearbox**, which is
 self-locking: the bed holds wherever it is stopped, with no power and
 no brake to fail. A crank/lever socket on the gearbox drives it by hand
 if the electrics are dead.
@@ -148,8 +147,8 @@ That is ≈ 63 mm of extra draft, which the hull can take. The real
 issue is the **mass budget**: the whole boat is costed at 2 000 kg for
 towing, and the fit-out alone is now **42 % of it**, with the battery
 bank taking 18 % on its own. Hull, frame, floats, wheels, arms, jets
-and the pop-top have to live in the remaining 1 170 kg, and they will
-not.
+and the glass sun deck have to live in the remaining 1 170 kg, and they
+will not.
 
 Three honest options, in order of how much they cost you:
 

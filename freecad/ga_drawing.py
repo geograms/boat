@@ -90,10 +90,9 @@ D = dict(
     sole=350,
     head=P.CABIN_CEIL_Z - 350,
     roof=P.CABIN_ROOF_Z,
-    canopy_top=P.CABIN_ROOF_Z + P.CANOPY_THICK,
-    lift=P.CANOPY_LIFT,
+    canopy_top=P.CABIN_ROOF_Z + P.DECK_BUILDUP,
     ground=P.GROUND_Z,
-    road_h=P.CABIN_ROOF_Z + P.CANOPY_THICK - P.GROUND_Z,
+    road_h=P.CABIN_ROOF_Z + P.DECK_BUILDUP - P.GROUND_Z,
     water_beam=2 * (P.POD_WATER[0] + P.FLOAT_W / 2),
     disp=P.displacement_kg(),
     door=1700,
@@ -107,7 +106,6 @@ D["air_draft"] = D["canopy_top"] - P.WL_Z
 D["cpl_x"], D["cpl_z"] = P.arch_coupling()
 D["cpl_h"] = D["cpl_z"] - P.GROUND_Z
 D["overhang"] = -D["cpl_x"]
-D["terrace"] = P.CANOPY_LIFT
 wx = [P.FLOAT_X + d for d in P.WHEEL_XS]
 D["wheelbase"] = max(wx) - min(wx)
 
@@ -150,25 +148,14 @@ ax.add_patch(Polygon(glass, closed=True, fc=GLASS, ec=INK, lw=1.0,
 ax.text(6560, 1640, "winter\ngarden", ha="center", va="center",
         fontsize=8.5, style="italic", color=INK)
 
-# roof lid, stowed and raised
+# walk-on glass deck over the structural roof
 ax.add_patch(Rectangle((P.CABIN_X0 - 20, P.CABIN_ROOF_Z),
-                       P.CABIN_X1 - P.CABIN_X0 + 40, P.CANOPY_THICK,
+                       P.CABIN_X1 - P.CABIN_X0 + 40, P.DECK_BUILDUP,
                        fc=ROOF, ec=INK, lw=1.0))
-ax.add_patch(Rectangle((P.CABIN_X0 - 20, P.CABIN_ROOF_Z + P.CANOPY_LIFT),
-                       P.CABIN_X1 - P.CABIN_X0 + 40, P.CANOPY_THICK,
-                       fc="none", ec=ROOF, lw=1.1, ls=(0, (6, 4))))
-for gx in (P.CABIN_X0 + 250, P.CABIN_X1 - 250):
-    ax.plot([gx, gx], [P.CABIN_ROOF_Z + P.CANOPY_THICK,
-                       P.CABIN_ROOF_Z + P.CANOPY_LIFT],
-            color=ROOF, lw=0.8, ls=(0, (4, 3)))
-ax.annotate("", (P.CABIN_X1 - 900, P.CABIN_ROOF_Z + P.CANOPY_THICK + 60),
-            (P.CABIN_X1 - 900, P.CABIN_ROOF_Z + P.CANOPY_LIFT - 60),
-            arrowprops=dict(arrowstyle="<->", color=DIM, lw=1.2))
-ax.text(P.CABIN_X1 - 800, P.CABIN_ROOF_Z + P.CANOPY_LIFT / 2 + 90,
-        f"pop-top lifts {P.CANOPY_LIFT} on 4 scissor units  →  "
-        f"terrace with {D['terrace']} standing headroom",
-        ha="left", va="center",
-        fontsize=9.5, color=DIM, fontweight="bold")
+ax.text(P.CABIN_X0 + 300, P.CABIN_ROOF_Z + P.DECK_BUILDUP + 120,
+        f"walk-on glass sun deck  ·  build-up {P.DECK_BUILDUP} mm  ·  "
+        "no moving parts", ha="left", va="bottom", fontsize=9.5,
+        color=DIM, fontweight="bold")
 
 # solar balcony (folded-down walkway, seen edge-on behind the hull)
 ax.plot([P.BALC_X0, P.BALC_X1], [P.CABIN_BASE_Z + 30, P.CABIN_BASE_Z + 30],
@@ -186,15 +173,15 @@ ax.text(P.CABIN_X0 + 200, 240,
         style="italic", color=INK)
 
 # ---- dimensions
-top = P.CABIN_ROOF_Z + P.CANOPY_LIFT + 1100
+top = P.CABIN_ROOF_Z + P.DECK_BUILDUP + 1100
 dim_h(ax, 0, P.LOA, top, f"LOA  {P.LOA}")
 witness(ax, 0, P.STATIONS[0][5], 0, top)
 witness(ax, P.LOA, P.STATIONS[-1][5], P.LOA, top)
 
 dim_h(ax, P.CABIN_X0, P.CABIN_X1, top - 560, f"cabin {D['cabin_L']}")
-witness(ax, P.CABIN_X0, P.CABIN_ROOF_Z + P.CANOPY_LIFT + P.CANOPY_THICK,
+witness(ax, P.CABIN_X0, P.CABIN_ROOF_Z + P.DECK_BUILDUP,
         P.CABIN_X0, top - 560)
-witness(ax, P.CABIN_X1, P.CABIN_ROOF_Z + P.CANOPY_LIFT + P.CANOPY_THICK,
+witness(ax, P.CABIN_X1, P.CABIN_ROOF_Z + P.DECK_BUILDUP,
         P.CABIN_X1, top - 560)
 
 dim_v(ax, P.WL_Z, D["canopy_top"], 8300, f"air draft {D['air_draft']}")
@@ -233,7 +220,7 @@ ax.add_patch(Rectangle((P.CABIN_X0, P.CABIN_BASE_Z),
                        P.CABIN_ROOF_Z - P.CABIN_BASE_Z,
                        fc=CABIN, ec=INK, lw=1.0))
 ax.add_patch(Rectangle((P.CABIN_X0 - 20, P.CABIN_ROOF_Z),
-                       P.CABIN_X1 - P.CABIN_X0 + 40, P.CANOPY_THICK,
+                       P.CABIN_X1 - P.CABIN_X0 + 40, P.DECK_BUILDUP,
                        fc=ROOF, ec=INK, lw=1.0))
 # folded solar shutters standing over the windows
 for x0 in (P.CABIN_X0 + 150, P.CABIN_X0 + 1900, P.CABIN_X0 + 3650):
@@ -290,7 +277,7 @@ ax.add_patch(Rectangle((-P.CABIN_W / 2, P.CABIN_BASE_Z), P.CABIN_W,
                        P.CABIN_ROOF_Z - P.CABIN_BASE_Z, fc=CABIN, ec=INK,
                        lw=1.0))
 ax.add_patch(Rectangle((-P.CABIN_W / 2 - 20, P.CABIN_ROOF_Z),
-                       P.CABIN_W + 40, P.CANOPY_THICK, fc=ROOF, ec=INK,
+                       P.CABIN_W + 40, P.DECK_BUILDUP, fc=ROOF, ec=INK,
                        lw=1.0))
 ax.plot([-1250, 1250], [P.CABIN_BASE_Z, P.CABIN_BASE_Z], color=INK, lw=2.5)
 
@@ -311,9 +298,9 @@ dim_h(ax, -P.HULL_BEAM / 2, P.HULL_BEAM / 2, 620,
       f"hull beam {P.HULL_BEAM}")
 dim_h(ax, -P.CABIN_W / 2 + 60, P.CABIN_W / 2 - 60, P.CABIN_ROOF_Z + 620,
       f"interior {D['cabin_W_in']}")
-witness(ax, -P.CABIN_W / 2 + 60, P.CABIN_ROOF_Z + P.CANOPY_THICK,
+witness(ax, -P.CABIN_W / 2 + 60, P.CABIN_ROOF_Z + P.DECK_BUILDUP,
         -P.CABIN_W / 2 + 60, P.CABIN_ROOF_Z + 620)
-witness(ax, P.CABIN_W / 2 - 60, P.CABIN_ROOF_Z + P.CANOPY_THICK,
+witness(ax, P.CABIN_W / 2 - 60, P.CABIN_ROOF_Z + P.DECK_BUILDUP,
         P.CABIN_W / 2 - 60, P.CABIN_ROOF_Z + 620)
 dim_h(ax, P.BALC_HINGE_Y, P.BALC_HINGE_Y + P.BALC_SPAN,
       P.CABIN_BASE_Z + 430, f"solar balcony {P.BALC_SPAN}", fs=9)
@@ -351,11 +338,7 @@ rows = [
     ("", "cabin length", f"{D['cabin_L']:,} mm".replace(",", " ")),
     ("", "cabin width, inside", f"{D['cabin_W_in']:,} mm".replace(",", " ")),
     ("", "standing headroom", f"{D['head']:,} mm".replace(",", " ")),
-    ("", "terrace, roof raised",
-     f"{D['terrace']:,} mm standing".replace(",", " ")),
-    ("", "air draft, roof raised",
-     f"{P.CABIN_ROOF_Z + P.CANOPY_LIFT + P.CANOPY_THICK - P.WL_Z:,} mm"
-     .replace(",", " ")),
+    ("", "roof sun deck", "walk-on glass, 8 panes"),
     ("", "floor area", "≈ 12.1 m²"),
     ("", "entry door, clear", f"700 × {D['door']:,} mm".replace(",", " ")),
     ("", "cockpit floor / bulwark", "400 / 750 mm"),
@@ -366,7 +349,7 @@ rows = [
     ("", "aft passage width", f"{P.PASSAGE_W} mm  (part of the folding deck)"),
     ("", "roof terrace", f"{P.CABIN_X1 - P.CABIN_X0:,} × 2 360 mm"
      .replace(",", " ")),
-    ("", "panels", f"16 × {P.PANEL_L:,} × {P.PANEL_W:,} flexible (≈ 6.9 kW)"
+    ("", "panels", f"11 × {P.PANEL_L:,} × {P.PANEL_W:,} flexible (≈ 4.7 kWp)"
      .replace(",", " ")),
     ("H", "ROAD GEAR", ""),
     ("", "wheels", "6 × 205/70 R15 all-terrain"),

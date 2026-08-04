@@ -1,169 +1,131 @@
-# Pop-Top Solar Roof — Scissor Lift, Plug-In Bars, Solar Side Walls
+# Roof Terrace — Walk-On Glass Deck
 
-Status: design study. Geometry in `freecad/params.py` (`SCISSOR_*`,
-`CANOPY_*`, `TERRACE_*`, `BAR_*`, `SIDEPANEL_*`, `WIND_*`), shapes in
-`build_terrace()`, `build_scissors()`, `build_canopy()` and
-`build_side_walls()`, limits asserted in `checks()`. Spec cards:
-[roof_scissor](images/roof_scissor.png), [roof_seal](images/roof_seal.png),
-[roof_wind](images/roof_wind.png), [roof_hardware](images/roof_hardware.png).
+Status: design study. Geometry in `freecad/params.py` (the `---- roof
+terrace ----` block), shapes in `build_terrace()`, limits asserted in
+`checks()`. Spec cards: [roof_deck](images/roof_deck.png),
+[roof_glass](images/roof_glass.png), [roof_loads](images/roof_loads.png).
 Terms in [glossary.md](glossary.md).
 
-## 1. What the pop-top actually is
+## 1. What it is
 
-**It shelters the terrace, not the cabin.** The cabin roof at z 2 400 is
-a sealed structural sandwich — it is the terrace floor, and it stays
-put. The pop-top is a separate lid that lifts **1 900 mm** off that
-floor so people stand up under it.
-
-That single decision is what makes the whole thing storm-worthy: the
-living quarters are never opened by the roof. A leaking pop-top wets a
-deck, not a bed.
+The cabin roof at z 2 400 is a 200 mm structural sandwich. On top of it:
 
 ```
-   roof up (terrace)                    roof down (everything else)
-   ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄  canopy 4480     ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄  2580
-   │ ╲   ╱   solar side walls           ══════════════════  latched
-   │  ╳   scissors      1 900 clear     ┌────────────────┐
-   │ ╱   ╲                              │ scissors flat  │ sealed box
-   ══════════════════  terrace 2400     ══════════════════  terrace
-   │     cabin, 1 850 clear     │       │  cabin         │
+   ▓▓▓▓▓▓  6+6 laminated heat-strengthened glass, anti-slip frit
+   ──┬───  alu grid, 8 panes of 1200 × 1050, bolted to deck inserts
+     │ 60  VENTILATED AIR BOX — mesh slots fore and aft, drains
+   ░░┴░░░  flexible laminates, bonded flat
+   ██████  200 mm roof sandwich  ← carries every load
+   ██████  cabin ceiling 2 200
 ```
 
-The cabin roof went **up 250 mm** with this change (2 150 → 2 400): the
-200 mm structural sandwich was eating the interior height. Inside is
-now **1 850 mm clear** over the sole, and the road height is 3 062 —
-still 938 mm under the 4 000 limit.
+**Nothing moves.** People walk on the glass; the panels underneath can
+never be touched, stepped on, or scuffed. The air box ventilates the
+cells, so they run cooler than laminates bonded straight to a deck.
 
-## 2. Mechanism: four scissor units
+Total build-up **131 mm**, so the deck surface sits at 2 531, the air
+draft is **2 271** and the road height **3 013** against the 4 000 limit.
 
-A 1 900 mm stroke cannot fold into a 180 mm lid — that constraint
-decides everything. A telescopic column would have to live inside the
-cabin; a scissor folds flat instead, so nothing enters the living
-space.
+## 2. Why the pop-top was deleted
 
-| | value |
-|---|---|
-| units | 4, one per terrace corner, arms fore-and-aft |
-| arm | 2 000 mm, pinned at mid-length, single stage |
-| raised | 71.8° → **1 900 mm**, span 624 |
-| stowed | 3.5° → 122 mm high, span 1 996 |
-| stack, stowed | 202 mm into a 100 mm well + the 180 mm lid cavity |
-| slider travel | 1 372 mm |
-| actuator | 6 000 N, 1 450 mm stroke, 5.5 mm/s → **4.2 min** to raise |
+The earlier design lifted a 12 m² canopy 1 900 mm on four scissor units.
+Max judged it weak for rough sea and wind. Rechecking the mechanics
+agreed with him, and the first analysis had been wrong:
 
-**Single stage on purpose.** A double scissor would halve the travel
-but double the pin joints, and on a boat every pin is a corrosion site
-to inspect and rinse. Fourteen joints per unit is already the number
-that matters.
+- The force at a scissor foot is **F = W/tan θ** (virtual work), not
+  **W/(2·tan θ)** as first specced. The true breakout force was
+  **11.4 kN per corner, not 3.6 kN** — the actuators were half the size
+  they needed to be.
+- Because F → ∞ as θ → 0, a scissor that folds into a thin lid is
+  always brutal to start. Fixes existed (park at 7–8°, a 220 mm lid,
+  spring assist) but all of them traded thickness or fatigue parts.
+- Worse, four salt-exposed mechanisms still had to hold a **7.7 kN**
+  uplift at 50 kn, and be trusted after months of neglect.
 
-**The actuators are sized by breakout, not by weight.** The canopy is
-only 180 kg (441 N per unit), but a scissor near flat has terrible
-mechanical advantage: the push needed is W/(2·tan θ), so **3 609 N** at
-the parked angle, falling to 73 N at full height. Hence 6 kN units.
+A fixed glass deck has none of those failure modes. The trade was
+**weight-neutral** (see §5), so the whole gain is robustness.
 
-**Four independent actuators, encoder-synced.** They must track within
-a few millimetres or the canopy racks. The controller compares Hall
-counts and stops all four on any disagreement; the frame is stiff
-enough to survive a small mismatch, and the end stops are mechanical.
+## 3. Sizing the glass
 
-## 3. Sea-resistance
+Two load cases, and they scale completely differently:
 
-The mechanism lives outside, so it is engineered for it. The single
-biggest mitigation is architectural:
-
-> **Roof down = the mechanism is inside a closed, gasketed box.** In
-> road, harbour, cruise and storm trim the scissors see no weather at
-> all. They are exposed only at anchor, in fair weather, by the
-> operating rules below.
-
-| risk | answer |
-|---|---|
-| salt in the joints | 316 shoulder-bolt pins in PTFE-lined composite bushes (igus/Vesconite) — no metal-on-metal, no grease to wash out |
-| galvanic pairs | hard-anodized 6082-T6 arms, Tef-Gel at every stainless-in-aluminium interface, isolation washers |
-| standing water | slider channels are open-bottom, the recessed wells drain to corner scuppers — nothing pools on a bearing |
-| actuator seals | IP69K washdown units (Linak LA36 / Thomson Electrak HD class), stainless tube, neoprene boots, rod mounted down-aft so the seal never sits in a puddle |
-| water into the cabin | there is no penetration: the lift is entirely above the sealed roof |
-| rain on the terrace | canopy crowned 40 mm to a perimeter gutter with a drip edge; terrace drains through four corner scuppers |
-
-**Sealing when stowed.** The canopy skirt drops 50 mm past a 60 mm
-coaming — a labyrinth, not a butt joint — onto a continuous EPDM bulb
-gasket, and **8 over-centre draw latches** clamp it. The gasket line
-sits above any water that can stand on the terrace.
-
-## 4. What holds the roof up
-
-**Never the actuators.** Two independent mechanical locks:
-
-1. **Lock pin** through each scissor at full extension. A red band on
-   the pin shows when it is not in — the same convention as the float
-   arms.
-2. **The plug-in bars** (Max's idea, and structurally the right one).
-   The scissors are stiff in their own fore-and-aft plane and floppy
-   across the boat; the bars take the transverse load. Four sockets a
-   side give three bays, plus two diagonal tie-rods in the forward
-   bays. They double as lifeline stanchions and as the frame the solar
-   side walls clip into.
-
-Wind, EN 1991-1-4 free-standing canopy, cp,net ±1.5 on 12.5 m²:
-
-| wind | net uplift | per corner |
+| | law | t needed at 1 050 mm |
 |---|---|---|
-| 25 kn (design) | 1.9 kN | 481 N |
-| 50 kn (survival) | 7.7 kN | 1 925 N |
+| UDL 2 kN/m² | σ = 0.287·q·a²/t² → **t ∝ a** | 4.9 mm |
+| 2 kN point on 50 × 50 | σ ≈ (3P/2πt²)·[(1+ν)·ln(2a/πr₀)+0.5] → **t ∝ √ln a** | **11.2 mm** ← governs |
 
-The pins and latches are sized for the survival case; the actuators
-never see it.
+That log term is the whole story: **halving the pane barely thins the
+glass.** A 1 000 mm pane needs 10.9 mm, a 400 mm pane 9.4, a 200 mm
+pane 8.0 — while the extra grid metal and the shading grow fast. Total
+deck weight is nearly flat (300–340 kg) across every pane size, with a
+shallow minimum near 400–500 mm.
 
-## 5. Solar side walls
+Chosen: **8 panes of 1 200 × 1 050 in 6+6 heat-strengthened laminated
+glass** (12 mm, SGP interlayer). Fewest seals, least shading (4.4 %),
+38 kg per pane — two people or a suction lifter to lift one out.
+Deflection under the distributed load is 0.9 mm against a span/300
+limit of 3.5 mm.
 
-Flexible laminates on 25 mm tube frames, clipped between the bars —
-light enough to handle at 4 m up, unlike glass or polycarbonate, and
-they generate while they shelter.
+**Two plies, not the three a building floor would use**: the air box is
+only 60 mm over a solid deck, so a cracked pane cannot drop anyone. The
+residual-capacity case that drives 3-ply floor glazing does not exist
+here.
 
-- 3 bays per side; the **aft bay stays open** for the ladder.
-- 2 laminates per side (≈ 430 W each) → **≈ 1.7 kW** on top of the
-  6 roof panels.
-- ≈ 10 kg per framed panel; they stow flat under the canopy.
-- Fitted, each side shows ≈ 5.8 m² of sail area: at 20 kn that is
-  ≈ 2.6 kNm of heeling moment against ≈ 31 kNm of righting moment from
-  the floats — negligible, and they come off above 20 kn anyway.
+Design loads are the full building-code figures — 2 kN/m² plus a 2 kN
+point load — so there are no use restrictions: stilettos, a stepladder,
+a dropped anchor are all inside the envelope.
 
-## 6. Operating rules
+## 4. Detail
 
-Raising the roof is a fair-weather, at-anchor operation. On a placard
-at the switch:
+- **Panes** drop into a gasketed rebate in the grid with captive
+  fasteners; any pane lifts out to clean the inside face or service the
+  laminate beneath it.
+- **Air box** vented fore and aft through insect mesh. Cross-flow keeps
+  the cells cool and clears condensation; the floor of the box falls to
+  the corner scuppers.
+- **Cabling and junction boxes** live in the perimeter channel, never
+  under a walked pane.
+- **Anti-slip**: ceramic frit, R11, on the top face.
+- **Guardrail**: the plug-in bar sockets remain, but the bars are now
+  **1 000 mm stanchions with two lifelines**, removable so they cost
+  nothing on the road.
+- **Stability**: four people hard to one side is 3.7 kNm of heeling
+  against ≈31 kNm of float righting — asserted in `checks()`.
 
-| | |
-|---|---|
-| raise | at anchor or alongside only — **never underway, never on the road** |
-| above 20 kn | side walls off |
-| above 25 kn | roof down and latched |
-| before towing | roof latched is a line on the road checklist |
-| air draft raised | **4 220 mm above the waterline** — check bridges |
+## 5. What it weighs, and what it generates
 
-**Raise sequence.** Release the 8 latches → check nobody is on the
-canopy → run the 4 actuators together (4.2 min) → drop the 4 lock pins
-→ plug in the bars, then the tie-rods, then the side walls.
-**Lower** is the exact reverse; the controller refuses to retract while
-a lock pin reads home.
+| removed | kg | added | kg |
+|---|---|---|---|
+| canopy slab + frame | 145 | glass, 10.1 m² × 30 kg/m² | 302 |
+| scissors (4 units) | 88 | alu grid + kerb | 35 |
+| drives + controller | 36 | seals, adhesive, fixings | 15 |
+| latches, gaskets, coaming | 12 | | |
+| solar side walls | 60 | | |
+| **total** | **341** | **total** | **352** |
 
-**Failure modes.** One actuator stalls → controller stops all four,
-roof sits skewed by a few mm, hand-retract via the actuator's
-emergency release. Controller dead → the roof is on its pins and is
-safe to leave up until 25 kn. Power gone entirely → the pins hold it up
-and the latches hold it down; neither needs electricity.
+**Net ≈ +11 kg.** This is not a weight saving — it is the same mass
+bought as fixed structure instead of mechanism.
 
-## 7. Cost sketch (2026, EUR)
+Solar: **4.73 kWp nominal** (deck 5 laminates = 2.15, balconies 2.58)
+against 6.88 before; the four side-wall panels went with the raised
+roof that carried them. After glass transmission (91 %), frame shading
+(4.4 %) and the ventilation gain (+5 %), reckon **≈ 4.5 kWp effective**.
+
+Two limits worth stating plainly:
+
+1. **People shade the panels.** The deck generates best when nobody is
+   on it. It is a sun deck first and a solar array second.
+2. **Dark glass gets hot** — 60–70 °C in strong sun. Light-toned cells
+   and the ventilated box help; barefoot at midday will still be
+   unpleasant.
+
+## 6. Cost sketch (2026, EUR)
 
 | Item | Est. |
 |---|---|
-| 4 × IP69K 24 V actuator, 6 kN / 1 450 mm | 760 |
-| Sync controller + Hall encoders + limit switches | 220 |
-| Scissor arms, pins, composite bushes (4 units) | 900 |
-| Slider channels + UHMW shoes | 180 |
-| Canopy sandwich 12.5 m² + alu edge frame + gutter | 1 400 |
-| Coaming, EPDM bulb gasket, 8 draw latches | 260 |
-| 6 plug-in bars, 8 sockets, 4 tie-rods | 340 |
-| 6 side frames + 4 flexible laminates | 1 250 |
-| Wiring, drag chain, wind sensor | 300 |
-| **Total** | **≈ 5 610** |
+| 8 × walk-on laminated panes 1200 × 1050, 6+6 HS, frit | 3 200 |
+| Alu grid, kerb, standoffs, inserts | 700 |
+| Gaskets, structural adhesive, fixings | 350 |
+| 5 flexible laminates (bonded, under the glass) | 1 750 |
+| Stanchions, lifelines, sockets | 340 |
+| **Total** | **≈ 6 340** |

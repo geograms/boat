@@ -168,202 +168,97 @@ def build_cabin():
 # ---------------------------------------------------------------
 # Pop-top canopy
 # ---------------------------------------------------------------
-def canopy_plan():
-    """(length, width, centre x) of the canopy / terrace footprint."""
+def terrace_plan():
+    """(length, width, centre x) of the roof terrace."""
     return (P.CABIN_X1 - P.CABIN_X0 + 2 * P.CANOPY_OVERHANG,
             P.CABIN_W + 2 * P.CANOPY_OVERHANG,
             (P.CABIN_X0 + P.CABIN_X1) / 2)
 
 
-def build_terrace():
-    """Roof terrace: the walkable top of the cabin roof, the coaming the
-    canopy gasket lands on, the recessed scissor wells with their slider
-    channels, corner scuppers, toe rail and the bar sockets."""
-    cl, cw, cx = canopy_plan()
-    deck, fittings = [], []
+def build_terrace(rails=True):
+    """Roof terrace: bonded laminates on the structural roof, a
+    ventilated air box, an alu grid and 8 walk-on glass panes over the
+    top. Nothing here moves — the pop-top lift is gone.
+    Returns (deck, laminates, frame, glass, rail)."""
+    tl, tw, cx = terrace_plan()
+    z0 = P.CABIN_ROOF_Z
+    deck, lam, frame, glass, rail = [], [], [], [], []
 
-    # non-slip deck panel over the structural roof, crowned to the sides
-    deck.append(box(cl - 60, cw - 60, 12,
-                    (cx - (cl - 60) / 2, -(cw - 60) / 2, P.CABIN_ROOF_Z)))
-    # coaming: gasket land, high enough that standing water can't reach it
-    outer = box(cl, cw, P.COAMING_H, (cx - cl / 2, -cw / 2, P.CABIN_ROOF_Z))
-    inner = box(cl - 90, cw - 90, P.COAMING_H + 20,
-                (cx - (cl - 90) / 2, -(cw - 90) / 2, P.CABIN_ROOF_Z - 10))
-    coaming = outer.cut(inner)
-    # corner scuppers through the coaming: the wells never hold water
+    # walking surface of the structural roof, and its toe rail
+    deck.append(box(tl, tw, 12, (cx - tl / 2, -tw / 2, z0)))
+    for sy in (-1, 1):
+        deck.append(box(tl - 200, 24, P.TERRACE_TOERAIL,
+                        (cx - (tl - 200) / 2, sy * (tw / 2 - 30) - 12,
+                         z0 + 12)))
+    # corner scuppers through the toe rail
     for sx in (-1, 1):
         for sy in (-1, 1):
-            coaming = coaming.cut(box(
-                P.TERRACE_SCUPPER, 200, 26,
-                (cx + sx * (cl / 2 - 320), sy * cw / 2 - 100,
-                 P.CABIN_ROOF_Z + 4)))
-    deck.append(coaming)
-    # EPDM bulb gasket sitting on the coaming
-    fittings.append(box(cl - 40, cw - 40, P.GASKET_D,
-                        (cx - (cl - 40) / 2, -(cw - 40) / 2,
-                         P.CABIN_ROOF_Z + P.COAMING_H))
-                    .cut(box(cl - 40 - 2 * P.GASKET_D,
-                             cw - 40 - 2 * P.GASKET_D, P.GASKET_D + 20,
-                             (cx - (cl - 40) / 2 + P.GASKET_D,
-                              -(cw - 40) / 2 + P.GASKET_D,
-                              P.CABIN_ROOF_Z + P.COAMING_H - 10))))
+            deck.append(box(P.TERRACE_SCUPPER, 40, 26,
+                            (cx + sx * (tl / 2 - 320),
+                             sy * (tw / 2 - 30) - 20, z0 + 12)))
 
-    # scissor wells: open-bottom slider channel, recessed so nothing
-    # stands proud of the deck when the roof is down
-    for ux in P.SCISSOR_X:
-        for sy in (-1, 1):
-            y = sy * P.SCISSOR_Y
-            fittings.append(box(P.SCISSOR_ARM + 120, P.SCISSOR_CHAN_W, 24,
-                                (ux - (P.SCISSOR_ARM + 120) / 2,
-                                 y - P.SCISSOR_CHAN_W / 2,
-                                 P.CABIN_ROOF_Z - P.SCISSOR_WELL)))
+    fx0, fx1 = P.DECK_FIELD_X
+    fhw = P.DECK_FIELD_HW
+    px, py = P.DECK_PANE
 
-    # toe rail + plug-in bar sockets
+    # 1. flexible laminates bonded flat on the deck
+    for i in range(P.DECK_PANELS):
+        lam.append(box(P.PANEL_L, P.PANEL_W, P.PANEL_T,
+                       (fx0 + 40 + i * (P.PANEL_L + 20), -P.PANEL_W / 2,
+                        z0 + 12)))
+
+    # 2. perimeter kerb of the air box, with vent slots fore and aft
+    kerb = box(fx1 - fx0 + 80, 2 * fhw + 80, P.AIRBOX_H,
+               (fx0 - 40, -fhw - 40, z0 + 12))
+    kerb = kerb.cut(box(fx1 - fx0, 2 * fhw, P.AIRBOX_H + 20,
+                        (fx0, -fhw, z0 + 2)))
+    for sx in (-1, 1):                        # ventilation slots
+        for j in range(3):
+            kerb = kerb.cut(box(50, 300, P.DECK_VENT_H,
+                                (cx + sx * (fx1 - fx0) / 2 - 25,
+                                 -450 + j * 300,
+                                 z0 + 12 + (P.AIRBOX_H - P.DECK_VENT_H) / 2)))
+    frame.append(kerb)
+
+    # 3. alu grid on standoffs: bars between the panes carry the glass
+    gz = z0 + 12 + P.AIRBOX_H
+    for i in range(P.DECK_PANE_NX + 1):
+        bx = fx0 + i * px
+        frame.append(box(P.DECK_FRAME_W, 2 * fhw, P.DECK_FRAME_H,
+                         (bx - P.DECK_FRAME_W / 2, -fhw, gz)))
+    for j in range(P.DECK_PANE_NY + 1):
+        by = -fhw + j * py
+        frame.append(box(fx1 - fx0, P.DECK_FRAME_W, P.DECK_FRAME_H,
+                         (fx0, by - P.DECK_FRAME_W / 2, gz)))
+
+    # 4. the walk-on panes themselves, dropped into the grid rebate
+    tz = gz + P.DECK_FRAME_H
+    for i in range(P.DECK_PANE_NX):
+        for j in range(P.DECK_PANE_NY):
+            glass.append(box(px - P.DECK_FRAME_W - 6, py - P.DECK_FRAME_W - 6,
+                             P.DECK_GLASS_T,
+                             (fx0 + i * px + P.DECK_FRAME_W / 2 + 3,
+                              -fhw + j * py + P.DECK_FRAME_W / 2 + 3,
+                              tz - P.DECK_GLASS_T)))
+
+    # 5. removable stanchions + lifelines (sea modes only)
     for sy in (-1, 1):
-        y = sy * (cw / 2 - 30)
-        fittings.append(box(cl - 200, 24, P.TERRACE_TOERAIL,
-                            (cx - (cl - 200) / 2, y - 12,
-                             P.CABIN_ROOF_Z + 12)))
         for bx in P.BAR_XS:
-            fittings.append(Part.makeCylinder(
-                P.BAR_D / 2 + 8, 90,
-                Vector(bx, sy * P.BAR_Y, P.CABIN_ROOF_Z - 40)))
-    # latch keepers on the coaming
-    for i in range(P.LATCH_N // 2):
-        bx = P.CABIN_X0 + 400 + i * (cl - 800) / (P.LATCH_N // 2 - 1)
-        for sy in (-1, 1):
-            fittings.append(box(70, 40, 60,
-                                (bx - 35, sy * (cw / 2 - 20) - 20,
-                                 P.CABIN_ROOF_Z)))
-    return Part.makeCompound(deck), Part.makeCompound(fittings)
-
-
-def build_scissors(lift):
-    """Four single-stage scissor units, one per terrace corner, arms
-    lying fore-and-aft. Geometry comes straight from scissor_geom()."""
-    th, span, travel, _ = P.scissor_geom(lift)
-    t = math.radians(th)
-    z0 = P.CABIN_ROOF_Z - P.SCISSOR_WELL + 12
-    z1 = z0 + P.SCISSOR_ARM * math.sin(t)
-    arms, gear = [], []
-
-    for ux in P.SCISSOR_X:
-        for sy in (-1, 1):
-            y = sy * P.SCISSOR_Y
-            x_fix = ux - span / 2          # pinned end, aft
-            x_sld = ux + span / 2          # sliding end, forward
-            # arm A: fixed at the bottom aft, slides at the top forward
-            # arm B: slides at the bottom forward, fixed at the top aft
-            for (xa, za, xb, zb) in (
-                    (x_fix, z0, x_sld, z1),
-                    (x_sld, z0, x_fix, z1)):
-                arms.append(bar((xa, y, za), (xb, y, zb),
-                                P.SCISSOR_ARM_T, 120))
-            # centre pin + end pins
-            for (px, pz) in ((ux, (z0 + z1) / 2), (x_fix, z0),
-                             (x_sld, z0), (x_fix, z1), (x_sld, z1)):
-                gear.append(rod((px, y - 70, pz), (px, y + 70, pz), 26))
-            # sliding shoes in the channel
-            gear.append(box(180, 80, 40, (x_sld - 90, y - 40, z0 - 34)))
-            gear.append(box(180, 80, 40, (x_sld - 90, y - 40, z1 - 6)))
-            # actuator: body anchored aft in the well, rod pushes the
-            # bottom slider forward; boot over the rod seal
-            ax0 = x_fix - 260
-            gear.append(rod((ax0, y, z0 - 14), (ax0 + 520, y, z0 - 14), 76))
-            gear.append(rod((ax0 + 520, y, z0 - 14),
-                            (x_sld - 90, y, z0 - 14), 40))
-            # lock pin through both arms at full extension
-            if lift > 100:
-                gear.append(rod((ux - 30, y - 90, (z0 + z1) / 2 + 120),
-                                (ux - 30, y + 90, (z0 + z1) / 2 + 120), 22))
-    return Part.makeCompound(arms), Part.makeCompound(gear)
-
-
-def build_canopy(lift):
-    """Pop-top canopy: crowned sandwich slab, perimeter gutter and drip
-    edge, skirt dropping over the coaming, 6 flexible laminates."""
-    cl, cw, cx = canopy_plan()
-    z = P.canopy_z(lift)
-    slab = box(cl, cw, P.CANOPY_THICK, (cx - cl / 2, -cw / 2, z))
-    # gutter lip: the panel field sits inside a raised rim, so rain runs
-    # to the outboard edges and drips clear of the deck below
-    rim = box(cl, cw, P.CANOPY_CROWN,
-              (cx - cl / 2, -cw / 2, z + P.CANOPY_THICK))
-    rim = rim.cut(box(cl - 120, cw - 120, P.CANOPY_CROWN + 20,
-                      (cx - (cl - 120) / 2, -(cw - 120) / 2,
-                       z + P.CANOPY_THICK - 10)))
-    slab = slab.fuse(rim)
-    try:
-        slab = slab.makeFillet(25, slab.Edges)
-    except Exception:
-        pass
-    # skirt: drops over the coaming, 50 mm overlap = labyrinth seal
-    skirt = box(cl + 24, cw + 24, P.CANOPY_SKIRT,
-                (cx - (cl + 24) / 2, -(cw + 24) / 2, z - P.CANOPY_SKIRT))
-    skirt = skirt.cut(box(cl - 16, cw - 16, P.CANOPY_SKIRT + 20,
-                          (cx - (cl - 16) / 2, -(cw - 16) / 2,
-                           z - P.CANOPY_SKIRT - 10)))
-    slab = slab.fuse(skirt)
-
-    panels = []
-    gx = (cl - 3 * P.PANEL_L) / 4
-    for i in range(3):
-        for j in (-1, 1):
-            panels.append(box(
-                P.PANEL_L, P.PANEL_W, P.PANEL_T,
-                (cx - cl / 2 + gx + i * (P.PANEL_L + gx),
-                 j * 20 - (P.PANEL_W if j < 0 else 0),
-                 z + P.CANOPY_THICK)))
-
-    # over-centre draw latches, hanging under the skirt
-    latches = []
-    for i in range(P.LATCH_N // 2):
-        bx = P.CABIN_X0 + 400 + i * (cl - 800) / (P.LATCH_N // 2 - 1)
-        for sy in (-1, 1):
-            latches.append(box(60, 34, 110,
-                               (bx - 30, sy * (cw / 2 + 6) - 17,
-                                z - P.CANOPY_SKIRT)))
-    return slab, Part.makeCompound(panels), Part.makeCompound(latches)
-
-
-def build_side_walls(lift):
-    """Plug-in bars, diagonal tie-rods and the framed flexible-laminate
-    side walls. Only fitted with the roof up; the aft bay each side is
-    left open for the ladder."""
-    cl, cw, cx = canopy_plan()
-    z0 = P.CABIN_ROOF_Z + 12
-    z1 = P.canopy_z(lift)
-    bars, frames, laminates = [], [], []
-
-    for sy in (-1, 1):
-        y = sy * P.BAR_Y
-        for bx in P.BAR_XS:
-            bars.append(rod((bx, y, z0), (bx, y, z1), P.BAR_D))
-        # diagonal tie-rod in the aft bay: the scissors are stiff
-        # fore-and-aft, the diagonal stops transverse racking. It goes
-        # in the bay that carries no panel, so nothing is shaded.
-        bars.append(rod((P.BAR_XS[0], y, z0),
-                        (P.BAR_XS[1], y, z1), P.TIE_ROD_D))
-        # framed panels between the bars, laminate low, open above
-        for i in range(1, P.SIDEPANEL_BAYS):
-            x0, x1 = P.BAR_XS[i], P.BAR_XS[i + 1]
-            fw = x1 - x0 - 80
-            for (fx, fz, w, h) in (
-                    (x0 + 40, z0 + 60, fw, P.SIDEPANEL_FRAME_T),
-                    (x0 + 40, z0 + 60 + P.PANEL_W, fw, P.SIDEPANEL_FRAME_T)):
-                frames.append(box(w, P.SIDEPANEL_FRAME_T, h,
-                                  (fx, y - P.SIDEPANEL_FRAME_T / 2, fz)))
-            for fx in (x0 + 40, x1 - 40 - P.SIDEPANEL_FRAME_T):
-                frames.append(box(P.SIDEPANEL_FRAME_T, P.SIDEPANEL_FRAME_T,
-                                  P.PANEL_W,
-                                  (fx, y - P.SIDEPANEL_FRAME_T / 2,
-                                   z0 + 60)))
-            if i > 0:            # aft bay stays open for the ladder
-                laminates.append(box(fw - 60, P.PANEL_T, P.PANEL_W - 40,
-                                     (x0 + 70, y - P.PANEL_T / 2,
-                                      z0 + 80)))
-    return (Part.makeCompound(bars), Part.makeCompound(frames),
-            Part.makeCompound(laminates))
+            frame.append(Part.makeCylinder(
+                P.BAR_D / 2 + 8, 90, Vector(bx, sy * P.BAR_Y, z0 - 40)))
+            if rails:
+                rail.append(rod((bx, sy * P.BAR_Y, z0 + 12),
+                                (bx, sy * P.BAR_Y, z0 + P.RAIL_H), P.BAR_D))
+        if rails:
+            for k in range(P.LIFELINE_N):
+                lz = z0 + P.RAIL_H - 60 - k * (P.RAIL_H - 220) / \
+                    max(P.LIFELINE_N - 1, 1)
+                rail.append(rod((P.BAR_XS[0], sy * P.BAR_Y, lz),
+                                (P.BAR_XS[-1], sy * P.BAR_Y, lz),
+                                P.LIFELINE_D))
+    return (Part.makeCompound(deck), Part.makeCompound(lam),
+            Part.makeCompound(frame), Part.makeCompound(glass),
+            Part.makeCompound(rail) if rail else None)
 
 
 # ---------------------------------------------------------------
@@ -1199,22 +1094,15 @@ def build_mode(mode):
     add("BatteriesTanks", iheavy, (0.25, 0.42, 0.35), group=g_int)
     add("Fittings", iglass, (0.20, 0.22, 0.24), group=g_int)
 
-    g_roof = doc.addObject("App::DocumentObjectGroup", "PopTop")
-    tdeck, tfit = build_terrace()
+    g_roof = doc.addObject("App::DocumentObjectGroup", "RoofDeck")
+    tdeck, tlam, tframe, tglass, trail = build_terrace(
+        rails=cfg["tow"] == "sea")
     add("Terrace", tdeck, WHITE, group=g_roof)
-    add("TerraceFittings", tfit, (0.42, 0.44, 0.47), group=g_roof)
-    sc_arms, sc_gear = build_scissors(cfg["lift"])
-    add("ScissorArms", sc_arms, STEEL, group=g_roof)
-    add("ScissorGear", sc_gear, GRAY, group=g_roof)
-    slab, panels, latches = build_canopy(cfg["lift"])
-    add("Canopy", slab, WHITE, group=g_roof)
-    add("SolarPanels", panels, PANEL, group=g_roof)
-    add("CanopyLatches", latches, GRAY, group=g_roof)
-    if cfg.get("walls"):
-        wbars, wframes, wlam = build_side_walls(cfg["lift"])
-        add("SideBars", wbars, STEEL, group=g_roof)
-        add("SideFrames", wframes, (0.42, 0.44, 0.47), group=g_roof)
-        add("SideSolar", wlam, PANEL, group=g_roof)
+    add("DeckLaminates", tlam, PANEL, group=g_roof)
+    add("DeckFrame", tframe, (0.62, 0.64, 0.67), group=g_roof)
+    add("WalkOnGlass", tglass, (0.62, 0.78, 0.86), 72, group=g_roof)
+    if trail:
+        add("Guardrail", trail, STEEL, group=g_roof)
 
     pod = P.pod_at(cfg["phi"])
     roll = 90 - cfg["phi"]          # rigid arm: roll locked to swing
@@ -1249,7 +1137,7 @@ def build_mode(mode):
     add("Frame", build_frame(), (0.42, 0.44, 0.47))
     add("SternArch", build_tow(cfg["tow"]), (0.42, 0.44, 0.47))
     add("SternGear", build_stern_gear(), (0.55, 0.57, 0.6))
-    aft_s, aft_d, aft_g = build_aft_entry(cfg["lift"] > 0,
+    aft_s, aft_d, aft_g = build_aft_entry(cfg["tow"] == "sea",
                                           cfg["balc"] == 0)
     add("AftEntry", aft_s, WHITE)
     add("AftFittings", aft_d, (0.30, 0.32, 0.35))

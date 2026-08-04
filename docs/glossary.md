@@ -26,29 +26,22 @@ Shared language for the design. Geometry values live in
 - **Cabin** — the living superstructure on deck (5.3 × 2.28 m inside,
   1.85 m clear over the sole under a 200 mm structural roof).
 - **Sole** — the interior floor inside the hull.
-- **Roof terrace / chillout deck** — the walkable top of the cabin
-  roof (z 2 400). It is a sealed structural sandwich, so raising the
-  pop-top never opens the living quarters.
-- **Pop-top canopy / solar roof** — the raisable lid carrying six
-  laminates; four scissor units lift it **1.9 m** off the terrace at
-  anchor. Details in [roof.md](roof.md).
-- **Scissor lift** — two arms crossed and pinned at mid-length: a
-  horizontal push at the slider raises the top. Folds flat, which is
-  why it fits a 180 mm lid.
-- **Breakout force** — the push a scissor needs when it is near flat,
-  where mechanical advantage is worst (3 609 N here). It sizes the
-  actuator, not the canopy weight.
-- **Coaming (canopy)** — the 60 mm raised rim the canopy gasket lands
-  on, keeping the seal line above any standing water.
-- **Over-centre latch** — a draw latch that goes past its pivot to
-  clamp and stay clamped; the eight of them hold the roof down at sea.
-- **Plug-in bar** — a ⌀50 alu tube dropped into a deck socket and
-  twist-locked when the roof is up: takes uplift and racking, carries
-  the lifelines, frames the solar side walls.
-- **Solar side wall** — a flexible laminate on a 25 mm tube frame
-  clipped between two bars; shelter and generation, off above 20 kn.
+- **Roof terrace / sun deck** — the walkable top of the cabin roof
+  (z 2 400). A sealed structural sandwich, so nothing above it can
+  ever open the living quarters.
+- **Walk-on glass** — laminated safety glass rated for foot traffic:
+  here 6+6 mm heat-strengthened with an SGP interlayer and an
+  anti-slip frit, in 8 panes of 1 200 × 1 050.
+- **Air box** — the ventilated 60 mm gap between the bonded solar
+  laminates and the glass over them. It keeps feet off the panels and
+  keeps the cells cool; mesh slots fore and aft give the cross-flow.
+- **Point load (design)** — the 2 kN on a 50 × 50 mm patch that sizes
+  walk-on glass. Its stress grows with the LOG of the pane span, which
+  is why smaller panes barely thin the glass.
+- **Frit** — ceramic pattern fired onto the glass; here the anti-slip
+  (R11) surface of the deck.
 - **Air draft** — height from the waterline to the highest point:
-  2.07 m roof down, **4.22 m** with the pop-top raised.
+  **2.27 m**.
 
 ## Interior (details in [interior.md](interior.md))
 
@@ -94,7 +87,7 @@ Shared language for the design. Geometry values live in
   The boat stands on its own floats (self-propelled by the waterjets;
   nothing external involved).
 - **Pose / mode** — a named configuration of all movable parts: `road`,
-  `launch`, `harbor`, `cruise`, `anchor`, `terrace`.
+  `launch`, `harbor`, `cruise`, `anchor`.
 - **Reserve buoyancy** — the float volume above water available to
   resist heeling; sized to ~82 % of displacement per side (righting
   safety factor ≥ 3 vs a 50 kn gust).
