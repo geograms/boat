@@ -267,8 +267,9 @@ GATE_X0, GATE_X1 = 200, 800    # sheer-rail gap right beside the
 # landing in each forward corner at bench height, and a grab post
 # bolted to the balcony frame at the gate
 LANDING_Z = 850
+GATE_PLATE_Y = 1180           # threshold plate stays inside the hull
 GRAB_POST_X = 520
-GRAB_POST_Y = 1230
+GRAB_POST_Y = 1150            # inboard of the deck edge (road width)
 GRAB_POST_H = 900
 # aft wall fit-out, seen from the cockpit: AC upper right, lockers below
 AC_Y0, AC_Y1 = 600, 1140
@@ -373,7 +374,9 @@ def checks(verbose=True):
     wheel_outer = wheel_disc_y + (WHEEL_W + 60) / 2
     float_outer_road = POD_ROAD[0] + FLOAT_H / 2               # sideways
     road_width = 2 * max(HULL_BEAM / 2, wheel_outer, float_outer_road,
-                         BALC_HINGE_Y + BALC_T + 2 * PANEL_T + 12)
+                         BALC_HINGE_Y + BALC_T + 2 * PANEL_T + 12,
+                         GATE_PLATE_Y,            # gate threshold plate
+                         GRAB_POST_Y + 35)        # boarding grab post
     road_height = CABIN_ROOF_Z + CANOPY_THICK - GROUND_Z
     track = 2 * wheel_disc_y
     # water: floats flat, wheels flat on deck

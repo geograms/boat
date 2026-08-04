@@ -703,8 +703,9 @@ def build_aft_entry(rail_up=False, door_open=False):
         parts.append(box(P.GATE_X1 - P.GATE_X0, 300, 55,
                          (P.GATE_X0, sgn * 880 - (300 if sgn < 0 else 0),
                           (P.LANDING_Z + DECK_Z) / 2)))       # half step
-        parts.append(box(P.GATE_X1 - P.GATE_X0, 260, 50,
-                         (P.GATE_X0, sgn * 1200 - 130, DECK_Z)))
+        parts.append(box(P.GATE_X1 - P.GATE_X0, 240, 50,
+                         (P.GATE_X0, sgn * P.GATE_PLATE_Y
+                          - (240 if sgn > 0 else 0), DECK_Z)))
         # grab post on the balcony frame + tie back into the cabin wall
         parts.append(rod((P.GRAB_POST_X, sgn * P.GRAB_POST_Y, DECK_Z),
                          (P.GRAB_POST_X, sgn * P.GRAB_POST_Y,
