@@ -1,0 +1,6 @@
+# regenerable build artifacts
+freecad/*.FCStd
+freecad/*.FCStd1
+export/
+__pycache__/
+*.pyc
