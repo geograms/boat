@@ -88,7 +88,7 @@ D = dict(
     cabin_W=P.CABIN_W,
     cabin_W_in=P.CABIN_W - 120,
     sole=350,
-    head=P.CABIN_ROOF_Z - 350,
+    head=P.CABIN_CEIL_Z - 350,
     roof=P.CABIN_ROOF_Z,
     canopy_top=P.CABIN_ROOF_Z + P.CANOPY_THICK,
     lift=P.CANOPY_LIFT,
@@ -107,7 +107,7 @@ D["air_draft"] = D["canopy_top"] - P.WL_Z
 D["cpl_x"], D["cpl_z"] = P.arch_coupling()
 D["cpl_h"] = D["cpl_z"] - P.GROUND_Z
 D["overhang"] = -D["cpl_x"]
-D["terrace"] = D["head"] + P.CANOPY_LIFT
+D["terrace"] = P.CANOPY_LIFT
 wx = [P.FLOAT_X + d for d in P.WHEEL_XS]
 D["wheelbase"] = max(wx) - min(wx)
 
@@ -165,8 +165,9 @@ ax.annotate("", (P.CABIN_X1 - 900, P.CABIN_ROOF_Z + P.CANOPY_THICK + 60),
             (P.CABIN_X1 - 900, P.CABIN_ROOF_Z + P.CANOPY_LIFT - 60),
             arrowprops=dict(arrowstyle="<->", color=DIM, lw=1.2))
 ax.text(P.CABIN_X1 - 800, P.CABIN_ROOF_Z + P.CANOPY_LIFT / 2 + 90,
-        f"roof lifts {P.CANOPY_LIFT}  →  chill-out deck, "
-        f"{D['terrace']} clear inside", ha="left", va="center",
+        f"pop-top lifts {P.CANOPY_LIFT} on 4 scissor units  →  "
+        f"terrace with {D['terrace']} standing headroom",
+        ha="left", va="center",
         fontsize=9.5, color=DIM, fontweight="bold")
 
 # solar balcony (folded-down walkway, seen edge-on behind the hull)
@@ -203,7 +204,7 @@ dim_v(ax, 0, P.WL_Z, -1150, f"draft {P.WL_Z}", side="right")
 witness(ax, 0, 0, -1150, 0)
 witness(ax, 0, P.WL_Z, -1150, P.WL_Z)
 
-dim_v(ax, 350, P.CABIN_ROOF_Z, 5900, f"headroom {D['head']}")
+dim_v(ax, 350, P.CABIN_CEIL_Z, 5900, f"headroom {D['head']}")
 dim_v(ax, P.COCKPIT_FLOOR, P.COCKPIT_FLOOR + D["door"], 1560,
       f"door {D['door']}")
 
@@ -322,7 +323,7 @@ witness(ax, -D["water_beam"] / 2, P.POD_WATER[1] - P.FLOAT_H / 2,
         -D["water_beam"] / 2, -1150)
 witness(ax, D["water_beam"] / 2, P.POD_WATER[1] - P.FLOAT_H / 2,
         D["water_beam"] / 2, -1150)
-dim_v(ax, P.CABIN_BASE_Z, P.CABIN_ROOF_Z, -2050, "cabin 1 000",
+dim_v(ax, P.CABIN_BASE_Z, P.CABIN_ROOF_Z, -2050, f"cabin {P.CABIN_ROOF_Z - P.CABIN_BASE_Z:,}".replace(",", " "),
       fs=9, side="right")
 
 ax.set_xlim(-3600, 3600)
@@ -350,8 +351,11 @@ rows = [
     ("", "cabin length", f"{D['cabin_L']:,} mm".replace(",", " ")),
     ("", "cabin width, inside", f"{D['cabin_W_in']:,} mm".replace(",", " ")),
     ("", "standing headroom", f"{D['head']:,} mm".replace(",", " ")),
-    ("", "headroom, roof raised",
-     f"{D['terrace']:,} mm".replace(",", " ")),
+    ("", "terrace, roof raised",
+     f"{D['terrace']:,} mm standing".replace(",", " ")),
+    ("", "air draft, roof raised",
+     f"{P.CABIN_ROOF_Z + P.CANOPY_LIFT + P.CANOPY_THICK - P.WL_Z:,} mm"
+     .replace(",", " ")),
     ("", "floor area", "≈ 12.1 m²"),
     ("", "entry door, clear", f"700 × {D['door']:,} mm".replace(",", " ")),
     ("", "cockpit floor / bulwark", "400 / 750 mm"),
@@ -360,8 +364,9 @@ rows = [
      f"{P.BALC_SPAN:,} × {P.BALC_X1 - P.BALC_X0:,} mm, both sides"
      .replace(",", " ")),
     ("", "aft passage width", f"{P.PASSAGE_W} mm  (part of the folding deck)"),
-    ("", "roof terrace", f"{P.CABIN_X1 - P.CABIN_X0:,} × 2 360 mm".replace(",", " ")),
-    ("", "panels", f"15 × {P.PANEL_L:,} × {P.PANEL_W:,} flexible (≈ 6.4 kW)"
+    ("", "roof terrace", f"{P.CABIN_X1 - P.CABIN_X0:,} × 2 360 mm"
+     .replace(",", " ")),
+    ("", "panels", f"16 × {P.PANEL_L:,} × {P.PANEL_W:,} flexible (≈ 6.9 kW)"
      .replace(",", " ")),
     ("H", "ROAD GEAR", ""),
     ("", "wheels", "6 × 205/70 R15 all-terrain"),

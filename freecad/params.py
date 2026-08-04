@@ -32,10 +32,16 @@ def full_section(st):
 CABIN_X0, CABIN_X1 = 900, 6200
 CABIN_W = 2400
 CABIN_BASE_Z = 1150
-CABIN_ROOF_Z = 2150
+# roof raised 250 over the first design: the 200 mm structural roof was
+# eating the interior height. Outside 2400 -> ceiling 2200 -> 1850 clear
+# over the sole; road height 3062, still far under the StVZO 4000 limit.
+CABIN_ROOF_Z = 2400
+ROOF_STRUCT = 200        # sandwich depth of the cabin roof = terrace floor
+CABIN_CEIL_Z = CABIN_ROOF_Z - ROOF_STRUCT
 CANOPY_THICK = 180
-CANOPY_LIFT = 1500
+CANOPY_LIFT = 1900       # Max: stand up on the terrace under the canopy
 CANOPY_OVERHANG = -20    # canopy 2360: fits 2 rows of panels, clears shutters
+WIN_Z0, WIN_H = 1500, 600          # window band (taller with the new roof)
 
 # ONE panel footprint everywhere: FLEXIBLE laminates (~430 W, ~6 kg,
 # bifacial on the balconies)
@@ -258,7 +264,7 @@ PORCH_T = 120                 # thin slab + fascia lip: a deliberate lower roof
 PORCH_STRUT_Y = 620           # diagonal tubes to the wall — no deck posts
 # alternating-tread ladder, hard against the aft wall to save floor space
 STAIR_Y0, STAIR_Y1 = -1200, -740   # port strip, to the LEFT of the door
-STAIR_X0, STAIR_X1 = 460, 880
+STAIR_X0, STAIR_X1 = 350, 880      # 530 run for the 1250 rise -> 67 deg
 STAIR_STEPS = 8
 GATE_X0, GATE_X1 = 200, 800    # sheer-rail gap right beside the
                                # cockpit: step straight out of the
@@ -274,6 +280,58 @@ AC_DEPTH = 170                # shallow and faired, not a bolted-on slab
 LOCKER_Y0, LOCKER_Y1 = 430, 1140
 LOCKER_Z0, LOCKER_Z1 = 950, 1720
 LOCKER_DEPTH = 300
+
+# ---- pop-top roof: scissor lift, plug-in bars, solar side walls ----
+# The pop-top shelters the ROOF TERRACE, it never opens the living
+# quarters — the cabin ceiling underneath stays a sealed structural
+# deck. Raised, the canopy stands 1900 mm over the terrace floor so
+# people walk under it.
+#
+# Mechanism (Max's choice): SCISSORS on the terrace, four units, one
+# per corner, arms lying fore-and-aft along the terrace edge, each with
+# its own electric actuator (encoder-synced). Single stage on purpose —
+# half the pin joints of a double scissor, and every joint is a
+# corrosion site. Stowed, the whole mechanism is sealed inside the
+# gasketed lid cavity, so it only meets weather at anchor.
+SCISSOR_ARM = 2000                 # pinned at mid-length: h = ARM*sin(th)
+SCISSOR_ARM_T = 40                 # arm section thickness (stack height)
+SCISSOR_WELL = 100                 # recessed well in the terrace floor
+SCISSOR_STOW_DEG = 3.5             # parked angle: h 122, span 1996
+SCISSOR_X = (1700, 5400)           # unit centres, fore and aft
+SCISSOR_Y = 900                    # +/- : under the canopy edge beams
+SCISSOR_CHAN_W = 90                # drained, open-bottom slider channel
+ACT_FORCE_N = 6000                 # IP69K washdown actuator, 24 V
+ACT_STROKE = 1450                  # >= slider travel 1378
+ACT_SPEED = 5.5                    # mm/s -> ~4 min full travel
+
+CANOPY_MASS = 180                  # kg: sandwich slab, frame, 6 laminates
+CANOPY_CROWN = 40                  # crown so rain runs to the gutter
+CANOPY_SKIRT = 90                  # skirt drops over the coaming
+COAMING_H = 60                     # gasket lands here, above any puddle
+GASKET_D = 25                      # EPDM bulb, compressed by the latches
+LATCH_N = 8                        # over-centre draw latches, storm/road
+TERRACE_TOERAIL = 80
+TERRACE_SCUPPER = 60               # corner drains: wells never hold water
+
+# plug-in bars (Max's idea): they take uplift and racking, carry the
+# lifelines, and are the frame the solar side walls clip into
+BAR_D = 50
+BAR_T = 3
+BAR_XS = (1150, 2883, 4617, 6150)  # 4 sockets per side -> 3 bays
+BAR_Y = 1120                       # inside the toe rail
+TIE_ROD_D = 16                     # 2 diagonals per side, forward bays
+
+# side walls: FLEXIBLE laminates on light tube frames (Max: lighter
+# than rigid panels, and they generate). Aft bay stays open for the
+# ladder, so 3 bays per side are framed and 2 of them carry a panel.
+SIDEPANEL_BAYS = 3
+SIDEPANEL_FRAME_T = 25
+SIDEPANEL_MASS = 10                # kg per framed panel
+
+WIND_DESIGN_KN = 25                # canopy may stay up to here
+WIND_SURVIVE_KN = 50               # pins + latches sized for this
+WIND_PANEL_KN = 20                 # side walls come off above this
+CP_NET = 1.5                       # EN 1991-1-4 free-standing canopy
 
 # ---- stern gear: electric winch + anchor ----
 # Winch: self-recovery on slippery ramps — pull to a ramp-top anchor
@@ -296,8 +354,46 @@ MODES = {
     "launch":  dict(phi=0,         balc=90, tow="land", lift=0),
     "harbor":  dict(phi=0,         balc=90, tow="sea",  lift=0),
     "cruise":  dict(phi=PHI_WATER, balc=0,  tow="sea",  lift=0),
-    "anchor":  dict(phi=PHI_WATER, balc=0,  tow="sea",  lift=CANOPY_LIFT),
+    "anchor":  dict(phi=PHI_WATER, balc=0,  tow="sea",  lift=0),
+    # roof up: only at anchor or alongside, never underway
+    "terrace": dict(phi=PHI_WATER, balc=0,  tow="sea",  lift=CANOPY_LIFT,
+                    walls=True),
 }
+
+
+def scissor_geom(lift):
+    """Single-stage scissor pinned at mid-arm. Returns the pose and the
+    load the actuator sees at that height:
+        (angle deg, horizontal span, slider travel from stowed,
+         actuator push N)
+    Height h = ARM*sin(theta), span = ARM*cos(theta). The push needed to
+    drive the slider is W/(2*tan(theta)) — huge near flat, which is why
+    the units are sized on breakout, not on weight."""
+    h = max(lift, SCISSOR_ARM * math.sin(math.radians(SCISSOR_STOW_DEG)))
+    th = math.asin(min(h / SCISSOR_ARM, 1.0))
+    span = SCISSOR_ARM * math.cos(th)
+    span0 = SCISSOR_ARM * math.cos(math.radians(SCISSOR_STOW_DEG))
+    w = CANOPY_MASS * 9.81 / 4                 # per unit
+    push = w / (2 * math.tan(th))
+    return math.degrees(th), span, span0 - span, push
+
+
+def canopy_z(lift):
+    """Underside of the canopy for a given lift."""
+    return CABIN_ROOF_Z + lift
+
+
+def wind_pressure(kn):
+    """Dynamic pressure (Pa) for a wind speed in knots."""
+    v = kn * 0.5144
+    return 0.5 * 1.25 * v * v
+
+
+def canopy_uplift_N(kn):
+    """Net wind load on the raised canopy (N), up or down."""
+    area = (CABIN_X1 - CABIN_X0 + 2 * CANOPY_OVERHANG) * \
+           (CABIN_W + 2 * CANOPY_OVERHANG) / 1e6
+    return wind_pressure(kn) * area * CP_NET
 
 
 def arch_apex(deg):
@@ -434,6 +530,44 @@ def checks(verbose=True):
     assert jack_frac <= 0.85, f"floats too small to jack up: {jack_frac:.2f}"
     assert -60 <= harbor_wl <= 40, \
         f"jack-up equilibrium off keel-awash regime: {harbor_wl:.0f}"
+    # pop-top roof: scissor kinematics, actuator sizing, wind, stability
+    th_up, span_up, travel, push_up = scissor_geom(CANOPY_LIFT)
+    _, _, _, push_break = scissor_geom(0)          # breakout, near flat
+    stow_h = SCISSOR_ARM * math.sin(math.radians(SCISSOR_STOW_DEG)) \
+        + 2 * SCISSOR_ARM_T
+    cavity = SCISSOR_WELL + CANOPY_THICK
+    terrace_clear = CANOPY_LIFT
+    air_draft_up = CABIN_ROOF_Z + CANOPY_LIFT + CANOPY_THICK - WL_Z
+    interior_clear = CABIN_CEIL_Z - 350                    # sole at 350
+    up_design = canopy_uplift_N(WIND_DESIGN_KN)
+    up_survive = canopy_uplift_N(WIND_SURVIVE_KN)
+    raise_min = travel / ACT_SPEED / 60
+    # CG rise from the raised gear: canopy + scissors + bars + walls
+    up_mass = CANOPY_MASS + 4 * 22 + 4 * 9 + 25 + 6 * SIDEPANEL_MASS
+    up_z = (CABIN_ROOF_Z + CANOPY_LIFT / 2 - WL_Z) / 1000
+    cg_rise = up_mass * (up_z - 1.0) / (BOAT_MASS + up_mass)
+    # side walls fitted: heeling moment vs the pontoon righting moment
+    wall_area = SIDEPANEL_BAYS * 1.733 * 1.9
+    m_heel_walls = wind_pressure(WIND_PANEL_KN) * wall_area * 1.3 * \
+        (CABIN_ROOF_Z + CANOPY_LIFT / 2 - WL_Z) / 1e6      # kNm
+
+    assert stow_h <= cavity, \
+        f"scissor stows {stow_h:.0f} mm, cavity only {cavity}"
+    assert travel <= ACT_STROKE, \
+        f"slider travels {travel:.0f} mm, actuator stroke {ACT_STROKE}"
+    assert push_break <= ACT_FORCE_N, \
+        f"breakout {push_break:.0f} N over the {ACT_FORCE_N} N actuator"
+    assert span_up + SCISSOR_CHAN_W <= CABIN_X1 - CABIN_X0, \
+        "scissor span does not fit the terrace"
+    assert terrace_clear >= 1900, f"terrace headroom {terrace_clear}"
+    assert interior_clear >= 1800, f"interior clear only {interior_clear}"
+    assert up_survive / 4 <= 2500, \
+        f"survival uplift {up_survive / 4:.0f} N/corner over the pin rating"
+    assert cg_rise <= 0.35, f"raised gear lifts the CG {cg_rise:.2f} m"
+    assert m_heel_walls <= 0.25 * m_right, \
+        f"side walls heel {m_heel_walls:.1f} kNm vs righting {m_right:.1f}"
+    assert MODES["road"]["lift"] == 0 and MODES["cruise"]["lift"] == 0, \
+        "roof must be latched down on the road and underway"
     grid_top = POD_WATER[1] + JET_Z_LOCAL + JET_GRID_H / 2
     assert grid_top <= WL_Z - 40, \
         f"intake grids not submerged enough: top {grid_top}"
@@ -464,6 +598,20 @@ def checks(verbose=True):
         print(f"aft entry       {DOOR_Z1 - COCKPIT_FLOOR} mm clear at the door, "
               f"bulwark {CABIN_BASE_Z - COCKPIT_FLOOR}, "
               f"floor {COCKPIT_FLOOR - WL_Z} above WL, ladder {stair_ang:.0f} deg")
+        print(f"cabin inside    {interior_clear:.0f} mm clear "
+              f"({CABIN_ROOF_Z} outside, {ROOF_STRUCT} roof structure)")
+        print(f"pop-top         lift {CANOPY_LIFT}, scissor {th_up:.1f} deg, "
+              f"span {span_up:.0f}, slider {travel:.0f} mm, "
+              f"{raise_min:.1f} min")
+        print(f"roof actuators  4 x {ACT_FORCE_N} N, breakout "
+              f"{push_break:.0f} N, holding {push_up:.0f} N, "
+              f"stows {stow_h:.0f} mm in a {cavity} mm cavity")
+        print(f"roof wind       {up_design / 1000:.1f} kN at "
+              f"{WIND_DESIGN_KN} kn ({up_design / 4:.0f} N/corner), "
+              f"{up_survive / 1000:.1f} kN at {WIND_SURVIVE_KN} kn on the pins")
+        print(f"roof raised     air draft {air_draft_up:.0f} mm above WL, "
+              f"CG +{cg_rise * 1000:.0f} mm, walls heel "
+              f"{m_heel_walls:.1f} vs righting {m_right:.1f} kNm")
         print(f"jack-up stance  floats {jack_frac * 100:.0f}% deep, "
               f"keel {-harbor_wl:.0f} mm above water (awash), "
               f"pontoon GM ~{gm_est:.1f} m")

@@ -72,8 +72,10 @@ Standing in the cockpit facing forward:
 
 ## 4. Stairs to the roof terrace
 
-The ladder is pushed **hard against the aft wall** — 420 mm of run for
-1 000 mm of rise, i.e. **67°** — so it takes almost no deck. That angle
+The ladder is pushed **hard against the aft wall** — 530 mm of run for
+1 250 mm of rise, i.e. **67°** — so it takes almost no deck. (The rise
+grew when the cabin roof went up 250 mm for interior headroom; the run
+grew with it to hold the angle.) That angle
 is only walkable with **alternating treads** (the loft/engine-room
 stair): eight half-width treads that swap sides, so each foot gets a
 250 mm-deep step in half the going a normal stair would need. Two

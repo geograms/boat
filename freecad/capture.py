@@ -9,12 +9,14 @@ os.makedirs(OUT, exist_ok=True)
 import glob
 for old in glob.glob(OUT + "/*.png"):
     os.remove(old)
-sys.argv = ["capture", "road", "launch", "harbor", "cruise", "anchor"]
+sys.argv = ["capture", "road", "launch", "harbor", "cruise", "anchor",
+            "terrace"]
 exec(open("/home/brito/code/boat/freecad/build_boat.py").read())
 
 PLANES = ("Ground", "Water", "Slipway")
 
-for mode in ("road", "launch", "harbor", "cruise", "anchor"):
+for mode in ("road", "launch", "harbor", "cruise", "anchor",
+             "terrace"):
     doc = App.getDocument("boat_" + mode)
     App.setActiveDocument(doc.Name)
     Gui.ActiveDocument = Gui.getDocument(doc.Name)

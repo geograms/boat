@@ -23,12 +23,32 @@ Shared language for the design. Geometry values live in
 - **Displacement** — the weight of water the hull pushes aside = the
   boat's floating weight.
 - **Freeboard** — hull height above the waterline.
-- **Cabin** — the living superstructure on deck (5.3 × 2.4 m, 1.8 m
-  standing headroom over the sole).
+- **Cabin** — the living superstructure on deck (5.3 × 2.28 m inside,
+  1.85 m clear over the sole under a 200 mm structural roof).
 - **Sole** — the interior floor inside the hull.
-- **Pop-top canopy / solar roof** — the raisable roof slab carrying six
-  solar panels; lifts 1.5 m on four posts at anchor to create the
-  **chillout deck** (roof terrace).
+- **Roof terrace / chillout deck** — the walkable top of the cabin
+  roof (z 2 400). It is a sealed structural sandwich, so raising the
+  pop-top never opens the living quarters.
+- **Pop-top canopy / solar roof** — the raisable lid carrying six
+  laminates; four scissor units lift it **1.9 m** off the terrace at
+  anchor. Details in [roof.md](roof.md).
+- **Scissor lift** — two arms crossed and pinned at mid-length: a
+  horizontal push at the slider raises the top. Folds flat, which is
+  why it fits a 180 mm lid.
+- **Breakout force** — the push a scissor needs when it is near flat,
+  where mechanical advantage is worst (3 609 N here). It sizes the
+  actuator, not the canopy weight.
+- **Coaming (canopy)** — the 60 mm raised rim the canopy gasket lands
+  on, keeping the seal line above any standing water.
+- **Over-centre latch** — a draw latch that goes past its pivot to
+  clamp and stay clamped; the eight of them hold the roof down at sea.
+- **Plug-in bar** — a ⌀50 alu tube dropped into a deck socket and
+  twist-locked when the roof is up: takes uplift and racking, carries
+  the lifelines, frames the solar side walls.
+- **Solar side wall** — a flexible laminate on a 25 mm tube frame
+  clipped between two bars; shelter and generation, off above 20 kn.
+- **Air draft** — height from the waterline to the highest point:
+  2.07 m roof down, **4.22 m** with the pop-top raised.
 
 ## Stabilizer / hangar system
 
@@ -53,7 +73,7 @@ Shared language for the design. Geometry values live in
   The boat stands on its own floats (self-propelled by the waterjets;
   nothing external involved).
 - **Pose / mode** — a named configuration of all movable parts: `road`,
-  `launch`, `harbor`, `cruise`, `anchor`, `foiling`.
+  `launch`, `harbor`, `cruise`, `anchor`, `terrace`.
 - **Reserve buoyancy** — the float volume above water available to
   resist heeling; sized to ~82 % of displacement per side (righting
   safety factor ≥ 3 vs a 50 kn gust).
