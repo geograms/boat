@@ -7,6 +7,7 @@ README means the two cannot drift.
 
 Run: python3 docs/make_pdf.py
 """
+import datetime
 import os
 import re
 import sys
@@ -28,6 +29,11 @@ RULE = "#c9ced4"
 
 FS_BODY, FS_H1, FS_H2, FS_H3 = 9.2, 20, 14, 11
 LEAD = 0.150                          # inch per body line
+
+AUTHOR = "Max Brito"
+EMAIL = "maxbrito@pm.me"
+YEAR = datetime.date.today().year
+COPYRIGHT = f"© {YEAR} {AUTHOR}"
 
 
 def strip_md(s):
@@ -60,6 +66,8 @@ class Doc:
                        fontsize=8, color=MUTED)
         self.page.text(ML / PW, MB * 0.55 / PH, "Boat-Home — design study",
                        fontsize=7.5, color=MUTED)
+        self.page.text(1 - MR / PW, MB * 0.55 / PH, COPYRIGHT,
+                       fontsize=7.5, color=MUTED, ha="right")
 
     def space(self, inches):
         self.y -= inches
@@ -228,6 +236,8 @@ def photoreal(pdf):
         fig.text(0.5, 0.49 - i * 0.030, ln, ha="center", fontsize=10.5,
                  color=INK if i < 3 else MUTED,
                  style="normal" if i < 3 else "italic")
+    fig.text(0.5, 0.08, f"{COPYRIGHT}  ·  {EMAIL}", ha="center", fontsize=8,
+             color=MUTED)
     pdf.savefig(fig)
     plt.close(fig)
 
@@ -243,8 +253,10 @@ def photoreal(pdf):
         ax.axis("off")
         fig.text(0.5, 0.095, title.upper(), ha="center", fontsize=15,
                  fontweight="bold", color=INK)
-        fig.text(0.5, 0.028, "\n".join(textwrap.wrap(sub, 92)), ha="center",
+        fig.text(0.5, 0.040, "\n".join(textwrap.wrap(sub, 92)), ha="center",
                  fontsize=9.5, color=MUTED, va="bottom")
+        fig.text(0.985, 0.012, f"{COPYRIGHT}  ·  {EMAIL}", ha="right",
+                 fontsize=7, color=MUTED)
         pdf.savefig(fig)
         plt.close(fig)
 
@@ -273,7 +285,13 @@ def title_page(pdf):
     for i, ln in enumerate(lines):
         fig.text(0.5, 0.30 - i * 0.033, ln, ha="center", fontsize=10.5,
                  color=INK)
-    fig.text(0.5, 0.10, "generated from README.md — python3 docs/make_pdf.py",
+    fig.text(0.5, 0.145, f"{COPYRIGHT}", ha="center", fontsize=10,
+             color=INK)
+    fig.text(0.5, 0.118, f"contact  ·  {EMAIL}", ha="center", fontsize=9.5,
+             color=ACCENT)
+    fig.text(0.5, 0.085, "All rights reserved. Not for redistribution "
+             "without permission.", ha="center", fontsize=7.5, color=MUTED)
+    fig.text(0.5, 0.055, "generated from README.md — python3 docs/make_pdf.py",
              ha="center", fontsize=8, color=MUTED, style="italic")
     pdf.savefig(fig)
     plt.close(fig)
@@ -392,6 +410,8 @@ def gallery(pdf):
              fontweight="bold", color=INK)
     fig.text(0.5, 0.50, f"{len(shots)} plates", ha="center", fontsize=11,
              color=MUTED)
+    fig.text(0.5, 0.08, f"{COPYRIGHT}  ·  {EMAIL}", ha="center", fontsize=8,
+             color=MUTED)
     pdf.savefig(fig)
     plt.close(fig)
 
@@ -409,6 +429,8 @@ def gallery(pdf):
         ax.imshow(img)
         ax.axis("off")
         fig.text(0.5, 0.035, cap, ha="center", fontsize=10, color=INK)
+        fig.text(0.985, 0.012, f"{COPYRIGHT}  ·  {EMAIL}", ha="right",
+                 fontsize=7, color=MUTED)
         pdf.savefig(fig)
         plt.close(fig)
 
@@ -423,4 +445,8 @@ if __name__ == "__main__":
         d = pdf.infodict()
         d["Title"] = "Boat-Home — Road-Towable Solar Trimaran"
         d["Subject"] = "Design study"
+        d["Author"] = f"{AUTHOR} <{EMAIL}>"
+        d["Creator"] = AUTHOR
+        d["Keywords"] = (f"{COPYRIGHT}. All rights reserved. "
+                         f"Contact {EMAIL}")
     print("wrote", OUT)

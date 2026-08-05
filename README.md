@@ -292,3 +292,8 @@ python3 -c "import sys; sys.path.insert(0,'freecad'); import params; params.chec
 legality (StVZO), submergence margins, stability, glass thickness, panel
 fit and interior clearances from the same numbers the geometry uses —
 change a dimension and the asserts tell you what broke.
+
+---
+
+© 2026 Max Brito. All rights reserved.
+Contact: [maxbrito@pm.me](mailto:maxbrito@pm.me)
