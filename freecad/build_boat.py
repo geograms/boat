@@ -157,8 +157,7 @@ def build_cabin():
         panes.append(Part.makeCylinder(
             pd / 2 - 30, 20, Vector(px, sy * (P.CABIN_W / 2 - 20), pz),
             Vector(0, sy, 0)))
-    cuts.append(box(200, 1500, wh, (P.CABIN_X1 - 100, -750, wz0)))   # windshield
-    panes.append(box(120, 1500, wh, (P.CABIN_X1 - 60, -750, wz0)))
+    # no windshield cut: the front dome IS the forward wall now
     cuts.append(door_opening())          # companionway
     for c in cuts:
         shell = shell.cut(c)
@@ -1024,46 +1023,46 @@ def build_interior(bed_down=None, bunk_down=None):
             Part.makeCompound(glass))
 
 
-def build_wintergarden():
-    """Full curved plexiglass envelope, fuller/rounder profile:
-    elliptical side curve with a gentle outward bulge (5 bends per
-    side), open top under the roof lid over the cabin, closed crown
-    around the raked bow bubble. Ruled loft = bent-panel build."""
-    def gunw(x):
-        st = P.STATIONS
-        for i in range(len(st) - 1):
-            if st[i][0] <= x <= st[i + 1][0]:
-                t = (x - st[i][0]) / (st[i + 1][0] - st[i][0])
-                return (st[i][1] + t * (st[i + 1][1] - st[i][1]),
-                        st[i][5] + t * (st[i + 1][5] - st[i][5]))
-        return st[-1][1], st[-1][5]
+def build_front_dome():
+    """The SKY DOME over the foredeck: a glazed conservatory the crew
+    sits in. It springs from the deck - flat on the bottom, the deck is
+    its floor - opens aft into the saloon at the cabin's front corners,
+    and closes down onto the bow forward. Doubly curved, so the glass is
+    hundreds of small flat triangles. Returns (glass, frame)."""
+    secs, tris = P.dome_mesh()
+    glass, frame = [], []
 
-    def section(x, top_z, top_hw):
-        gw, sz = gunw(x)
-        gw -= P.WG_EDGE_INSET
-        a = gw + 95                     # elliptical half-width w/ bulge
-        b_ = top_z - sz
-        side = []
-        for th in (20, 40, 60, 80):
-            yy = min(a * math.cos(math.radians(th)), gw + 60)
-            zz = sz + b_ * math.sin(math.radians(th))
-            side.append((yy, zz))
-        pts = [(x, 0, sz - 20), (x, -gw, sz)]
-        pts += [(x, -yy, zz) for yy, zz in side]
-        pts += [(x, -top_hw, top_z), (x, top_hw, top_z)]
-        pts += [(x, yy, zz) for yy, zz in reversed(side)]
-        pts += [(x, gw, sz)]
-        return wire(pts)
+    faces = []
+    for t in tris:
+        try:
+            faces.append(Part.Face(wire([tuple(p) for p in t])))
+        except Exception:
+            pass
+    try:
+        glass.append(Part.makeShell(faces).makeThickness(
+            [], -P.DOME_GLASS_T, 1e-3))
+    except Exception:
+        for f in faces:
+            n = f.normalAt(0, 0)
+            glass.append(f.extrude(Vector(n.x, n.y, n.z) * P.DOME_GLASS_T))
 
-    wires = []
-    for x in (P.CABIN_X0, 1800, 2800, 3800, 4800, 5600, 6200):
-        wires.append(section(x, 2145, P.WG_TOP_HW))
-    for x, apex in ((6550, 1980), (6800, 1760), (7000, 1560),
-                    (7130, 1430), (7190, 1360)):
-        gw, _ = gunw(x)
-        wires.append(section(x, apex, max((gw - P.WG_EDGE_INSET) * 0.12, 50)))
-    return Part.makeLoft(wires, True, True)
-
+    fh = P.DOME_FRAME_H
+    # a framed arch every other station, and the deck rail it stands on
+    for j, sec in enumerate(secs):
+        if j % P.DOME_RIB_EVERY or j == len(secs) - 1:
+            continue
+        for i in range(len(sec) - 1):
+            frame.append(rod(sec[i], sec[i + 1], fh))
+    for side in (0, len(secs[0]) - 1):        # the two deck rails
+        for j in range(len(secs) - 1):
+            frame.append(rod(secs[j][side], secs[j + 1][side],
+                             P.DOME_FRAME_W))
+    # longitudinal stringers, a few, so it reads as a frame not a mesh
+    npts = len(secs[0])
+    for i in range(2, npts - 2, 5):
+        for j in range(len(secs) - 1):
+            frame.append(rod(secs[j][i], secs[j + 1][i], fh - 8))
+    return Part.makeCompound(glass), Part.makeCompound(frame)
 
 def build_main_jet():
     """Main-hull waterjet: VERTICAL flush grids on the submerged part
@@ -1170,7 +1169,9 @@ def build_mode(mode):
     add("AftFittings", aft_d, (0.30, 0.32, 0.35))
     add("DoorGlass", aft_g, (0.5, 0.7, 0.8), 70)
     add("MainJet", build_main_jet(), (0.8, 0.65, 0.2))
-    add("WinterGarden", build_wintergarden(), (0.75, 0.88, 0.92), 70)
+    dglass, dframe = build_front_dome()
+    add("FrontDome", dglass, (0.72, 0.86, 0.92), 62)
+    add("FrontDomeFrame", dframe, (0.62, 0.64, 0.67))
 
     if mode == "road":
         add("Ground", box(13000, 9000, 20,

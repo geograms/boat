@@ -34,7 +34,7 @@ W, H = 2800, 1750
 
 # anything that lives inside the cabin must not show through the glass
 INSIDE = ("Joinery", "Cushions", "Appliances", "BatteriesTanks", "Fittings")
-GLASSY = ("Glazing", "WinterGarden", "DoorGlass", "WalkOnGlass")
+GLASSY = ("Glazing", "FrontDome", "DoorGlass", "WalkOnGlass")
 
 CX = P.LOA / 2                      # boat centre, for aiming the camera
 
@@ -92,6 +92,11 @@ for mode in MODES:
                 o.ViewObject.Visibility = False       # no cutaway look
             elif o.Name.startswith(GLASSY):
                 o.ViewObject.Transparency = 30        # real glass, not open
+                if o.Name.startswith("FrontDome"):
+                    # shaded, no facet wireframe: the dome must read as
+                    # a smooth glass cap, not as a mesh
+                    o.ViewObject.DisplayMode = "Shaded"
+                    o.ViewObject.Transparency = 42
                 if o.Name.startswith("WalkOnGlass"):
                     o.ViewObject.Transparency = 45
             elif o.Name in ("Water", "Ground", "Slipway"):

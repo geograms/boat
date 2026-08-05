@@ -224,15 +224,102 @@ def keel_z_at(x):
             return STATIONS[i][3] + t * (STATIONS[i + 1][3] - STATIONS[i][3])
     return STATIONS[-1][3]
 
-# ---- winter garden: full curved plexiglass envelope ----
-# One molded piece covering the WHOLE habitation area: bottom edge at
-# the sheer line (where the hull starts), rising over the cabin sides
-# to just under the roof-lid edge, wrapping the raked bow bubble down
-# to the foredeck. The solar roof lid caps the top opening, so the
-# pop-top still lifts through it.
-WG_APEX_CABIN = 2210     # glass crown over the cabin (roof lid above)
-WG_TOP_HW = 1195         # glass meets the roof-lid edge here
-WG_EDGE_INSET = 30       # bottom edge inset from the gunwale line
+# ---- front dome: faceted glass bow screen ----
+# Replaces the old wrap-the-whole-cabin envelope, which Max judged
+# clunky and which double-glazed over the picture windows anyway.
+# Max's definition fixes the geometry completely: the dome STARTS at
+# the two upper corners of the living-quarters box and LANDS on the two
+# lower corners where the hull starts, then sweeps forward over the
+# foredeck. Flat glass cut to size, so it is faceted, not bent.
+#   top edge     x 6200, z 2400, y -1200..+1200  (cabin front roof line)
+#   bottom edge  the hull sheer, (6200, +/-1136, 1196) forward
+#   forward limit x 7000, leaving 200 mm of solid bow to fend off with
+DOME_X_FWD = 7000               # pole; 200 mm of solid bow left forward
+DOME_STATIONS = 12              # arches from the cabin to the bow
+DOME_GLASS_T = 8                # laminated, cut to shape
+DOME_GLASS_KG_M2 = 20
+DOME_FRAME_W, DOME_FRAME_H = 40, 25
+DOME_RIB_EVERY = 2              # a framed arch every Nth station
+
+
+class Vec3:
+    __slots__ = ("x", "y", "z")
+
+    def __init__(self, x, y, z):
+        self.x, self.y, self.z = x, y, z
+
+    def __sub__(self, o):
+        return Vec3(self.x - o.x, self.y - o.y, self.z - o.z)
+
+    def cross(self, o):
+        return Vec3(self.y * o.z - self.z * o.y,
+                    self.z * o.x - self.x * o.z,
+                    self.x * o.y - self.y * o.x)
+
+    def dot(self, o):
+        return self.x * o.x + self.y * o.y + self.z * o.z
+
+    def length(self):
+        return math.sqrt(self.dot(self))
+
+
+def sheer_at(x):
+    """(gunwale half width, sheer z) anywhere along the hull."""
+    for i in range(len(STATIONS) - 1):
+        x0, x1 = STATIONS[i][0], STATIONS[i + 1][0]
+        if x0 <= x <= x1:
+            t = (x - x0) / (x1 - x0)
+            return (STATIONS[i][1] + t * (STATIONS[i + 1][1] - STATIONS[i][1]),
+                    STATIONS[i][5] + t * (STATIONS[i + 1][5] - STATIONS[i][5]))
+    return STATIONS[-1][1], STATIONS[-1][5]
+
+
+def dome_section(x, npts=26):
+    """One athwartships arch of the sky dome at station x.
+
+    The dome is a CONSERVATORY the crew sits in, so it springs from the
+    deck and the deck is its floor - it is flat on the bottom, open to
+    the saloon aft, and closes down onto the foredeck forward. Each
+    section is an arch: squarish aft where it meets the cabin's corners,
+    rounder forward as it settles onto the bow."""
+    span = DOME_X_FWD - CABIN_X1
+    t = min(max((x - CABIN_X1) / span, 0.0), 1.0)
+    hw_deck, z_deck = sheer_at(x)
+    hw0, _ = sheer_at(CABIN_X1)
+    h0 = CABIN_ROOF_Z - sheer_at(CABIN_X1)[1]          # 1204 at the cabin
+    crown = z_deck + h0 * math.sqrt(max(0.0, 1.0 - t * t))
+    w_top = hw_deck + (CABIN_W / 2 - hw0) * (1.0 - t)  # cabin corner aft
+    n = 3.6 - 1.6 * t                                  # squarer aft
+    pts = []
+    for k in range(npts):
+        s_ = math.pi * k / (npts - 1)
+        c, si = math.cos(s_), math.sin(s_)
+        fy = math.copysign(abs(c) ** (2.0 / n), c)
+        fz = abs(si) ** (2.0 / n)
+        z = z_deck + (crown - z_deck) * fz
+        f = 0.0 if crown - z_deck < 1e-6 else (z - z_deck) / (crown - z_deck)
+        w = hw_deck + (w_top - hw_deck) * f
+        pts.append((x, -w * fy, z))
+    return pts
+
+
+def dome_mesh():
+    """(sections, triangles) of the sky-dome shell. Flat on the deck,
+    open aft to the saloon, closed onto the foredeck forward."""
+    xs = [CABIN_X1 + (DOME_X_FWD - CABIN_X1) * i / DOME_STATIONS
+          for i in range(DOME_STATIONS + 1)]
+    secs = [dome_section(x) for x in xs]
+    tris = []
+    for j in range(len(secs) - 1):
+        a, b = secs[j], secs[j + 1]
+        for i in range(len(a) - 1):
+            if b[i] == b[i + 1]:
+                tris.append((a[i], a[i + 1], b[i]))
+            else:
+                tris.append((a[i], a[i + 1], b[i + 1]))
+                tris.append((a[i], b[i + 1], b[i]))
+    return secs, tris
+
 
 # ---- exoskeleton: external steel space frame ----
 # Everything mounts on the frame, not the hull skin: float-arm shoulder
@@ -792,6 +879,33 @@ def checks(verbose=True):
     assert DINETTE_X[1] <= WARDROBE_X[0] and HEADS_X[1] <= DINETTE_X[0], \
         "interior zones overlap"
 
+    # front dome: a real doubly-curved cap, tessellated in triangles
+    secs, tris = dome_mesh()
+    zt, zb = CABIN_ROOF_Z, sheer_at(CABIN_X1)[1]
+    dome_area = 0.0
+    for t in tris:
+        a, b, c = (Vec3(*p) for p in t)
+        dome_area += (b - a).cross(c - a).length() / 2 / 1e6
+    dome_kg = dome_area * DOME_GLASS_KG_M2 + 34
+    aft, fwd = secs[0], secs[-1]
+    dome_bulge = DOME_X_FWD - CABIN_X1
+    dome_head = max(p[2] for p in aft) - zb          # sitting height inside
+    # the dome is FLAT ON THE DECK: every section springs from the sheer
+    foot_err = max(abs(min(p[2] for p in s_) - sheer_at(s_[0][0])[1])
+                   for s_ in secs)
+
+    assert abs(max(p[2] for p in aft) - zt) < 3, \
+        "dome must reach the cabin roof line where it meets the saloon"
+    assert foot_err < 2, \
+        f"dome must sit ON the deck; worst foot is {foot_err:.0f} mm off"
+    assert max(p[2] for p in fwd) - min(p[2] for p in fwd) < 5, \
+        "dome must close down onto the foredeck, not stop in mid air"
+    assert DOME_X_FWD < LOA - 150, "dome leaves no bow platform"
+    assert max(abs(p[1]) for s_ in secs for p in s_) <= CABIN_W / 2 + 1, \
+        "dome is wider than the cabin"
+    assert len(tris) >= 200, "too few facets to read as a dome"
+    assert dome_head >= 1150, f"only {dome_head:.0f} mm of head in the dome"
+
     # roof terrace: walk-on glass deck, no moving parts
     interior_clear = CABIN_CEIL_Z - 350                    # sole at 350
     field, glass_area, bar_m, shade = deck_areas()
@@ -904,6 +1018,12 @@ def checks(verbose=True):
         print(f"roof modules    {DECK_PANELS} x standard {mod_l}x{mod_w} "
               f"{MODULE_500_W} W framed, laid across, "
               f"{DECK_PANELS * MODULE_500_KG} kg")
+        print(f"front dome      HALF dome, cut flat by the deck: "
+              f"{len(tris)} flat glass triangles, {DOME_GLASS_T} mm, "
+              f"{dome_area:.2f} m2, {dome_kg:.0f} kg")
+        print(f"sky dome        {len(secs)} arches over {dome_bulge:.0f} mm "
+              f"of foredeck, {dome_head:.0f} mm of head at the saloon end, "
+              f"sits flat on the deck (worst foot {foot_err:.1f} mm)")
         print(f"deck edge       toe rail {TERRACE_TOERAIL} mm, no guardrail")
         print(f"deck loads      {DECK_LOAD_UDL * 1000:.1f} kN/m2 + "
               f"{DECK_LOAD_POINT / 1000:.1f} kN point; crew one side "

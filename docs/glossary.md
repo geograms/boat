@@ -49,6 +49,9 @@ Shared language for the design. Geometry values live in
   the 75 mm the road-width limit allows.
 - **Air draft** — height from the waterline to the highest point:
   **2.27 m**.
+- **Sky dome** — the glazed conservatory over the foredeck: half a
+  dome cut flat by the deck, springing from the sheer and closing onto
+  the bow. Replaced the old wrap-around winter garden.
 
 ## Interior (details in [interior.md](interior.md))
 

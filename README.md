@@ -157,6 +157,12 @@ Sized for full building-code deck loads: 2 kN/m² plus 2 kN on a
 bed forward, fold-down bunk to port; batteries and water low and
 amidships. → [docs/interior.md](docs/interior.md)
 
+**Front sky dome** — a glazed conservatory over the foredeck: half a
+dome cut flat by the deck, so the deck is its floor and you walk into
+it from the saloon. 600 flat glass triangles, because a doubly curved
+surface cannot be tiled with flat quads.
+→ [docs/dome.md](docs/dome.md)
+
 **Tow and stern gear** — a wide A-arch on the transom pin-locks into a
 sea gantry or an extensible drawbar; the 2 t electric self-recovery
 winch and the anchor share the centreline so a ramp pull has no yaw
@@ -239,6 +245,7 @@ is your own time.
 | [propulsion.md](docs/propulsion.md) | waterjets, weed strategy, BOM |
 | [structure.md](docs/structure.md) | exoskeleton frame, tow arch, stern gear |
 | [roof.md](docs/roof.md) | walk-on glass deck, glass sizing, balconies |
+| [dome.md](docs/dome.md) | front sky dome: shape, tessellation, headroom |
 | [interior.md](docs/interior.md) | layout, stowage, services, mass budget |
 | [aft_entry.md](docs/aft_entry.md) | companionway, porch, ladder, AC, lockers |
 | [glossary.md](docs/glossary.md) | vocabulary for every part and term |
