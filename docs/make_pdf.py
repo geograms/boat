@@ -186,6 +186,69 @@ class Doc:
         plt.close(self.page)
 
 
+PR_DIR = "docs/photo-realistic"
+PHOTOREAL = [
+    ("docs/photo-realistic/ChatGPT Image Aug 5, 2026, 12_10_01 PM (2).png",
+     "Lying to the anchor",
+     "The sky dome forward is a room, not a windscreen: no wall between "
+     "it and the saloon, the sole runs straight through, 2 050 mm of "
+     "headroom under 4 m² of glass."),
+    ("docs/photo-realistic/ChatGPT Image Aug 5, 2026, 12_10_01 PM (3).png",
+     "Under way on sunlight",
+     "Three flush waterjets, no rudder, no propeller to foul. On a "
+     "summer day the roof makes more than the boat spends at 4.2 knots."),
+    ("docs/photo-realistic/ChatGPT Image Aug 5, 2026, 12_10_01 PM (1).png",
+     "The same boat, Tuesday morning",
+     "The floats fold under the hull and carry six driven wheels: "
+     "2 535 mm wide behind a Viano-class car. No crane, no yard, no "
+     "trailer to store."),
+]
+
+
+def photoreal(pdf):
+    """Marketing plates at the front — what the thing is, before the
+    engineering explains how."""
+    plates = [(p, t, s) for p, t, s in PHOTOREAL
+              if os.path.exists(os.path.join(ROOT, p))]
+    if not plates:
+        return
+    fig = plt.figure(figsize=(PW, PH))
+    fig.patch.set_facecolor("white")
+    fig.text(0.5, 0.62, "A HOUSE THAT SWIMS", ha="center", fontsize=26,
+             fontweight="bold", color=INK)
+    fig.text(0.5, 0.575, "and drives itself to the water", ha="center",
+             fontsize=13, color=ACCENT)
+    for i, ln in enumerate([
+            "Seven metres of Dutch barge with a glass dome on the bow, a",
+            "solar roof you can walk on, and its own trailer folded",
+            "underneath. One car tows it; it launches itself.",
+            "",
+            "The pictures on the next three pages are impressions.",
+            "Everything after them is measured."]):
+        fig.text(0.5, 0.49 - i * 0.030, ln, ha="center", fontsize=10.5,
+                 color=INK if i < 3 else MUTED,
+                 style="normal" if i < 3 else "italic")
+    pdf.savefig(fig)
+    plt.close(fig)
+
+    for path, title, sub in plates:
+        img = mpimg.imread(os.path.join(ROOT, path))
+        h, w = img.shape[0], img.shape[1]
+        land = w > h
+        fw, fh = (PH, PW) if land else (PW, PH)
+        fig = plt.figure(figsize=(fw, fh))
+        fig.patch.set_facecolor("white")
+        ax = fig.add_axes([0.03, 0.135, 0.94, 0.815])
+        ax.imshow(img)
+        ax.axis("off")
+        fig.text(0.5, 0.095, title.upper(), ha="center", fontsize=15,
+                 fontweight="bold", color=INK)
+        fig.text(0.5, 0.028, "\n".join(textwrap.wrap(sub, 92)), ha="center",
+                 fontsize=9.5, color=MUTED, va="bottom")
+        pdf.savefig(fig)
+        plt.close(fig)
+
+
 def title_page(pdf):
     fig = plt.figure(figsize=(PW, PH))
     fig.patch.set_facecolor("white")
@@ -195,12 +258,14 @@ def title_page(pdf):
              fontsize=15, color=ACCENT)
     fig.text(0.5, 0.727, "design study  ·  2026", ha="center", fontsize=10,
              color=MUTED)
-    hero = os.path.join(ROOT, "freecad/shots/cruise_iso.png")
-    if os.path.exists(hero):
-        img = mpimg.imread(hero)
-        ax = fig.add_axes([0.06, 0.36, 0.88, 0.34])
-        ax.imshow(img)
-        ax.axis("off")
+    for cand in (PHOTOREAL[0][0], "freecad/shots/beauty/cruise_bow_quarter.png"):
+        hero = os.path.join(ROOT, cand)
+        if os.path.exists(hero):
+            img = mpimg.imread(hero)
+            ax = fig.add_axes([0.06, 0.36, 0.88, 0.34])
+            ax.imshow(img)
+            ax.axis("off")
+            break
     lines = ["7.2 m  ·  2.5 m beam  ·  2 535 mm on the road",
              "4.40 kWp solar  ·  50 kWh battery  ·  4.8 kn maximum",
              "5 berths  ·  1 850 mm headroom  ·  12.1 m² floor",
@@ -352,6 +417,7 @@ if __name__ == "__main__":
     md = open(os.path.join(ROOT, "README.md")).read()
     with PdfPages(OUT) as pdf:
         title_page(pdf)
+        photoreal(pdf)
         render(md, pdf)
         gallery(pdf)
         d = pdf.infodict()
