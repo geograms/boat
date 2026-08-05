@@ -187,11 +187,11 @@ bias.
 | Solar balconies | 1 700 | 2 000 | [roof.md](docs/roof.md) |
 | Battery bank, 50 kWh LiFePO₄ | 9 000 | 11 000 | at 180–220 €/kWh |
 | Electrics: inverter/charger, MPPT, switchgear, cabling | 3 000 | 4 500 | est. |
-| Glazing: winter garden + windows | 6 000 | 9 000 | est. |
+| Glazing: front sky dome + windows | 6 000 | 9 000 | [dome.md](docs/dome.md) |
 | Interior fit-out incl. appliances, heads, AC | 12 000 | 16 000 | est. |
 | Paint, antifoul, deck finish | 2 000 | 3 000 | est. |
-| Approvals: CE self-certification, TÜV/StVZO trailer | 2 000 | 4 000 | est. |
-| **Materials total** | **73 000** | **101 000** | |
+| Approvals: national individual approval + engineering evidence | 3 000 | 12 000 | [homologation.md](docs/homologation.md) |
+| **Materials total** | **74 000** | **109 000** | |
 
 **Built professionally**, add labour: ≈ 2 550 h at 60–80 €/h =
 **150 000–205 000**, so a yard-built boat lands near
@@ -229,8 +229,13 @@ is your own time.
    first: travel with the water tank empty (−200 kg), carry half the
    bank as removable modules (−180 kg), or re-budget at ~2 500 kg and
    tow with a heavier car. → [interior.md §8](docs/interior.md)
-2. **TÜV approval** of the integrated running gear as a trailer is
-   unprecedented; get an engineer's sign-off early.
+2. **Road approval.** The folding running gear is not the problem —
+   the **brake** is: over 750 kg an overrun brake to UN R13 is
+   mandatory and approvals go to catalogue axle/brake combinations,
+   which our swinging arms do not have. Design around a hydraulic
+   overrun boat-trailer set, and cap the land drive at 6 km/h so the
+   vehicle stays a trailer rather than an amphibian.
+   → [homologation.md](docs/homologation.md)
 3. **Jet hydrodynamics** are first-order estimates — the intake grids
    want CFD or a tank test before committing.
 4. **Arm and shoulder-pin fatigue** — each arm carries ~1 000 kg
@@ -240,7 +245,47 @@ is your own time.
 
 ---
 
-## 8. Documents
+## 8. Road approval — the hangar as a trailer
+
+Full research, sources and cost bands: [homologation.md](docs/homologation.md).
+
+The running gear is part of the boat, so what gets registered is the
+whole thing as a **category O2 trailer** (750–3 500 kg). Three findings
+shape the design:
+
+1. **Keep the land drive at ≤ 6 km/h.** German registration law applies
+   to motor vehicles over 6 km/h; at or below it the wheel drive is a
+   manoeuvring aid and the vehicle stays a *trailer*. Above it, the
+   thing becomes an amphibious motor vehicle — a far harder approval,
+   with an unresolved conflict between road and waterway marking. The
+   Sealander swimming caravan is registered as a caravan and a
+   category D motorboat precisely *because* it has no drive of its own.
+   The design currently says 10 km/h; **6 is worth more than the 4.**
+2. **The brake is the obstacle, not the folding gear.** Over 750 kg an
+   overrun brake to UN R13 is mandatory, and approvals are granted to a
+   *catalogue combination* of overrun device, axle and brake. Design
+   the arms around a **hydraulic overrun boat-trailer brake set** and
+   the paperwork comes free with the parts; invent a brake and it is a
+   five-figure test programme.
+3. **There is no EU-wide route.** EU individual approval covers only M1
+   and N1, so a trailer gets a *national* individual approval, valid in
+   the issuing state; other states "shall permit" it unless they doubt
+   equivalence (Art. 46, Reg. 2018/858). **Register where you live** —
+   Germany requires re-registration within 12 months of a resident
+   bringing a vehicle in.
+
+| Country | Fees + engineering | Elapsed | Notes |
+|---|---|---|---|
+| **Germany** — § 21 StVZO / § 13 EG-FGV | **≈ 3 000–12 000** | 4–10 months | inspector-led; a plain self-built trailer goes through for ≈ €430, and that is the floor |
+| **Portugal** — IMT homologação individual | **≈ 1 700–6 500** | 4–12 weeks | document-led; €160 homologation + €45 matrícula, but IMT may demand accredited lab tests |
+| **Netherlands** — RDW individual approval | ≈ 250–300 in fees | weeks | the most transparent price list in the EU |
+
+**Next step, before more CAD:** buy a €300–800 pre-assessment from a
+technical service and get the required evidence in writing.
+
+---
+
+## 9. Documents
 
 | Document | Covers |
 |---|---|
@@ -249,6 +294,7 @@ is your own time.
 | [propulsion.md](docs/propulsion.md) | waterjets, weed strategy, BOM |
 | [structure.md](docs/structure.md) | exoskeleton frame, tow arch, stern gear |
 | [roof.md](docs/roof.md) | walk-on glass deck, glass sizing, balconies |
+| [homologation.md](docs/homologation.md) | road approval: trailer vs amphibian, brakes, DE/PT/NL cost and time |
 | [dome.md](docs/dome.md) | front sky dome: flat glazing, the two tubes, the open portal |
 | [interior.md](docs/interior.md) | layout, stowage, services, mass budget |
 | [aft_entry.md](docs/aft_entry.md) | companionway, porch, ladder, AC, lockers |
@@ -256,7 +302,7 @@ is your own time.
 
 ---
 
-## 9. Repository layout
+## 10. Repository layout
 
 ```
 freecad/            the model — the source of truth
@@ -276,7 +322,7 @@ drafts/             original concept PDF + STL sketch
 *.scad, Makefile    legacy OpenSCAD sketch (superseded)
 ```
 
-## 10. Working on it
+## 11. Working on it
 
 ```sh
 ./freecad/view.sh                              # open in the GUI
