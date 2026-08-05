@@ -96,7 +96,7 @@ for mode in MODES:
                     # shaded, no facet wireframe: the dome must read as
                     # a smooth glass cap, not as a mesh
                     o.ViewObject.DisplayMode = "Shaded"
-                    o.ViewObject.Transparency = 42
+                    o.ViewObject.Transparency = 66
                 if o.Name.startswith("WalkOnGlass"):
                     o.ViewObject.Transparency = 45
             elif o.Name in ("Water", "Ground", "Slipway"):

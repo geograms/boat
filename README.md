@@ -159,8 +159,9 @@ amidships. → [docs/interior.md](docs/interior.md)
 
 **Front sky dome** — a glazed conservatory over the foredeck: half a
 dome cut flat by the deck, so the deck is its floor and you walk into
-it from the saloon. 600 flat glass triangles, because a doubly curved
-surface cannot be tiled with flat quads.
+it from the saloon. Its aft rim lands exactly on the living-quarters
+box corners. **8 big hot-bent panes** in one band — fore-and-aft seams
+only, nothing horizontal for water to sit in.
 → [docs/dome.md](docs/dome.md)
 
 **Tow and stern gear** — a wide A-arch on the transom pin-locks into a
@@ -245,7 +246,7 @@ is your own time.
 | [propulsion.md](docs/propulsion.md) | waterjets, weed strategy, BOM |
 | [structure.md](docs/structure.md) | exoskeleton frame, tow arch, stern gear |
 | [roof.md](docs/roof.md) | walk-on glass deck, glass sizing, balconies |
-| [dome.md](docs/dome.md) | front sky dome: shape, tessellation, headroom |
+| [dome.md](docs/dome.md) | front sky dome: shape, 8-pane glazing, headroom |
 | [interior.md](docs/interior.md) | layout, stowage, services, mass budget |
 | [aft_entry.md](docs/aft_entry.md) | companionway, porch, ladder, AC, lockers |
 | [glossary.md](docs/glossary.md) | vocabulary for every part and term |

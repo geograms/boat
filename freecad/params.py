@@ -236,6 +236,11 @@ def keel_z_at(x):
 #   forward limit x 7000, leaving 200 mm of solid bow to fend off with
 DOME_X_FWD = 7000               # pole; 200 mm of solid bow left forward
 DOME_STATIONS = 12              # arches from the cabin to the bow
+DOME_PANELS = 8                 # BIG glass panels around the arch: each
+                                # runs the full length, so the dome has
+                                # 7 seams instead of hundreds of seals
+DOME_N_AFT = 24.0               # aft section exponent: square, so the
+DOME_N_FWD = 2.0                # glass meets the cabin's own corners
 DOME_GLASS_T = 8                # laminated, cut to shape
 DOME_GLASS_KG_M2 = 20
 DOME_FRAME_W, DOME_FRAME_H = 40, 25
@@ -274,14 +279,15 @@ def sheer_at(x):
     return STATIONS[-1][1], STATIONS[-1][5]
 
 
-def dome_section(x, npts=26):
+def dome_section(x, npts=25):
     """One athwartships arch of the sky dome at station x.
 
     The dome is a CONSERVATORY the crew sits in, so it springs from the
-    deck and the deck is its floor - it is flat on the bottom, open to
-    the saloon aft, and closes down onto the foredeck forward. Each
-    section is an arch: squarish aft where it meets the cabin's corners,
-    rounder forward as it settles onto the bow."""
+    deck and the deck is its floor - half a dome, cut flat by the deck.
+
+    The AFT arch is exactly the cabin's front opening: a rectangle, so
+    the top of the glass lands on the box's own upper corners. Running
+    forward it morphs into an ellipse and closes onto the bow."""
     span = DOME_X_FWD - CABIN_X1
     t = min(max((x - CABIN_X1) / span, 0.0), 1.0)
     hw_deck, z_deck = sheer_at(x)
@@ -289,18 +295,58 @@ def dome_section(x, npts=26):
     h0 = CABIN_ROOF_Z - sheer_at(CABIN_X1)[1]          # 1204 at the cabin
     crown = z_deck + h0 * math.sqrt(max(0.0, 1.0 - t * t))
     w_top = hw_deck + (CABIN_W / 2 - hw0) * (1.0 - t)  # cabin corner aft
-    n = 3.6 - 1.6 * t                                  # squarer aft
+    box = (1.0 - t) ** 1.6            # 1 = rectangle aft, 0 = ellipse fwd
     pts = []
     for k in range(npts):
         s_ = math.pi * k / (npts - 1)
         c, si = math.cos(s_), math.sin(s_)
-        fy = math.copysign(abs(c) ** (2.0 / n), c)
-        fz = abs(si) ** (2.0 / n)
+        m = max(abs(c), si, 1e-9)                      # square mapping
+        fy = box * (c / m) + (1.0 - box) * c
+        fz = box * (si / m) + (1.0 - box) * si
         z = z_deck + (crown - z_deck) * fz
         f = 0.0 if crown - z_deck < 1e-6 else (z - z_deck) / (crown - z_deck)
         w = hw_deck + (w_top - hw_deck) * f
         pts.append((x, -w * fy, z))
     return pts
+
+
+def dome_panel_edges():
+    """The theta indices where one big glass panel ends and the next
+    begins - the only seams in the dome."""
+    npts = 25
+    return [round(i * (npts - 1) / DOME_PANELS) for i in range(DOME_PANELS + 1)]
+
+
+def dome_panel_bend():
+    """For each big panel: (deviation from flat mm, bend radius mm).
+
+    A dome is doubly curved, so a LARGE pane has to be curved - there is
+    no way round that. What matters for the builder is how gently: this
+    fits a plane to each panel and reports the radius. Anything over
+    ~1.5 m is ordinary hot-bent glass, milder than a car windscreen."""
+    secs, _ = dome_mesh()
+    edges = dome_panel_edges()
+    out = []
+    for p in range(DOME_PANELS):
+        i0, i1 = edges[p], edges[p + 1]
+        pts = [s_[i] for s_ in secs for i in range(i0, i1 + 1)]
+        n_ = len(pts)
+        cx = sum(q[0] for q in pts) / n_
+        cy = sum(q[1] for q in pts) / n_
+        cz = sum(q[2] for q in pts) / n_
+        # plane normal from the panel's two dominant directions
+        d1 = Vec3(*pts[i1 - i0]) - Vec3(*pts[0])          # across the arch
+        d2 = Vec3(*pts[-1]) - Vec3(*pts[i1 - i0])         # along the sweep
+        nv = d1.cross(d2)
+        if nv.length() < 1e-6:
+            out.append((0.0, float("inf")))
+            continue
+        nv = Vec3(nv.x / nv.length(), nv.y / nv.length(), nv.z / nv.length())
+        dev = max(abs((Vec3(*q) - Vec3(cx, cy, cz)).dot(nv)) for q in pts)
+        span = 2 * max((Vec3(*q) - Vec3(cx, cy, cz)).length() for q in pts)
+        r = float("inf") if dev < 1e-6 else span * span / (8 * dev)
+        out.append((dev, r))
+    return out
 
 
 def dome_mesh():
@@ -903,8 +949,17 @@ def checks(verbose=True):
     assert DOME_X_FWD < LOA - 150, "dome leaves no bow platform"
     assert max(abs(p[1]) for s_ in secs for p in s_) <= CABIN_W / 2 + 1, \
         "dome is wider than the cabin"
-    assert len(tris) >= 200, "too few facets to read as a dome"
     assert dome_head >= 1150, f"only {dome_head:.0f} mm of head in the dome"
+    # big panels, few seams: 600 little triangles would be 600 seals
+    bend = dome_panel_bend()
+    dome_r = min(r for _, r in bend)
+    aft_top_y = max(abs(p[1]) for p in aft if p[2] > CABIN_ROOF_Z - 25)
+    assert DOME_PANELS <= 10, "too many panes to seal reliably"
+    assert dome_r >= 1500, \
+        f"panels need a {dome_r / 1000:.1f} m bend radius, too tight for glass"
+    assert abs(aft_top_y - CABIN_W / 2) <= 25, \
+        f"top of the glass is {CABIN_W / 2 - aft_top_y:.0f} mm short of the " \
+        "cabin corners"
 
     # roof terrace: walk-on glass deck, no moving parts
     interior_clear = CABIN_CEIL_Z - 350                    # sole at 350
@@ -1019,8 +1074,12 @@ def checks(verbose=True):
               f"{MODULE_500_W} W framed, laid across, "
               f"{DECK_PANELS * MODULE_500_KG} kg")
         print(f"front dome      HALF dome, cut flat by the deck: "
-              f"{len(tris)} flat glass triangles, {DOME_GLASS_T} mm, "
-              f"{dome_area:.2f} m2, {dome_kg:.0f} kg")
+              f"{DOME_PANELS} big panes ({DOME_PANELS + 1} seams), "
+              f"{DOME_GLASS_T} mm, {dome_area:.2f} m2, {dome_kg:.0f} kg")
+        print(f"dome glass      bend radius {dome_r / 1000:.1f} m "
+              f"(ordinary hot-bent; a car windscreen is tighter); top of "
+              f"the glass reaches y +/-{aft_top_y:.0f} of the cabin's "
+              f"{CABIN_W / 2:.0f}")
         print(f"sky dome        {len(secs)} arches over {dome_bulge:.0f} mm "
               f"of foredeck, {dome_head:.0f} mm of head at the saloon end, "
               f"sits flat on the deck (worst foot {foot_err:.1f} mm)")

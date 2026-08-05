@@ -1025,43 +1025,50 @@ def build_interior(bed_down=None, bunk_down=None):
 
 def build_front_dome():
     """The SKY DOME over the foredeck: a glazed conservatory the crew
-    sits in. It springs from the deck - flat on the bottom, the deck is
-    its floor - opens aft into the saloon at the cabin's front corners,
-    and closes down onto the bow forward. Doubly curved, so the glass is
-    hundreds of small flat triangles. Returns (glass, frame)."""
-    secs, tris = P.dome_mesh()
+    sits in. Half a dome, cut flat by the deck - the deck is its floor.
+    Its aft arch IS the cabin's front opening, so the top of the glass
+    lands on the box's own upper corners; forward it rounds off and
+    closes onto the bow.
+
+    Glazed in EIGHT big panes, not hundreds of facets: fewer seams is
+    what keeps water out. Each pane is hot-bent to a 1.6-3.3 m radius,
+    gentler than a car windscreen. Returns (glass, frame)."""
+    secs, _ = P.dome_mesh()
+    edges = P.dome_panel_edges()
     glass, frame = [], []
 
-    faces = []
-    for t in tris:
+    for p in range(P.DOME_PANELS):
+        i0, i1 = edges[p], edges[p + 1]
+        faces = []
+        for j in range(len(secs) - 1):
+            a, b = secs[j], secs[j + 1]
+            for i in range(i0, i1):
+                quad = [a[i], a[i + 1], b[i + 1], b[i]]
+                uniq = [q for k, q in enumerate(quad) if q not in quad[:k]]
+                if len(uniq) < 3:
+                    continue
+                try:
+                    faces.append(Part.Face(wire([tuple(q) for q in uniq])))
+                except Exception:
+                    pass
+        if not faces:
+            continue
         try:
-            faces.append(Part.Face(wire([tuple(p) for p in t])))
+            glass.append(Part.makeShell(faces).makeThickness(
+                [], -P.DOME_GLASS_T, 1e-3))
         except Exception:
-            pass
-    try:
-        glass.append(Part.makeShell(faces).makeThickness(
-            [], -P.DOME_GLASS_T, 1e-3))
-    except Exception:
-        for f in faces:
-            n = f.normalAt(0, 0)
-            glass.append(f.extrude(Vector(n.x, n.y, n.z) * P.DOME_GLASS_T))
+            glass.extend(faces)
 
     fh = P.DOME_FRAME_H
-    # a framed arch every other station, and the deck rail it stands on
-    for j, sec in enumerate(secs):
-        if j % P.DOME_RIB_EVERY or j == len(secs) - 1:
-            continue
-        for i in range(len(sec) - 1):
-            frame.append(rod(sec[i], sec[i + 1], fh))
-    for side in (0, len(secs[0]) - 1):        # the two deck rails
+    for i in edges:                            # the eight seams
+        for j in range(len(secs) - 1):
+            frame.append(rod(secs[j][i], secs[j + 1][i], fh))
+    for i in range(len(secs[0]) - 1):          # aft rim, onto the cabin
+        frame.append(rod(secs[0][i], secs[0][i + 1], P.DOME_FRAME_W))
+    for side in (0, len(secs[0]) - 1):         # the two deck rails
         for j in range(len(secs) - 1):
             frame.append(rod(secs[j][side], secs[j + 1][side],
                              P.DOME_FRAME_W))
-    # longitudinal stringers, a few, so it reads as a frame not a mesh
-    npts = len(secs[0])
-    for i in range(2, npts - 2, 5):
-        for j in range(len(secs) - 1):
-            frame.append(rod(secs[j][i], secs[j + 1][i], fh - 8))
     return Part.makeCompound(glass), Part.makeCompound(frame)
 
 def build_main_jet():
