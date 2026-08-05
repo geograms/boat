@@ -118,6 +118,19 @@ def build_hull():
          (P.CABIN_X1 - 50, P.CABIN_W / 2 - 70),
          (P.CABIN_X0 + 50, P.CABIN_W / 2 - 70)],
         DECK_Z - 60, DECK_Z + 60))
+    # the dome is a ROOM, not a bubble on the deck: open the foredeck
+    # under it so the saloon sole runs on through, leaving a 130 mm
+    # gunwale ledge for the glass to land on
+    fx0, fx1 = P.CABIN_X1 - 50, P.DOME_SOLE_X1
+    fplan = []
+    for i in range(9):
+        x = fx0 + (fx1 - fx0) * i / 8
+        fplan.append((x, -(P.sheer_at(x)[0] - 180)))
+    for i in range(8, -1, -1):
+        x = fx0 + (fx1 - fx0) * i / 8
+        fplan.append((x, P.sheer_at(x)[0] - 180))
+    # only the deck PLATE comes out - the shell below it is untouched
+    shell = shell.cut(plan_prism(fplan, DECK_Z - 80, DECK_Z + 80))
     shell = shell.cut(door_opening())   # companionway through the bulkhead
     return shell
 
@@ -157,7 +170,12 @@ def build_cabin():
         panes.append(Part.makeCylinder(
             pd / 2 - 30, 20, Vector(px, sy * (P.CABIN_W / 2 - 20), pz),
             Vector(0, sy, 0)))
-    # no windshield cut: the front dome IS the forward wall now
+    # NO FORWARD WALL: the saloon opens straight into the dome, so the
+    # front of the cabin is a portal - a corner post each side and the
+    # roof header over it. The dome's aft rim frames the opening.
+    pw = P.CABIN_W - 2 * P.DOME_PORTAL_POST
+    cuts.append(box(400, pw, P.CABIN_CEIL_Z - P.SOLE_Z,
+                    (P.CABIN_X1 - 200, -pw / 2, P.SOLE_Z)))
     cuts.append(door_opening())          # companionway
     for c in cuts:
         shell = shell.cut(c)
@@ -1030,46 +1048,72 @@ def build_front_dome():
     lands on the box's own upper corners; forward it rounds off and
     closes onto the bow.
 
-    Glazed in EIGHT big panes, not hundreds of facets: fewer seams is
-    what keeps water out. Each pane is hot-bent to a 1.6-3.3 m radius,
-    gentler than a car windscreen. Returns (glass, frame)."""
-    secs, _ = P.dome_mesh()
-    edges = P.dome_panel_edges()
+    EVERY PANE IS FLAT - no bent glass anywhere, so any pane can be
+    re-cut by a local glazier. Flat quads cannot tile a dome (they twist
+    124 mm), so each cell is split on its diagonal into two triangles,
+    which are planar by definition. Two tube purlins run across the
+    middle to keep the panes small, and the nose closes with a flat bow
+    pane. Returns (glass, frame)."""
+    rings = P.dome_rings()
     glass, frame = [], []
 
-    for p in range(P.DOME_PANELS):
-        i0, i1 = edges[p], edges[p + 1]
-        faces = []
-        for j in range(len(secs) - 1):
-            a, b = secs[j], secs[j + 1]
-            for i in range(i0, i1):
-                quad = [a[i], a[i + 1], b[i + 1], b[i]]
-                uniq = [q for k, q in enumerate(quad) if q not in quad[:k]]
-                if len(uniq) < 3:
-                    continue
-                try:
-                    faces.append(Part.Face(wire([tuple(q) for q in uniq])))
-                except Exception:
-                    pass
-        if not faces:
-            continue
+    for pts in P.dome_panes():
         try:
-            glass.append(Part.makeShell(faces).makeThickness(
-                [], -P.DOME_GLASS_T, 1e-3))
+            face = Part.Face(wire([tuple(q) for q in pts]))
+            glass.append(face.extrude(
+                Vector(*[c * P.DOME_GLASS_T for c in face.normalAt(0, 0)])))
         except Exception:
-            glass.extend(faces)
+            pass
 
-    fh = P.DOME_FRAME_H
-    for i in edges:                            # the eight seams
-        for j in range(len(secs) - 1):
-            frame.append(rod(secs[j][i], secs[j + 1][i], fh))
-    for i in range(len(secs[0]) - 1):          # aft rim, onto the cabin
-        frame.append(rod(secs[0][i], secs[0][i + 1], P.DOME_FRAME_W))
-    for side in (0, len(secs[0]) - 1):         # the two deck rails
-        for j in range(len(secs) - 1):
-            frame.append(rod(secs[j][side], secs[j + 1][side],
-                             P.DOME_FRAME_W))
+    fh, fw = P.DOME_FRAME_H, P.DOME_FRAME_W
+    for p in range(len(rings[0])):             # the eight meridian seams
+        for b in range(len(rings) - 1):
+            if rings[b][p] != rings[b + 1][p]:
+                frame.append(rod(rings[b][p], rings[b + 1][p], fh))
+    for b, ring in enumerate(rings):           # rims and the TWO TUBES
+        d = P.DOME_TUBE_D if 0 < b < len(rings) - 1 else fw
+        for i in range(len(ring) - 1):
+            if ring[i] != ring[i + 1]:
+                frame.append(rod(ring[i], ring[i + 1], d))
+    for b in range(len(rings) - 1):            # the diagonal in each cell
+        a, c = rings[b], rings[b + 1]
+        for p in range(len(a) - 1):
+            if p < P.DOME_PANELS / 2:          # mirrored about the
+                q0, q1 = a[p], c[p + 1]        # centreline
+            else:
+                q0, q1 = a[p + 1], c[p]
+            if q0 != q1:
+                frame.append(rod(q0, q1, fh - 6))
+    bow = rings[-1]                            # sill under the bow pane
+    z0 = min(q[2] for q in bow)
+    for i in range(len(bow) - 1):
+        frame.append(rod((bow[i][0], bow[i][1], z0),
+                         (bow[i + 1][0], bow[i + 1][1], z0), fw))
     return Part.makeCompound(glass), Part.makeCompound(frame)
+
+
+def build_dome_sole():
+    """The saloon sole runs straight on under the dome, so you walk out
+    of the living quarters into the glass without a step. The foredeck
+    is opened over the dome footprint (build_hull) and this is the floor
+    at the bottom of it, with one step up where the hull rises."""
+    parts = []
+    x0, x1 = P.CABIN_X1 - 200, P.DOME_SOLE_X1
+    plan = []
+    n = 8
+    for i in range(n + 1):
+        x = x0 + (x1 - x0) * i / n
+        plan.append((x, -(P.sheer_at(x)[0] - 130)))
+    for i in range(n, -1, -1):
+        x = x0 + (x1 - x0) * i / n
+        plan.append((x, P.sheer_at(x)[0] - 130))
+    inside = loft_sections(hull_sections(inner=True))
+    parts.append(plan_prism(plan, P.SOLE_Z - 30, P.SOLE_Z).common(inside))
+    # step up onto the bow locker top, forward of the sole
+    hw = P.sheer_at(P.DOME_SOLE_X1)[0] - 130
+    parts.append(box(240, 2 * hw, 30,
+                     (P.DOME_SOLE_X1, -hw, P.SOLE_Z + 220)).common(inside))
+    return Part.makeCompound(parts)
 
 def build_main_jet():
     """Main-hull waterjet: VERTICAL flush grids on the submerged part
@@ -1179,6 +1223,7 @@ def build_mode(mode):
     dglass, dframe = build_front_dome()
     add("FrontDome", dglass, (0.72, 0.86, 0.92), 62)
     add("FrontDomeFrame", dframe, (0.62, 0.64, 0.67))
+    add("DomeSole", build_dome_sole(), (0.78, 0.72, 0.60))
 
     if mode == "road":
         add("Ground", box(13000, 9000, 20,
@@ -1205,7 +1250,7 @@ def build_mode(mode):
 
 
 P.checks()
-modes = [a for a in sys.argv if a in P.MODES] or ["cruise", "road", "foiling"]
+modes = [a for a in sys.argv if a in P.MODES] or list(P.MODES)
 for m in modes:
     build_mode(m)
 

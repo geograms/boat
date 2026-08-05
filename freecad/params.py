@@ -234,17 +234,33 @@ def keel_z_at(x):
 #   top edge     x 6200, z 2400, y -1200..+1200  (cabin front roof line)
 #   bottom edge  the hull sheer, (6200, +/-1136, 1196) forward
 #   forward limit x 7000, leaving 200 mm of solid bow to fend off with
-DOME_X_FWD = 7000               # pole; 200 mm of solid bow left forward
-DOME_STATIONS = 12              # arches from the cabin to the bow
-DOME_PANELS = 8                 # BIG glass panels around the arch: each
-                                # runs the full length, so the dome has
-                                # 7 seams instead of hundreds of seals
+#
+# ALL THE GLASS IS FLAT. A dome is doubly curved, so flat QUADS cannot
+# tile it - measured, the best 8x3 quad layout still twists 124 mm out
+# of plane, and a planar-quad optimiser only gets it to 43 mm while
+# dragging the shape 200 mm off station. Flat TRIANGLES tile anything
+# exactly, so the shell is triangulated: two tube purlins across the
+# dome, eight meridian seams, one diagonal per cell.
+DOME_X_FWD = 7000               # pole of the shape law (not the glass)
+DOME_T_END = 0.85               # glass stops here and closes with a flat
+                                # bow pane: the last 15 % is where the
+                                # dome plunges, and cutting it drops the
+                                # facet error from 256 mm to 20 mm
+DOME_RING_T = (0.0, 0.37, 0.66, DOME_T_END)   # aft rim, TWO TUBES, bow rim
+DOME_STATIONS = 12              # sampling for area/shape checks only
+DOME_PANELS = 8                 # meridian seams around the arch
 DOME_N_AFT = 24.0               # aft section exponent: square, so the
 DOME_N_FWD = 2.0                # glass meets the cabin's own corners
-DOME_GLASS_T = 8                # laminated, cut to shape
+DOME_GLASS_T = 8                # laminated, flat, cut to shape
 DOME_GLASS_KG_M2 = 20
 DOME_FRAME_W, DOME_FRAME_H = 40, 25
+DOME_TUBE_D = 48                # the two purlin tubes, aluminium
 DOME_RIB_EVERY = 2              # a framed arch every Nth station
+DOME_BOW_PANES = 3              # the flat closing pane, split for handling
+
+# the saloon opens straight into the dome: no wall, only corner posts
+DOME_PORTAL_POST = 180          # corner post each side of the opening
+DOME_SOLE_X1 = 6800             # sole runs forward to here, then a step
 
 
 class Vec3:
@@ -315,6 +331,102 @@ def dome_panel_edges():
     begins - the only seams in the dome."""
     npts = 25
     return [round(i * (npts - 1) / DOME_PANELS) for i in range(DOME_PANELS + 1)]
+
+
+def dome_rings():
+    """The four framed rings of the dome: the aft rim on the cabin, the
+    TWO TUBES across the middle, and the bow rim. Each is a 9-point
+    polyline from the port deck edge over the crown to starboard."""
+    span = DOME_X_FWD - CABIN_X1
+    edges = dome_panel_edges()
+    out = []
+    for t in DOME_RING_T:
+        sec = dome_section(CABIN_X1 + span * t)
+        out.append([sec[i] for i in edges])
+    return out
+
+
+def dome_panes():
+    """Every pane of glass in the dome, each one FLAT.
+
+    A cell between two rings and two meridians is not planar - its four
+    corners twist up to 124 mm - so each cell is split on its diagonal
+    into two triangles, and a triangle is planar by definition. The bow
+    rim is a plain section at constant x, so the closing face is already
+    planar and is cut into DOME_BOW_PANES straight strips.
+
+    Returns a list of point lists (3 or 4 points each)."""
+    rings = dome_rings()
+    panes = []
+    for b in range(len(rings) - 1):
+        a, c = rings[b], rings[b + 1]
+        for p in range(DOME_PANELS):
+            q = [a[p], a[p + 1], c[p + 1], c[p]]
+            uniq = [v for k, v in enumerate(q) if v not in q[:k]]
+            if len(uniq) < 3:
+                continue
+            if len(uniq) == 3:
+                panes.append(uniq)
+            elif p < DOME_PANELS / 2:   # diagonals mirror about the
+                panes.append([q[0], q[1], q[2]])    # centreline, so the
+                panes.append([q[0], q[2], q[3]])    # pattern reads as a
+            else:                                   # herringbone, not a
+                panes.append([q[0], q[1], q[3]])    # random web
+                panes.append([q[1], q[2], q[3]])
+    # the flat bow face, cut into vertical strips
+    bow = rings[-1]
+    n = len(bow) - 1
+    step = n // DOME_BOW_PANES
+    for s in range(DOME_BOW_PANES):
+        i0 = s * step
+        i1 = n if s == DOME_BOW_PANES - 1 else (s + 1) * step
+        top = [bow[i] for i in range(i0, i1 + 1)]
+        z0 = min(p[2] for p in bow)
+        panes.append(top + [(bow[i1][0], bow[i1][1], z0),
+                            (bow[i0][0], bow[i0][1], z0)])
+    return panes
+
+
+def dome_pane_stats():
+    """(count, total m2, biggest pane m2, worst out-of-flat mm)."""
+    total = big = worst = 0.0
+    panes = dome_panes()
+    for pts in panes:
+        a = Vec3(*pts[0])
+        area = 0.0
+        for k in range(1, len(pts) - 1):
+            area += (Vec3(*pts[k]) - a).cross(Vec3(*pts[k + 1]) - a).length() / 2
+        area /= 1e6
+        total += area
+        big = max(big, area)
+        if len(pts) > 3:                       # measure the flatness claim
+            n_ = (Vec3(*pts[1]) - a).cross(Vec3(*pts[2]) - a)
+            L = n_.length()
+            if L > 1e-9:
+                n_ = Vec3(n_.x / L, n_.y / L, n_.z / L)
+                worst = max(worst, max(abs((Vec3(*q) - a).dot(n_))
+                                       for q in pts))
+    return len(panes), total, big, worst
+
+
+def dome_facet_error():
+    """How far the faceted shell sits inside the true dome, mm."""
+    span = DOME_X_FWD - CABIN_X1
+    h0 = CABIN_ROOF_Z - sheer_at(CABIN_X1)[1]
+
+    def crown(t):
+        x = CABIN_X1 + span * t
+        return x, sheer_at(x)[1] + h0 * math.sqrt(max(0.0, 1.0 - t * t))
+
+    worst = 0.0
+    for b in range(len(DOME_RING_T) - 1):
+        t0, t1 = DOME_RING_T[b], DOME_RING_T[b + 1]
+        x0, z0 = crown(t0)
+        x1, z1 = crown(t1)
+        for k in range(1, 60):
+            x, z = crown(t0 + (t1 - t0) * k / 60)
+            worst = max(worst, abs(z - (z0 + (z1 - z0) * (x - x0) / (x1 - x0))))
+    return worst
 
 
 def dome_panel_bend():
@@ -946,20 +1058,30 @@ def checks(verbose=True):
         f"dome must sit ON the deck; worst foot is {foot_err:.0f} mm off"
     assert max(p[2] for p in fwd) - min(p[2] for p in fwd) < 5, \
         "dome must close down onto the foredeck, not stop in mid air"
-    assert DOME_X_FWD < LOA - 150, "dome leaves no bow platform"
     assert max(abs(p[1]) for s_ in secs for p in s_) <= CABIN_W / 2 + 1, \
         "dome is wider than the cabin"
-    assert dome_head >= 1150, f"only {dome_head:.0f} mm of head in the dome"
-    # big panels, few seams: 600 little triangles would be 600 seals
-    bend = dome_panel_bend()
-    dome_r = min(r for _, r in bend)
+    # FLAT GLASS. Triangles are planar by definition; the bow face is a
+    # section at constant x, so it is planar too. Nothing is bent.
+    rings = dome_rings()
+    dome_x_end = rings[-1][0][0]
+    n_pane, pane_area, pane_big, pane_flat = dome_pane_stats()
+    facet_err = dome_facet_error()
+    dome_head = max(p[2] for p in rings[0]) - SOLE_Z    # sole runs forward
+    assert pane_flat <= 0.5, \
+        f"a pane is {pane_flat:.1f} mm out of flat - glass must be flat"
+    assert dome_x_end < LOA - 250, "dome leaves no bow platform"
+    assert facet_err <= 40, \
+        f"faceting cuts {facet_err:.0f} mm off the dome, put the tubes better"
+    assert pane_big <= 1.2, f"biggest pane {pane_big:.2f} m2, awkward to lift"
+    assert dome_head >= 1900, f"only {dome_head:.0f} mm of head in the dome"
     aft_top_y = max(abs(p[1]) for p in aft if p[2] > CABIN_ROOF_Z - 25)
-    assert DOME_PANELS <= 10, "too many panes to seal reliably"
-    assert dome_r >= 1500, \
-        f"panels need a {dome_r / 1000:.1f} m bend radius, too tight for glass"
     assert abs(aft_top_y - CABIN_W / 2) <= 25, \
         f"top of the glass is {CABIN_W / 2 - aft_top_y:.0f} mm short of the " \
         "cabin corners"
+    # the saloon opens into the dome: a portal, not a wall
+    portal_w = CABIN_W - 2 * DOME_PORTAL_POST
+    assert portal_w >= 1800, f"only {portal_w:.0f} mm of opening into the dome"
+    assert DOME_SOLE_X1 < dome_x_end, "the dome sole runs past the glass"
 
     # roof terrace: walk-on glass deck, no moving parts
     interior_clear = CABIN_CEIL_Z - 350                    # sole at 350
@@ -1074,15 +1196,17 @@ def checks(verbose=True):
               f"{MODULE_500_W} W framed, laid across, "
               f"{DECK_PANELS * MODULE_500_KG} kg")
         print(f"front dome      HALF dome, cut flat by the deck: "
-              f"{DOME_PANELS} big panes ({DOME_PANELS + 1} seams), "
-              f"{DOME_GLASS_T} mm, {dome_area:.2f} m2, {dome_kg:.0f} kg")
-        print(f"dome glass      bend radius {dome_r / 1000:.1f} m "
-              f"(ordinary hot-bent; a car windscreen is tighter); top of "
-              f"the glass reaches y +/-{aft_top_y:.0f} of the cabin's "
-              f"{CABIN_W / 2:.0f}")
-        print(f"sky dome        {len(secs)} arches over {dome_bulge:.0f} mm "
-              f"of foredeck, {dome_head:.0f} mm of head at the saloon end, "
-              f"sits flat on the deck (worst foot {foot_err:.1f} mm)")
+              f"{n_pane} FLAT panes, {DOME_GLASS_T} mm, {pane_area:.2f} m2, "
+              f"{pane_area * DOME_GLASS_KG_M2 + 34:.0f} kg; biggest pane "
+              f"{pane_big:.2f} m2, worst out-of-flat {pane_flat:.2f} mm")
+        print(f"dome frame      2 tube purlins d{DOME_TUBE_D} at x "
+              f"{rings[1][0][0]:.0f} and {rings[2][0][0]:.0f}, "
+              f"{DOME_PANELS} meridians, glass ends x {dome_x_end:.0f} "
+              f"({LOA - dome_x_end:.0f} mm bow platform); facets sit "
+              f"{facet_err:.0f} mm inside the true dome")
+        print(f"sky dome        {dome_head:.0f} mm of head at the saloon end, "
+              f"sole runs through at z {SOLE_Z}, {portal_w:.0f} mm portal, "
+              f"no wall (worst foot {foot_err:.1f} mm)")
         print(f"deck edge       toe rail {TERRACE_TOERAIL} mm, no guardrail")
         print(f"deck loads      {DECK_LOAD_UDL * 1000:.1f} kN/m2 + "
               f"{DECK_LOAD_POINT / 1000:.1f} kN point; crew one side "

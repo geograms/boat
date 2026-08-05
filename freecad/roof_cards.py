@@ -128,12 +128,9 @@ def card_deck():
              f"{P.DECK_PANE_NX} × {P.DECK_PANE_NY} panes of {px} × {py}  ·  "
              f"{P.DECK_GLASS_KG_M2 * px * py / 1e6:.0f} kg each",
              ha="center", va="center", fontsize=10, fontweight="bold")
-    for sy in (-1, 1):
-        for bx in P.BAR_XS:
-            ax2.add_patch(Circle((bx, sy * P.BAR_Y), 45, fc=STEEL, ec=INK))
     ax2.text(P.CABIN_X0 + tl / 2, -P.CABIN_W / 2 - 190,
              f"walking margin {P.CABIN_W / 2 - P.DECK_FIELD_HW:.0f} mm all "
-             f"round  ·  stanchion sockets  ·  frame shades "
+             f"round  ·  toe rail, no guardrail  ·  frame shades "
              f"{P.deck_areas()[3] * 100:.1f}%", ha="center", fontsize=9)
     ax2.set_xlim(P.CABIN_X0 - 200, P.CABIN_X1 + 200)
     ax2.set_ylim(-P.CABIN_W / 2 - 420, P.CABIN_W / 2 + 200)
@@ -263,8 +260,7 @@ def card_loads():
         ("", "air draft", f"{P.CABIN_ROOF_Z + P.DECK_BUILDUP - P.WL_Z} mm"),
         ("", "road height", f"{P.CABIN_ROOF_Z + P.DECK_BUILDUP - P.GROUND_Z:.0f}"
          " mm  (limit 4 000)"),
-        ("", "guardrail", f"{P.RAIL_H} mm + {P.LIFELINE_N} lifelines, "
-         "removable"),
+        ("", "deck edge", f"{P.TERRACE_TOERAIL} mm toe rail, no guardrail"),
     ]
     y = 0.98
     for kind, left, right in rows:
