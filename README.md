@@ -28,8 +28,8 @@ drift without the build failing.
 | Air draft afloat | **2 260 mm** |
 | Draft | **328 mm** empty, **348 mm** loaded (computed from the mass) |
 | Freeboard, loaded | 802 mm |
-| Mass, computed | **2 957 kg** empty · **3 257 kg** with crew and stores |
-| Road category | **O2 trailer, ≤ 3 500 kg** — 243 kg of margin loaded |
+| Mass, computed | **2 948 kg** empty · **3 248 kg** with crew and stores |
+| Road category | **O2 trailer, ≤ 3 500 kg** — 252 kg of margin loaded |
 | Ground clearance, road | 482 mm |
 | Track / wheelbase | 2 270 / 3 400 mm |
 | Coupling height / tongue load | 445 mm / +100 kg |
@@ -74,7 +74,7 @@ efficiency 0.45. Method in
 (theoretical hull speed is 6.2 kn, needing 30 kW). The last 0.2 kn costs as much power
 as the first 4 — this is a boat to cruise at 3–4 kn, not to push.
 
-**Solar-neutral cruising.** With 4.70 kWp and ≈ 24 kWh on a good summer
+**Solar-neutral cruising.** With 4.60 kWp and ≈ 24 kWh on a good summer
 day, eight hours at **4.2 knots** is solar-neutral: the boat moves all day
 and finishes with a fuller battery than it started. In spring or autumn
 (12 kWh) that falls to 3.6 kn, and on an overcast winter day (6 kWh) to
@@ -84,7 +84,7 @@ and finishes with a fuller battery than it started. In spring or autumn
 |---|---|
 | Battery | 48 V LiFePO₄, **50 kWh**, 357 kg, split under both settees |
 | Structure | foam-core GRP sandwich, 103 m² of panel, **754 kg** |
-| Solar | **4.70 kWp** — 10 × 230 W flexible on the roof, 6 × 400 W bifacial on the balconies (4.94 kWp effective — nothing shades the roof cells) |
+| Solar | **4.60 kWp** — 10 × 230 W flexible on the roof, 10 more as side curtains (4.14 kWp effective; one panel type for the whole boat) |
 | House load | ≈ 2.5 kWh/day (fridge, lights, water, AC standby) |
 | Steering | differential thrust, no rudder |
 | On land | ≤ 10 km/h under its own wheels; towed at road speeds |
@@ -165,6 +165,13 @@ that deck had no guardrail at all.
 → [docs/roof.md](docs/roof.md)
 
 ![roof deck](docs/images/roof_deck.png)
+
+**Solar curtains** — the balconies are gone. The same panel as the roof
+rails, five a side, hinged on the roof-to-wall corner: closed they cover
+the windows and slim the boat for the road, at 78° they project 1 129 mm
+out as an awning over the glass. 2.30 kWp for **117 kg**, where the
+walkable balconies were ~298 kg of frame and mechanism.
+→ [docs/roof.md](docs/roof.md)
 
 **Interior** — heads, galley, dinette that sleeps two, elevating double
 bed forward, fold-down bunk to port; batteries and water low and

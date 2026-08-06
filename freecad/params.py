@@ -165,6 +165,94 @@ MOTOR_BAY_DX = 650       # bay center, float-local x
 MOTOR_BAY_L = 800
 MOTOR_BAY_W = 400
 
+# ---- solar curtains: the same panel, hinged at the roof corner ----
+# The walkable balconies are gone. They were a ladder frame, a fold
+# mechanism, legs down to the wheel boxes and 149 kg per side, and they
+# bought a deck nobody needed once the cockpit and the aft passage give
+# access.
+#
+# In their place: the SAME Zendure panel as the roof rails, five per
+# side in a light aluminium frame, hinged on the corner where the cabin
+# roof meets the side wall. Three positions, one hinge:
+#   closed  - hanging flat against the cabin side: the windows are
+#             covered, the boat is slim, and that is the road pose
+#   awning  - swung out and up: shade over the windows, and the cells
+#             face the sky at a useful tilt
+#   open    - flat against the side, above the window band
+CURT_N_SIDE = 5                # panels per side, one continuous band
+CURT_GAP = 12                  # shadow gap, same as the roof rails
+CURT_FRAME_KG = 4.0            # alu frame + hinge + stay, per panel
+CURT_FRAME_W = 20              # light: an awning, not a guardrail - it
+                               # must tuck inside the 2500 hull line
+CURT_HINGE_Y = CABIN_W / 2     # the roof-to-side corner
+CURT_HINGE_Z = CABIN_ROOF_Z
+CURT_CLOSED_DEG = 0            # hanging down the side
+CURT_AWNING_DEG = 78           # swung out nearly flat: the panel
+                               # projects 1129 mm OVER the window
+                               # instead of hanging in front of it
+CURT_STAY_MM = 700             # gas stay / strut length when open
+
+# balcony names kept ONLY where other geometry still references the
+# gunwale line the old hinge sat on
+BALC_X0, BALC_X1 = 100, 6200
+PASSAGE_X = 900
+BALC_HINGE_Y = CABIN_W / 2
+BALC_HINGE_Z = 1150
+
+
+def curtain_positions():
+    """(x, y, z, sign) hinge origin of every curtain panel."""
+    rise, run_l, _t = MODULE_FLEX
+    run = CURT_N_SIDE * run_l + (CURT_N_SIDE - 1) * CURT_GAP
+    x0 = CABIN_X0 + (CABIN_X1 - CABIN_X0 - run) / 2
+    return [(x0 + i * (run_l + CURT_GAP), sy * CURT_HINGE_Y, CURT_HINGE_Z, sy)
+            for sy in (-1, 1) for i in range(CURT_N_SIDE)]
+
+
+def curtain_mass():
+    """kg of both curtains: panels, frames, hinges and stays."""
+    n = 2 * CURT_N_SIDE
+    return n * (MODULE_FLEX_KG + CURT_FRAME_KG) + 12
+
+
+# ---- caster wheels (electric hub motors, sealed) ----
+# 205/70 R15 ALL-TERRAIN (General Grabber AT3 class): sand/mud traction
+# plus normal road use; still a standard 15-inch size, any tire shop
+WHEEL_DIA = 668
+WHEEL_W = 205
+HUB_DIA = 390
+WHEEL_XS = (-1527, 173, 1873)      # world x 1873/3573/5273, 6 wheels
+                                   # (centroid forward of the CG so the
+                                   #  STERN coupling gets +100 kg down)
+AXLE_STANDOFF = -15                # disc recessed; rim stays inside 2550
+WHEEL_DROP = 60                    # axle dropped so wheels, not floats, touch ground
+
+GROUND_Z = POD_ROAD[1] - WHEEL_DROP - WHEEL_DIA / 2   # -448
+
+# ---- jack-up stance (folded arms afloat) ----
+# Floats hold ~3.1 t of max buoyancy vs a 2.0 t boat: folding the arms
+# in deep water lifts the HULL until the floats alone carry the boat.
+# Equilibrium: floats ~65% submerged; the hull keel ends up AT the
+# water surface (unloaded, awash) — float top is welded flush to the
+# hull bottom, so true dry clearance is ~zero by construction.
+BOAT_MASS = 2000
+DESIGN_ALL_UP = BOAT_MASS          # ONE mass figure for the whole project:
+                                   # hydrostatics, performance and the road
+                                   # numbers all read this. See checks().
+CREW_STORES = 300                  # crew + stores + fuel/water top-up, kg
+_wedge = 0.5 * (BOTTOM_SLOPE * FLOAT_H) * FLOAT_H * FLOAT_LEN
+_reserve = (FLOAT_LEN * FLOAT_W * FLOAT_H * 0.62 - _wedge) * 1e-6
+JACK_DEPTH = FLOAT_W * BOAT_MASS / (2 * _reserve)        # ~387 mm
+HARBOR_WL_Z = (POD_ROAD[1] - FLOAT_W / 2) + JACK_DEPTH   # ~-1: keel awash
+
+# in-float electric-hydraulic drive bay (see docs/wheels.md):
+# 48V motor + pump + valve manifold in a watertight compartment;
+# hydraulic orbital motors in the wheel hubs, hoses internal to the
+# float — nothing hydraulic ever crosses the arm articulation
+MOTOR_BAY_DX = 650       # bay center, float-local x
+MOTOR_BAY_L = 800
+MOTOR_BAY_W = 400
+
 # ---- solar balcony: bifacial shutters / walkable water deck ----
 BALC_X0, BALC_X1 = 100, 6200   # runs aft to the transom so the
                                # walkway meets the cockpit directly
@@ -705,9 +793,11 @@ def solar_kwp():
     under glass. Deployed as guardrails they stand vertical and make
     roughly a third of this - see docs/roof.md."""
     deck = DECK_PANELS * PANEL_W_PEAK / 1000
-    balc = 2 * BALC_MODULES * MODULE_W_PEAK_STD / 1000
-    eff = deck * COOLING_GAIN + balc * BIFACIAL_GAIN
-    return deck, balc, eff
+    curt = 2 * CURT_N_SIDE * MODULE_FLEX_W / 1000
+    # curtains hang vertical when closed and sit at 40 deg as awnings;
+    # call it 0.75 of a roof panel over a season
+    eff = deck * COOLING_GAIN + curt * 0.75
+    return deck, curt, eff
 
 
 RAIL_VERTICAL_YIELD = 0.35         # of flat output, standing as a rail
@@ -735,8 +825,8 @@ MASS_ARMS = 150            # 6 swinging arms, steel, incl. shoulder pins
 MASS_HYDRAULICS = 120      # 2 x (BLDC + pump + manifold), hoses, oil, reservoir
 MASS_JETS = 75             # 3 x 2 kW waterjet cartridges incl. ducting
 MASS_ELECTRICS = 120       # inverter/charger, MPPTs, busbars, cabling
-MASS_SOLAR = 126           # 6 x 21 kg bifacial balcony modules;
-                           # the roof panels are counted in deck_mass()
+MASS_SOLAR = 0             # roof panels are in deck_mass(), side
+                           # panels in curtain_mass()
 
 # ---- interior ----
 # 5300 x 2280 of floor and 1850 of height. Four zones, aft to forward:
@@ -863,17 +953,17 @@ STERNPOD_LEN = 700
 
 # phi: arm swing (0 = road, PHI_WATER = floats on the water)
 # roll: float roll (90 = on its side / wheels vertical, 0 = flat)
-# balc: 90 folded up over the windows, 0 horizontal over the water
+# curt: 0 closed over the windows (road), 40 swung out as an awning
 # roll is NOT independent: rigid arm -> roll = 90 - phi
 # rails: 0 = panels flat (harvesting, road-latched), 90 = standing as
 # the guardrail with the deck in use
 MODES = {
-    "road":    dict(phi=0,         balc=90, tow="land", lift=0, rails=0),
-    "launch":  dict(phi=0,         balc=90, tow="land", lift=0, rails=0),
-    "harbor":  dict(phi=0,         balc=90, tow="sea",  lift=0, rails=0),
-    "cruise":  dict(phi=PHI_WATER, balc=0,  tow="sea",  lift=0, rails=0),
-    "anchor":  dict(phi=PHI_WATER, balc=0,  tow="sea",  lift=0, rails=0),
-    "deck":    dict(phi=PHI_WATER, balc=0,  tow="sea",  lift=0, rails=90),
+    "road":    dict(phi=0,         curt=0, tow="land", lift=0, rails=0),
+    "launch":  dict(phi=0,         curt=0, tow="land", lift=0, rails=0),
+    "harbor":  dict(phi=0,         curt=0, tow="sea",  lift=0, rails=0),
+    "cruise":  dict(phi=PHI_WATER, curt=78,  tow="sea",  lift=0, rails=0),
+    "anchor":  dict(phi=PHI_WATER, curt=78,  tow="sea",  lift=0, rails=0),
+    "deck":    dict(phi=PHI_WATER, curt=78,  tow="sea",  lift=0, rails=90),
 }
 
 
@@ -1016,7 +1106,7 @@ def mass_budget():
     items["hydraulic drive"] = MASS_HYDRAULICS
     items["waterjets"] = MASS_JETS
     items["electrics"] = MASS_ELECTRICS
-    items["solar modules"] = MASS_SOLAR
+    items["solar curtains"] = curtain_mass()
     items["interior (incl. 50 kWh, water)"] = sum(INT_MASS.values())
     items["roof deck + solar rails"] = deck_mass()
     items["front dome glazing"] = dome_pane_stats()[1] * DOME_GLASS_KG_M2 + 34
@@ -1029,7 +1119,7 @@ def checks(verbose=True, strict=True):
     wheel_outer = wheel_disc_y + (WHEEL_W + 60) / 2
     float_outer_road = POD_ROAD[0] + FLOAT_H / 2               # sideways
     road_width = 2 * max(HULL_BEAM / 2, wheel_outer, float_outer_road,
-                         BALC_HINGE_Y + BALC_FOLDED_T,
+                         CURT_HINGE_Y + MODULE_FLEX[2] + CURT_FRAME_W,
                          GATE_PLATE_Y)            # gate threshold plate
     road_height = CABIN_ROOF_Z + DECK_BUILDUP - GROUND_Z
     track = 2 * wheel_disc_y
@@ -1044,7 +1134,6 @@ def checks(verbose=True, strict=True):
     reserve_kg = (FLOAT_LEN * FLOAT_W * FLOAT_H * 0.62 - wedge) * 1e-6
     m_right = reserve_kg * 9.81 * POD_WATER[0] / 1e6
     m_heel = 0.5 * 1.2 * 1.1 * 11.5 * 25.7**2 * 1.5 / 1000
-    box_gap = BALC_HINGE_Z - BALC_T - WHEELBOX_TOP_Z           # leg length
 
     assert road_width <= 2550, f"road width {road_width}"
     # as-BUILT beam: hand-laid laminate is not a milled dimension, and
@@ -1067,33 +1156,26 @@ def checks(verbose=True, strict=True):
     assert 1700 < disp < 2400, f"displacement {disp}"
     assert reserve_kg >= 0.80 * 1900, f"ama reserve {reserve_kg:.0f}"
     assert m_right / m_heel >= 3, f"righting SF {m_right / m_heel:.1f}"
-    assert BALC_HINGE_Y >= CABIN_W / 2 + CANOPY_OVERHANG + 15, \
-        "folded balcony hits the canopy"
-    assert BALC_HINGE_Z + BALC_SPAN <= CABIN_ROOF_Z + DECK_BUILDUP + 50, \
-        "folded balcony sticks above the roof deck"
-    assert 100 <= box_gap <= 450, f"balcony leg length odd: {box_gap}"
-    # walkable balcony: the folded thickness is what the road limit sees
-    ml, mw, mt = MODULE_STD
-    balc_free = 1275 - BALC_HINGE_Y
-    balc_mass = (2 * (BALC_X1 - PASSAGE_X) / 1000 * 3 * BALC_FRAME_RAIL[0]
-                 * BALC_FRAME_RAIL[1] * 2.7e-6 * 1000) + \
-        BALC_MODULES * MODULE_KG + \
-        (BALC_X1 - PASSAGE_X) * BALC_WALK_W / 1e6 * 8
-    assert BALC_FOLDED_T <= balc_free, \
-        f"folded balcony {BALC_FOLDED_T} mm thick, only {balc_free:.0f} free"
-    assert mt < BALC_T, \
-        f"module {mt} mm must recess into the {BALC_T} mm frame, not sit on it"
-    assert BALC_WALK_W == 0 or BALC_WALK_W >= 450, \
-        f"balcony walkway {BALC_WALK_W} mm is neither absent nor usable"
-    assert mw + 20 <= BALC_PANEL_W, \
-        f"module {mw} does not fit the {BALC_PANEL_W} panel strip"
-    assert BALC_WALK_W + BALC_PANEL_W + BALC_FRAME_RAIL[0] <= BALC_SPAN, \
-        "walkway + panel strip wider than the balcony"
-    assert BALC_MODULE_X0 >= PASSAGE_X - 50, \
-        "balcony modules must start at the wide deck, not in the passage"
-    assert BALC_MODULE_X0 + BALC_MODULES * ml + \
-        (BALC_MODULES - 1) * BALC_MODULE_GAP <= BALC_X1, \
-        f"{BALC_MODULES} modules do not fit the deck length"
+    # solar curtains: five panels a side on the roof corner
+    rise, run_l, mt = MODULE_FLEX
+    curt_run = CURT_N_SIDE * run_l + (CURT_N_SIDE - 1) * CURT_GAP
+    curt_bottom = CURT_HINGE_Z - rise
+    curt_out = CURT_HINGE_Y + mt + CURT_FRAME_W
+    assert len(curtain_positions()) == 2 * CURT_N_SIDE, "curtain count"
+    assert curt_run <= CABIN_X1 - CABIN_X0, \
+        f"curtain band {curt_run:.0f} longer than the cabin side"
+    assert curt_bottom <= WIN_Z0, \
+        f"closed curtain reaches z {curt_bottom:.0f}, window band starts " \
+        f"at {WIN_Z0} - it would not cover the glass"
+    assert 2 * curt_out <= HULL_BEAM, \
+        f"closed curtains {2 * curt_out:.0f} mm wide, outside the " \
+        f"{HULL_BEAM} mm hull line"
+    curt_awn_z = CURT_HINGE_Z - rise * math.cos(math.radians(CURT_AWNING_DEG))
+    assert curt_awn_z >= WIN_Z0 + WIN_H, \
+        f"awning bottom at z {curt_awn_z:.0f} hangs in front of the window " \
+        f"(top {WIN_Z0 + WIN_H}) - swing it flatter"
+    assert CURT_AWNING_DEG <= 85, "flatter than this and rain sits on it"
+
     # tow arch: coupling height on the road, protection reach at sea
     cpl_x, cpl_z = arch_coupling()
     cpl_h = cpl_z - GROUND_Z
@@ -1245,6 +1327,7 @@ def checks(verbose=True, strict=True):
     assert portal_w >= 1800, f"only {portal_w:.0f} mm of opening into the dome"
     assert DOME_SOLE_X1 < dome_x_end, "the dome sole runs past the glass"
 
+
     # roof deck: the panels ARE the guardrail
     interior_clear = CABIN_CEIL_Z - 350                    # sole at 350
     field, panel_area, bar_m, shade = deck_areas()
@@ -1319,11 +1402,6 @@ def checks(verbose=True, strict=True):
         print(f"ama reserve     {reserve_kg:.0f} kg/side "
               f"({100 * reserve_kg / 1900:.0f}%)")
         print(f"righting SF     {m_right / m_heel:.1f}")
-        print(f"balcony legs    {box_gap:.0f} mm down to the wheel boxes")
-        print(f"balcony deck    walkway {BALC_WALK_W} + panels "
-              f"{BALC_PANEL_W} = {BALC_SPAN}; {BALC_MODULES} std modules "
-              f"{ml}x{mw} per side; folded {BALC_FOLDED_T} mm of "
-              f"{balc_free:.0f} free;  ~{balc_mass:.0f} kg/side")
         print(f"waterjets       3 x {JET_POWER_W} W, grid top "
               f"{WL_Z - grid_top:.0f} mm under WL, face v {face_v:.2f} m/s")
         print(f"stern arch      gantry {-sea_x:.0f} mm aft of transom, "
@@ -1382,7 +1460,11 @@ def checks(verbose=True, strict=True):
               f"are the guardrail")
         print(f"deck loads      crew one side {m_heel_crew:.1f} vs righting "
               f"{m_right:.1f} kNm")
-        print(f"solar           deck {kwp_deck:.2f} + balcony {kwp_balc:.2f} "
+        print(f"curtains        {2 * CURT_N_SIDE} x the same panel on the roof "
+              f"corner, band {curt_run:.0f} mm, closed bottom z {curt_bottom:.0f} "
+              f"(windows {WIN_Z0}..{WIN_Z0 + WIN_H}), {curtain_mass():.0f} kg; "
+              f"awning {CURT_AWNING_DEG} deg")
+        print(f"solar           deck {kwp_deck:.2f} + curtains {kwp_balc:.2f} "
               f"= {kwp_deck + kwp_balc:.2f} kWp nominal, {kwp_eff:.2f} "
               f"effective;  air draft {air_draft:.0f} mm")
         print(f"jack-up stance  floats {jack_frac * 100:.0f}% deep, "

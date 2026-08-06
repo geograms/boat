@@ -463,79 +463,48 @@ def build_arms(phi):
     return parts, acts
 
 
-def build_balcony(fold_deg):
-    """WALKABLE solar balcony: an aluminium ladder frame carrying
-    STANDARD FRAMED MODULES in its outboard strip and an anti-slip
-    tread in its inboard strip. The modules drop INTO the frame, not
-    onto it — folded against the cabin the whole assembly may only be
-    55 mm thick before the road-width limit bites, which is also why
-    the walkway is beside the panels and not over them.
-    fold_deg 0 = horizontal (water), 90 = folded up (road). Starboard."""
-    place = Placement(Vector(0, P.BALC_HINGE_Y, P.BALC_HINGE_Z),
-                      Rotation(Vector(1, 0, 0), fold_deg))
+def build_curtains(deg):
+    """Solar curtains: the SAME flexible panel as the roof rails, five a
+    side in a light aluminium frame, hinged on the corner where the
+    cabin roof meets the side wall.
 
-    def posed(s):
-        s.Placement = place.multiply(s.Placement)
-        return s
+    deg 0  = closed, hanging flat down the side: windows covered, boat
+             slim - the road pose
+    deg 40 = swung out as an awning: shade over the glass, cells tilted
 
-    ml, mw, mt = P.MODULE_STD          # the standard 500 W panel
-    d = P.BALC_T
-    frame, panels, tread, rail = [], [], [], []
+    Returns (frames, panels, hinges) for BOTH sides, already placed."""
+    rise, run_l, pt = P.MODULE_FLEX
+    fw = P.CURT_FRAME_W
+    frames, panels, hinges = [], [], []
+    for (hx, hy, hz, sy) in P.curtain_positions():
+        # blank hangs from the hinge: x along the boat, y outboard, z DOWN
+        y0 = 0.0 if sy > 0 else -fw
+        frame_bar = box(run_l, fw, rise, (0, y0, -rise)).cut(
+            box(run_l - 2 * fw, fw + 2, rise - 2 * fw,
+                (fw, y0 - 1, -rise + fw)))
+        lam = box(run_l - 2 * fw - 4, pt, rise - 2 * fw - 4,
+                  (fw + 2, y0 + (fw - pt if sy > 0 else 0), -rise + fw + 2))
+        # swinging out is ONE rotation about the hinge line (the world x
+        # axis through the corner)
+        place = Placement(Vector(hx, hy, hz),
+                          Rotation(Vector(1, 0, 0), sy * deg))
+        for shp in (frame_bar, lam):
+            shp.Placement = place.multiply(shp.Placement)
+        frames.append(frame_bar)
+        panels.append(lam)
+        for f in (0.12, 0.88):
+            hinges.append(Part.makeCylinder(
+                10, 60, Vector(hx + run_l * f - 30, hy, hz), Vector(1, 0, 0)))
+        if deg > 5:                          # stay holding the awning out
+            import math as _m
+            r = _m.radians(deg)
+            hinges.append(rod(
+                (hx + run_l / 2, hy, hz - 60),
+                (hx + run_l / 2, hy + sy * rise * 0.55 * _m.sin(r),
+                 hz - rise * 0.55 * _m.cos(r)), 12))
+    return (Part.makeCompound(frames), Part.makeCompound(panels),
+            Part.makeCompound(hinges))
 
-    # ---- ladder frame: long rails at both edges, cross rails at the
-    #      module ends. No walkway strip any more: the modules run the
-    #      full width of the deck.
-    b, h, wall = P.BALC_FRAME_RAIL
-    for fy in (0, P.BALC_SPAN - b):
-        frame.append(posed(box(P.BALC_X1 - P.PASSAGE_X + 40, b, h,
-                               (P.PASSAGE_X - 40, fy, 0))))
-    nx = int((P.BALC_X1 - P.PASSAGE_X) / P.BALC_FRAME_PITCH) + 1
-    for i in range(nx + 1):
-        fx = P.PASSAGE_X + i * P.BALC_FRAME_PITCH
-        if fx <= P.BALC_X1:
-            frame.append(posed(box(b, P.BALC_SPAN, h, (fx, 0, 0))))
-    # narrow aft passage: frame plus tread — this is the only part of
-    # the balcony anyone walks on
-    frame.append(posed(box(P.PASSAGE_X - P.BALC_X0, b, h,
-                           (P.BALC_X0, 0, 0))))
-    frame.append(posed(box(P.PASSAGE_X - P.BALC_X0, b, h,
-                           (P.BALC_X0, P.PASSAGE_W - b, 0))))
-    for i in range(3):
-        frame.append(posed(box(b, P.PASSAGE_W, h,
-                              (P.BALC_X0 + i * (P.PASSAGE_X - P.BALC_X0) / 2,
-                               0, 0))))
-
-    # ---- standard 500 W modules, recessed into the full deck width
-    gy = (P.BALC_SPAN - mw) / 2
-    for i in range(P.BALC_MODULES):
-        px = P.BALC_MODULE_X0 + i * (ml + P.BALC_MODULE_GAP)
-        panels.append(posed(box(ml, mw, mt, (px, gy, d - mt))))
-        for edge in (gy, gy + mw - 35):            # alu module frame
-            panels.append(posed(box(ml, 35, mt + 4, (px, edge, d - mt - 2))))
-
-    # ---- tread on the aft passage only
-    tread.append(posed(box(P.PASSAGE_X - P.BALC_X0, P.PASSAGE_W,
-                           P.BALC_TREAD_T,
-                           (P.BALC_X0, 0, d - P.BALC_TREAD_T))))
-
-    # ---- outboard edge rail and the under-deck braces to the hull
-    rail_s = posed(box(P.BALC_X1 - P.PASSAGE_X, 40, 90,
-                       (P.PASSAGE_X, P.BALC_SPAN - 40, d)))
-    rail_s = rail_s.fuse(posed(box(P.PASSAGE_X - 340 - P.BALC_X0, 40, 90,
-                                   (P.BALC_X0, P.PASSAGE_W - 40, d))))
-    rail.append(rail_s)
-    braces = []
-    for bx in (P.PASSAGE_X + 300, (P.PASSAGE_X + P.BALC_X1) / 2,
-               P.BALC_X1 - 250):
-        braces.append(posed(rod((bx, 60, -20),
-                                (bx, P.BALC_SPAN - 120, -20), 55)))
-    braces.append(posed(rod((P.BALC_X0 + 260, 60, -20),
-                            (P.BALC_X0 + 260, P.PASSAGE_W - 90, -20), 55)))
-    hinges = []
-    for hx in (P.BALC_X0 + 200, (P.BALC_X0 + P.BALC_X1) / 2, P.BALC_X1 - 200):
-        hinges.append(posed(rod((hx - 90, 0, 0), (hx + 90, 0, 0), 70)))
-    return (Part.makeCompound(frame + braces), Part.makeCompound(panels),
-            Part.makeCompound(rail + tread), Part.makeCompound(hinges))
 
 def build_frame():
     """EXTERNAL space frame (docs/structure.md). Nothing crosses the
@@ -1175,7 +1144,10 @@ def build_mode(mode):
     (fl, strips, forks, tires, rims, wboxes,
      hatch, hydraulics, thruster) = build_float(pod, roll)
     arms, acts = build_arms(cfg["phi"])
-    bframe, bpanels, bwalk, bhinges = build_balcony(cfg["balc"])
+    cframe, cpanels, chinges = build_curtains(cfg["curt"])
+    add("CurtainFrames", cframe, (0.62, 0.64, 0.67), group=g_gear)
+    add("CurtainPanels", cpanels, PANEL, group=g_gear)
+    add("CurtainHinges", chinges, GRAY, group=g_gear)
     for side, mir in (("Stb", False), ("Port", True)):
         m = mirror_y if mir else (lambda s: s)
         add(f"Float{side}", m(fl), ORANGE, group=g_gear)
@@ -1187,11 +1159,6 @@ def build_mode(mode):
             group=g_gear)
         if wboxes:
             add(f"WheelBoxes{side}", m(wboxes), WHITE, group=g_gear)
-        add(f"BalconyFrame{side}", m(bframe), (0.62, 0.64, 0.67),
-            group=g_gear)
-        add(f"BalconyPanels{side}", m(bpanels), PANEL, group=g_gear)
-        add(f"BalconyWalkway{side}", m(bwalk), STEEL, group=g_gear)
-        add(f"BalconyHinges{side}", m(bhinges), GRAY, group=g_gear)
         for i, a in enumerate(arms):
             add(f"Arm{side}{i}", m(a), GRAY, group=g_gear)
         for i, a in enumerate(acts):
@@ -1205,7 +1172,7 @@ def build_mode(mode):
     add("SternArch", build_tow(cfg["tow"]), (0.42, 0.44, 0.47))
     add("SternGear", build_stern_gear(), (0.55, 0.57, 0.6))
     aft_s, aft_d, aft_g = build_aft_entry(cfg["tow"] == "sea",
-                                          cfg["balc"] == 0)
+                                          cfg["curt"] > 5)
     add("AftEntry", aft_s, WHITE)
     add("AftFittings", aft_d, (0.30, 0.32, 0.35))
     add("DoorGlass", aft_g, (0.5, 0.7, 0.8), 70)

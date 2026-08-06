@@ -58,10 +58,10 @@ owner does the part that only needs time:
 | Height on the road | 3 002 mm (limit 4 000) |
 | Draft, computed | 328 mm empty, 348 mm loaded |
 | Freeboard, loaded | 802 mm |
-| Mass, computed | **2 957 kg empty, 3 257 kg loaded** — inside category O2 |
+| Mass, computed | **2 948 kg empty, 3 248 kg loaded** — inside category O2 |
 | Structure | foam-core GRP sandwich, 103 m² of panel, 754 kg |
 | Propulsion | 3 × 2 kW flush-intake waterjets, differential thrust, no rudder |
-| Power | 4.70 kWp solar, 50 kWh LiFePO₄ at 48 V |
+| Power | 4.60 kWp solar (one panel type, 20 panels), 50 kWh LiFePO₄ at 48 V |
 | Speed / range | 4.7 kn maximum; 233 NM at 3 kn; solar-neutral at 4.2 kn |
 | Accommodation | 5 berths, 1 850 mm headroom, 12.1 m² floor, wetroom, galley |
 | Running gear | 6 × 205/70 R15 on swinging arms inside the floats, ≤ 6 km/h |
@@ -106,7 +106,7 @@ Two structural decisions worth flagging to a builder:
 
 ## The mass story, and what is still open
 
-A builder will ask what it weighs, so: **2 957 kg empty, 3 257 kg with
+A builder will ask what it weighs, so: **2 948 kg empty, 3 248 kg with
 crew and stores**, computed from measured areas × the laminate schedule
 plus every known fitting — not estimated. That is inside the 3 500 kg
 category O2 trailer limit with 243 kg to spare.

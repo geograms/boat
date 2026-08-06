@@ -115,53 +115,41 @@ Boat total: 2.30 roof + 2.40 balcony = **4.70 kWp** nominal,
 - Cable routing through the hinge line, in a drip loop, so rotating a
   panel does not flex a conductor.
 
-## 6. The solar balconies — full-width standard panels
+## 6. The solar curtains — the same panel, on the roof corner
 
-The balconies carry **400 W BIFACIAL modules**, 1 722 × 1 134,
-recessed into an aluminium ladder frame, **3 per side**.
+The walkable balconies are gone: a ladder frame, a fold mechanism, legs
+down to the wheel boxes, ~149 kg a side, all to make a side deck that
+the cockpit and the aft passage already made unnecessary.
 
-Two datasheet facts decided this. A 400 W panel is the 54-cell format
-at **1 722 × 1 134 × 30, ~21 kg**; a 500 W is **1 961 × 1 134 × 30,
-~27 kg**. Those 239 mm are exactly what lets **three** fit the 5 300 mm
-balcony run (3 × 1 722 + gaps = 5 246) where only two 500 W would go —
-so the smaller panel gives *more* power per side: 1.2 kW against 1.0.
+In their place, **the same Zendure panel as the roof rails** — five a
+side, in a light 20 mm aluminium frame, hinged on the corner where the
+cabin roof meets the side wall. One hinge, three useful positions:
 
-**Bifacial on the sides**: the rear face earns its keep here in a
-way it never could on the roof. Folded up over the windows in road and
-harbour trim both faces see daylight, and deployed flat over the water
-the back face picks up the surface reflection — reckon +5 %.
+| Position | What it does |
+|---|---|
+| **Closed**, hanging flat down the side | covers the windows completely and makes the boat slim — the **road pose** |
+| **Awning, 78°** | projects **1 129 mm out over** the glass: full shade, view unobstructed, cells tilted 12° to the sky |
+| Anywhere between | as much sun as you want on the saloon |
 
-The roof no longer uses framed modules at all — see §1. The balconies
-keep them because a balcony panel is structure that folds over a window,
-not something anyone lifts by hand.
-
-A side walkway was the first requirement here, and the geometry gave
-a hard answer: a 500 W module is 1 134 mm wide, the balcony span is
-1 200, and the fold height caps that span at 1 431 — so a walkway
-(480 mm) and a full-size module cannot share the deck. Offered the
-trade, he **dropped the walkway**: the balconies went from 0.99 to
-**2.00 kWp**, which is worth more than side decks nobody needs when the
-cockpit and the aft passage already give access.
-
-```
-   PLAN of one balcony                SECTION (folded 48 mm)
-   +--------------------------+        |<------ 1160 ------>|
-   |  module   |   module     |       ...........................
-   |  1934x1134|   1934x1134  |       |  module 35 recessed     |
-   +--------------------------+       +--- 40 mm alu ladder ----+
-    passage 540 aft, tread only
-```
+Numbers:
 
 | | |
 |---|---|
-| frame | aluminium box 25 × 40 × 3 ladder, cross rails at 740 |
-| modules | **3 × 400 W bifacial per side**, 1 722 × 1 134, recessed |
-| walked on | the **540 mm aft passage only** — the panels are not a deck |
-| folded thickness | **48 mm** of the 75 available |
-| mass | ≈ 149 kg per side |
+| Panels | **10 × 230 W = 2.30 kWp**, identical to the roof |
+| Band | 5 073 mm a side, 12 mm shadow gaps — one continuous line |
+| Closed | bottom edge at z 1 246; the window band is 1 500–2 100, so it is covered with 254 mm to spare |
+| Folded width | 2 496 mm — **inside the 2 500 mm hull line**, so the curtains never set the road width |
+| Mass | **117 kg** both sides, against ~298 kg of balcony |
+| Frame | 20 mm alu box: this one is an awning, not a guardrail, so it carries no line load |
 
-The folded assembly is what the road limit sees, which is why the
-modules still drop **into** the frame rather than onto it.
+Two things this buys beyond the weight. The windows get **shade in
+summer and cover on the road** from a part that was already there for
+its solar. And the boat has **one panel type** now — ten on the roof,
+ten on the sides, one spare fits anywhere.
+
+The cost: vertical when closed and 78° when open, the curtains make
+about **0.75 of what the same panel makes flat on the roof**, which is
+why the effective total is 4.14 kWp against 4.60 nominal.
 
 ## 7. Cost sketch (2026, EUR)
 
@@ -174,9 +162,9 @@ modules still drop **into** the frame rather than onto it.
 | Wiring, MC4, drip loops, junction boxes | 160 |
 | **Roof deck total** | **≈ 2 900** |
 
-| Balconies (both sides) | Est. |
+| Curtains (both sides) | Est. |
 |---|---|
-| 6 × 400 W bifacial framed modules | 660 |
-| Alu ladder frames, hinges, brackets | 900 |
-| Anti-slip tread on the aft passages | 140 |
-| **Balcony total** | **≈ 1 700** |
+| 10 × 230 W flexible panels (5 pairs) | 1 250 |
+| Alu frames 20 mm box, hinges, gas stays | 700 |
+| Wiring, MC4, drip loops | 150 |
+| **Curtain total** | **≈ 2 100** |
