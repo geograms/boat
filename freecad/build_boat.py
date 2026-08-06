@@ -424,43 +424,32 @@ def build_float(pod, roll):
         hatch, hydraulics, thruster
 
 
-def build_arms(phi):
-    """Rigid welded arm per station: straight segments cut at angles that
-    follow the hull section in road pose. The whole polyline swings
-    outboard by phi about the shoulder pin. Starboard, posed."""
-    c = math.cos(math.radians(phi))
-    s = math.sin(math.radians(phi))
-
-    def rot(p):
-        vy, vz = p[0] - P.SH_Y, p[1] - P.SH_Z
-        return (P.SH_Y + vy * c - vz * s, P.SH_Z + vy * s + vz * c)
-
-    pts = [rot(p) for p in P.ARM_POLY_ROAD]
-    parts = []
-    for ax in P.ARM_X:
-        # shoulder pin lug — the ONLY rotating joint
-        parts.append(Part.makeCylinder(
-            P.ARM_T / 2 + 30, P.ARM_T + 100,
-            Vector(ax - (P.ARM_T + 100) / 2, P.SH_Y, P.SH_Z),
+def build_arms(phi, dx=0.0):
+    """Elbowed arm per station - the inverted V. Two tube segments,
+    shoulder and elbow both 24 V worm slew drives; phi 90 = sea stance,
+    phi 0 = folded under the hull. `dx` staggers the stations so the
+    folded elbows of the two sides pass each other. Starboard, posed."""
+    J, Pod = P.arm_joints(phi)
+    parts, drives = [], []
+    for ax0 in P.ARM_X:
+        ax = ax0 + dx
+        # shoulder slew drive on the spine
+        drives.append(Part.makeCylinder(
+            P.ARM_DRIVE_D / 2, P.ARM_T + 120,
+            Vector(ax - (P.ARM_T + 120) / 2, P.SH_Y, P.SH_Z),
             Vector(1, 0, 0)))
-        # fully welded segments; angle-cut joints with gusset plates
-        for a, b in zip(pts, pts[1:]):
-            parts.append(rod((ax, a[0], a[1]), (ax, b[0], b[1]), P.ARM_T))
-        for j in pts[1:-1]:
-            parts.append(box(P.ARM_T + 40, 130, 130,
-                             (ax - (P.ARM_T + 40) / 2, j[0] - 65,
-                              j[1] - 65)))
-        # static welded foot plate at the float (no pivot)
+        # upper segment, shoulder -> elbow
+        parts.append(rod((ax, P.SH_Y, P.SH_Z), (ax, J[0], J[1]), P.ARM_T))
+        # elbow slew drive
+        drives.append(Part.makeCylinder(
+            P.ARM_DRIVE_D / 2 - 20, P.ARM_T + 90,
+            Vector(ax - (P.ARM_T + 90) / 2, J[0], J[1]), Vector(1, 0, 0)))
+        # lower segment, elbow -> float
+        parts.append(rod((ax, J[0], J[1]), (ax, Pod[0], Pod[1]), P.ARM_T))
+        # welded foot at the float
         parts.append(box(P.ARM_T + 80, 170, 60,
-                         (ax - (P.ARM_T + 80) / 2, pts[-1][0] - 85,
-                          pts[-1][1] - 30)))
-    # hydraulic actuator: hull side to the mid-arm joint
-    acts = []
-    mid = pts[len(pts) // 2]
-    for ax in P.ARM_X:
-        acts.append(rod((ax + 180, P.SH_Y - 60, P.SH_Z - 300),
-                        (ax + 180, mid[0], mid[1]), 70))
-    return parts, acts
+                         (ax - (P.ARM_T + 80) / 2, Pod[0] - 85, Pod[1] - 30)))
+    return parts, drives
 
 
 def build_curtains(deg):
@@ -534,19 +523,41 @@ def build_hangar(phi, coupled=True):
         parts.append(box(x0 - P.HANGAR_BIGHT_X, sb, sh,
                          (P.HANGAR_BIGHT_X, s_ * sy - sb / 2,
                           P.LOCK_Z - sh / 2)))
-        # shoulder housings: the worm slew drive at each arm station
+        # the shoulder drives live on build_arms(); the spine only
+        # carries their mounting bosses
         for ax in P.ARM_X:
             parts.append(Part.makeCylinder(
-                P.ARM_DRIVE_D / 2, sb + 60,
-                Vector(ax - (sb + 60) / 2, s_ * sy, P.LOCK_Z),
+                60, sb + 40, Vector(ax - (sb + 40) / 2, s_ * sy, P.SH_Z),
                 Vector(1, 0, 0)))
 
     # the bight: cross beam aft of the transom, carrying the drawbar
     bb, bh = P.HANGAR_BIGHT
     parts.append(box(bb, 2 * sy + sb, bh,
                      (P.HANGAR_BIGHT_X - bb, -sy - sb / 2, P.LOCK_Z - bh / 2)))
-    parts.append(rod((P.HANGAR_BIGHT_X - bb / 2, 0, P.LOCK_Z),
-                     (P.HANGAR_BIGHT_X - 900, 0, P.LOCK_Z - 200), 90))
+    # ---- the coupler to the car: an A-frame off the bight ----
+    nose_x = P.HANGAR_BIGHT_X - P.DRAWBAR_LEN
+    nose_z = P.GROUND_Z + P.COUPLING_H
+    for s_ in (-1, 1):                       # the two legs of the A
+        parts.append(rod((P.HANGAR_BIGHT_X - bb / 2, s_ * (sy - 200),
+                          P.LOCK_Z),
+                         (nose_x + 260, 0, nose_z + 40), P.DRAWBAR_TUBE))
+    parts.append(rod((nose_x + 300, 0, nose_z + 40),
+                     (nose_x, 0, nose_z), P.DRAWBAR_TUBE))
+    # coupling head and the ball socket
+    parts.append(box(220, 150, 130, (nose_x - 40, -75, nose_z - 50)))
+    parts.append(Part.makeSphere(P.COUPLING_BALL / 2,
+                                 Vector(nose_x + 30, 0, nose_z - 55)))
+    # safety chain eyes
+    for s_ in (-1, 1):
+        parts.append(Part.makeTorus(28, 7, Vector(nose_x + 120, s_ * 90,
+                                                  nose_z - 20),
+                                    Vector(0, 1, 0)))
+    # jockey wheel, stowed up
+    parts.append(rod((nose_x + 420, 150, nose_z + 60),
+                     (nose_x + 420, 150, nose_z - 300), 60))
+    parts.append(Part.makeCylinder(
+        P.JOCKEY_D / 2, 70, Vector(nose_x + 420, 115, nose_z - 300),
+        Vector(0, 1, 0)))
 
     # four cone-and-bayonet locks, pointing INBOARD off the spines
     for (lx, ly, lz) in P.lock_points():
@@ -1213,7 +1224,8 @@ def build_mode(mode):
     roll = 90 - cfg["phi"]          # rigid arm: roll locked to swing
     (fl, strips, forks, tires, rims, wboxes,
      hatch, hydraulics, thruster) = build_float(pod, roll)
-    arms, acts = build_arms(cfg["phi"])
+    arms_s, drv_s = build_arms(cfg["phi"])
+    arms_p, drv_p = build_arms(cfg["phi"], P.ARM_STAGGER)
     hframe, hlocks = build_hangar(cfg["phi"], cfg.get("coupled", True))
     add("HangarFrame", hframe, (0.55, 0.57, 0.60), group=g_gear)
     add("HangarLocks", hlocks, (0.80, 0.65, 0.20), group=g_gear)
@@ -1242,10 +1254,12 @@ def build_mode(mode):
             group=g_gear)
         if wboxes:
             add(f"WheelBoxes{side}", m(wboxes), WHITE, group=g_gear)
-        for i, a in enumerate(arms):
+        arms_side = arms_p if mir else arms_s
+        drv_side = drv_p if mir else drv_s
+        for i, a in enumerate(arms_side):
             add(f"Arm{side}{i}", m(a), GRAY, group=g_gear)
-        for i, a in enumerate(acts):
-            add(f"Actuator{side}{i}", m(a), STEEL, group=g_gear)
+        for i, a in enumerate(drv_side):
+            add(f"ArmDrive{side}{i}", m(a), STEEL, group=g_gear)
         for i, t in enumerate(tires):
             add(f"Tire{side}{i}", m(t), DARK, group=g_gear)
         for i, r in enumerate(rims):

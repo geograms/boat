@@ -24,6 +24,10 @@ people aboard** — a stable working catamaran for a shore run.
 
 ## 2. What the hangar is
 
+The drawbar is now modelled too: an **A-frame off the bight** dropping
+to a 445 mm coupling height, 50 mm ball head, safety-chain eyes and a
+jockey wheel — the parts a technical service expects to see.
+
 ```
 PLAN — the U                          SECTION at a lock
 
@@ -45,12 +49,39 @@ PLAN — the U                          SECTION at a lock
 | U opening | **2 419 mm** against a hull 2 403 mm wide at that height |
 | Bight | 140 × 180 cross beam, **320 mm aft of the transom**, carrying the drawbar |
 | Road width | **2 529 mm** with the spines included — inside 2 550 |
-| Mass | **901 kg** complete: floats, wheels, arms, drives, spines, bight, locks |
+| Mass | **991 kg** complete: floats, wheels, elbowed arms, drives, spines, bight, drawbar, locks |
 
 The spines ride at the **lock height, not the sheer**. The hull is
 1 202 mm half-beam down there against 1 250 at the gunwale, and those
 48 mm a side are the only reason the U fits inside the road limit at
 all.
+
+## 2b. The arms — an inverted V that folds under
+
+A single-pivot arm cannot reach both poses: the sea stance is 2 395 mm
+from the shoulder, the under-hull pose 990 mm. So each arm has a
+**shoulder and an elbow**, both 24 V worm slew drives:
+
+```
+SEA — the inverted V                 FOLDED — under the hull
+        J  elbow, 2 m above WL
+       / \                                o  shoulder
+      /   \  La 2480                     / \_
+     o     \  Lb 1760                   |    \__ elbows cross the
+  spine     \                        [float]     centreline under
+             [float]  2 m clear         the keel; port stations sit
+              of the hull               350 mm aft, so they pass
+```
+
+- **2 000 mm of clear water** between hull and float: righting moment
+  goes from 31 to **54 kNm**, righting SF from 4.2 to **7.2** — that is
+  the capsize margin the wide stance buys.
+- Water beam 7.7 m at sea; folds to the same 2 529 mm road envelope.
+- Both joints move together under one controller — one motion, two
+  motors, self-locking at any angle, nothing hydraulic.
+- The float's 90° roll between poses comes **from the linkage itself**
+  (segment B rotates 89.3°), so there is still no wrist joint at the
+  float.
 
 ## 3. Coupling — guide with a cone, lock with a motor
 
@@ -105,8 +136,8 @@ hydraulic ram:
 | | kg |
 |---|---|
 | **Boat alone**, empty | **2 228** |
-| **Hangar**, the whole trailer | **901** |
-| Combination with crew and stores | **3 429** — still category O2 |
+| **Hangar**, the whole trailer | **991** |
+| Combination with crew and stores | **3 519** — **19 kg over the O2 limit**, an open item |
 
 Detachability costs about **180 kg** (spines, bight, cones, gearmotors,
 slew drives) against welding it in. What it buys is a boat that is not a
@@ -118,6 +149,9 @@ hangar's 901 kg is carried by its own floats rather than by the hull.
 
 ## 6. Open points
 
+- **19 kg over category O2.** The elbowed arms cost 90 kg over the
+  rigid ones; find it back (the weight-study levers more than cover it)
+  or accept category O3.
 - **Brakes.** The trailer still needs a service brake over 750 kg. On a
   detachable hangar this is now a normal problem: the wheels are on the
   hangar, so a catalogue overrun set can be specified against the
