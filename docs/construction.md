@@ -147,7 +147,7 @@ Full exterior fairing on the hull plus two floats is **≈ 400 hours** of
 filler and longboard. It is the largest single labour item on the boat
 and the one that stalls owner builds in year two. It has its own line in
 the build-time table for that reason — burying it inside "hull shell"
-is how schedules get lied to.
+is how a schedule stops being honest.
 
 ## 6. Materials and suppliers, German market
 

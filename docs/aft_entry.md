@@ -81,7 +81,7 @@ stair): eight half-width treads that swap sides, so each foot gets a
 250 mm-deep step in half the going a normal stair would need. Two
 stringers on edge carry them.
 
-**A handrail that follows the ladder.** Max's reference is the boarding
+**A handrail that follows the ladder.** The reference is the boarding
 ladder on a Sea-class motor yacht: a second side rail running
 **parallel to the stringer**, carried on three short standoffs, that
 you grip like a ladder rail as you climb. It is offset 220 mm from the

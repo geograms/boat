@@ -224,8 +224,8 @@ while the vehicle's regular base is genuinely abroad. Portuguese plates
 on a boat that lives in Germany means fines and no valid insurance —
 which is the part that actually hurts.
 
-So the Portuguese route is real **if** Max's normal residence is (or
-becomes) Portugal, or the boat genuinely lives there. It is not a
+So the Portuguese route is real **if** the owner's normal residence is
+(or becomes) Portugal, or the boat genuinely lives there. It is not a
 shopping trip.
 
 ### And a national approval does not travel freely

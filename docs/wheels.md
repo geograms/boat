@@ -57,7 +57,7 @@ Equilibrium (asserted in `checks()`): the floats end **65 % submerged**
 the water surface — unloaded, awash** (float tops are welded flush to
 the hull bottom, so true dry clearance is ~zero by construction; the
 deadrise keeps most of the bottom plating just clear). Standing on the
-two side-lying floats the waterplane gives a pontoon **GM ≈ 3 m** —
+two floats on their sides the waterplane gives a pontoon **GM ≈ 3 m** —
 stiffer than the trimaran; protected-water stance only.
 
 Loads: the actuators can never see more than the boat's own weight

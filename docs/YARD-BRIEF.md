@@ -42,8 +42,9 @@ owner does the part that only needs time:
    have three options costed for them.
 4. **Fairing** — 400 h is my estimate for hull plus two floats. Is that
    the number you would use?
-5. The **mass problem** below is unresolved. Where would you take weight
-   out of a boat like this?
+5. The **mass package** below takes 259 kg out of the structure and
+   makes another 343 kg removable for the road. Which of those six
+   levers would you actually do, and what have I missed?
 
 ## Principal particulars
 
@@ -120,19 +121,41 @@ model now asserts this and **fails**, deliberately. Consequences:
 | **Flotation** | fine — draft 369 mm, freeboard 781 mm |
 | **Speed and range** | almost unaffected: 4.7 kn instead of 4.8, 233 NM instead of 240 at 3 kn |
 
-Levers, with what each is worth:
+**There is a package that fixes it without deleting anything** — full
+working in [Weight](weight.md). Two moves:
 
-| Lever | Δ mass | Cost of taking it |
-|---|---|---|
-| Delete the walk-on glass deck **and** thin the roof core to 60 mm | **−450 kg** | loses the sun deck — the boat's best feature |
-| Battery 50 → 30 kWh | −143 kg | range 233 → 140 NM at 3 kn |
-| Tow with the water tank empty | −200 kg | road only; refill on arrival |
-| Lighter float schedule + local doublers | −38 kg | needs a load case per landing |
-| Re-baseline at 3 300 kg loaded and stay in O2 | 0 | needs ~280 kg from the list above |
+**Make the heavy consumables removable**, so the boat is heavy afloat
+and light on the road:
 
-My preference is the last line: **take ~300 kg out and re-baseline**,
-rather than pretend 2 000 kg was ever real. A builder's opinion on where
-those 300 kg come from is exactly what this package is asking for.
+| Removable | kg |
+|---|---|
+| Fresh water, 200 L — fill at the ramp | −200 |
+| 20 kWh of the bank as plug-in modules, 30 kWh stays aboard | −143 |
+
+**Then six measured structural levers**, none of which loses a feature:
+
+| Lever | Saved |
+|---|---|
+| Roof core 200 → 60 mm on two longitudinal beams | −74 |
+| Joinery in foam-core GRP instead of plywood | −70 |
+| Walk-on glass 12 mm only over the 6 m² you actually walk on | −62 |
+| Dome glass 8 → 6 mm (panes are 0.43 m² and flat) | −20 |
+| Float shell 18 → 12 mm with local doublers at the landings | −18 |
+| Hull bottom outer skin 1800 → 1400 gsm, after an ISO check | −15 |
+| **Total** | **−259** |
+
+Where that lands:
+
+| | Empty | Loaded | On the road |
+|---|---|---|---|
+| Today | 3 282 | 3 582 | 3 282 |
+| With the package | **3 023** | **3 323** | **2 680** |
+
+Road mass inside category O2 with 820 kg of margin, so the overrun
+brake set stays a catalogue purchase; afloat draft ≈ 355 mm; same
+50 kWh, same sun deck, same interior. A builder's opinion on those six
+levers — especially the roof beams and the foam-core joinery — is
+exactly what this package is asking for.
 
 ## What is already settled
 

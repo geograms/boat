@@ -7,7 +7,7 @@ asserted in `checks()`. Terms in [glossary.md](glossary.md).
 ## 1. Layout
 
 Three identical **rim-drive tunnel thrusters**, 48 V / **2 000 W each**
-(Max's cap):
+(the design cap):
 
 | Position | Where | Role |
 |---|---|---|

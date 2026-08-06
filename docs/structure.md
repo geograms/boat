@@ -177,7 +177,7 @@ keeps the anchor rode leading fair in any wind direction.
 - **Anchor** on the roller under the gantry sheave: shank and plough
   stow against the roller, rode runs up to the drum over a chain
   stripper. Anchoring from the stern suits this boat — the winter
-  garden and the terrace face forward, so lying stern-to the wind keeps
+  garden and the terrace face forward, so riding stern-to the wind keeps
   the view and the breeze where people sit.
 
 `checks()` asserts both are within 30 mm of the centreline, that the

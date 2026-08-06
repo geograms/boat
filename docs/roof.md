@@ -27,7 +27,7 @@ Total build-up **127 mm**, so the deck surface sits at 2 531, the air
 draft is **2 267** and the road height **3 009** against the 4 000 limit.
 
 The roof panels are **standard 500 W framed modules** (1 934 × 1 134 ×
-30, ≈24 kg) rather than bonded laminates — Max's call, and the right
+30, ≈24 kg) rather than bonded laminates — the right
 one: they are the cheapest watt on the market, replaceable at any solar
 shop, and the 60 mm air box swallows their 30 mm frame with room to
 spare. They cost ≈72 kg more than flexible laminates would.
@@ -41,7 +41,7 @@ inside the field — after an earlier version drew five laminates at
 ## 2. Why the pop-top was deleted
 
 The earlier design lifted a 12 m² canopy 1 900 mm on four scissor units.
-Max judged it weak for rough sea and wind. Rechecking the mechanics
+It was judged weak for rough sea and wind. Rechecking the mechanics
 agreed with him, and the first analysis had been wrong:
 
 - The force at a scissor foot is **F = W/tan θ** (virtual work), not
@@ -98,7 +98,7 @@ a dropped anchor are all inside the envelope.
 - **Cabling and junction boxes** live in the perimeter channel, never
   under a walked pane.
 - **Anti-slip**: ceramic frit, R11, on the top face.
-- **No guardrail** (Max: the stanchions and lifelines looked awful).
+- **No guardrail** — stanchions and lifelines spoil the line.
   The edge carries the 80 mm toe rail and nothing else. This is a sun
   deck to sit on rather than a working deck, and the fall risk from
   2.4 m is accepted deliberately — worth knowing before anyone brings
@@ -145,7 +145,7 @@ at **1 722 × 1 134 × 30, ~21 kg**; a 500 W is **1 961 × 1 134 × 30,
 balcony run (3 × 1 722 + gaps = 5 246) where only two 500 W would go —
 so the smaller panel gives *more* power per side: 1.2 kW against 1.0.
 
-**Bifacial on the sides** (Max): the rear face earns its keep here in a
+**Bifacial on the sides**: the rear face earns its keep here in a
 way it never could on the roof. Folded up over the windows in road and
 harbour trim both faces see daylight, and deployed flat over the water
 the back face picks up the surface reflection — reckon +5 %.
@@ -153,7 +153,7 @@ the back face picks up the surface reflection — reckon +5 %.
 The roof keeps the 500 W panel, because there the constraint is the
 2 100 mm field width and a 1 961 mm module lies across it happily.
 
-Max's first requirement here was a side walkway, and the geometry gave
+A side walkway was the first requirement here, and the geometry gave
 a hard answer: a 500 W module is 1 134 mm wide, the balcony span is
 1 200, and the fold height caps that span at 1 431 — so a walkway
 (480 mm) and a full-size module cannot share the deck. Offered the

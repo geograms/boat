@@ -106,7 +106,7 @@ They are the plates at the front of the PDF gallery.
 | `launch` | driving itself down the slipway on six wheels | [bow qtr](freecad/shots/beauty/launch_bow_quarter.png) · [stern qtr](freecad/shots/beauty/launch_stern_quarter.png) · [beam](freecad/shots/beauty/launch_beam.png) · [above](freecad/shots/beauty/launch_drone.png) · [low](freecad/shots/beauty/launch_low.png) |
 | `harbor` | jack-up: floats carry the boat, keel awash, tyres as rolling quay fenders | [bow qtr](freecad/shots/beauty/harbor_bow_quarter.png) · [stern qtr](freecad/shots/beauty/harbor_stern_quarter.png) · [beam](freecad/shots/beauty/harbor_beam.png) · [above](freecad/shots/beauty/harbor_drone.png) · [low](freecad/shots/beauty/harbor_low.png) |
 | `cruise` | trimaran, floats out, balconies down | [bow qtr](freecad/shots/beauty/cruise_bow_quarter.png) · [stern qtr](freecad/shots/beauty/cruise_stern_quarter.png) · [beam](freecad/shots/beauty/cruise_beam.png) · [above](freecad/shots/beauty/cruise_drone.png) · [low](freecad/shots/beauty/cruise_low.png) |
-| `anchor` | lying to the stern anchor | [bow qtr](freecad/shots/beauty/anchor_bow_quarter.png) · [stern qtr](freecad/shots/beauty/anchor_stern_quarter.png) · [beam](freecad/shots/beauty/anchor_beam.png) · [above](freecad/shots/beauty/anchor_drone.png) · [low](freecad/shots/beauty/anchor_low.png) |
+| `anchor` | at anchor, held by the stern anchor | [bow qtr](freecad/shots/beauty/anchor_bow_quarter.png) · [stern qtr](freecad/shots/beauty/anchor_stern_quarter.png) · [beam](freecad/shots/beauty/anchor_beam.png) · [above](freecad/shots/beauty/anchor_drone.png) · [low](freecad/shots/beauty/anchor_low.png) |
 
 ![cruise, bow quarter](freecad/shots/beauty/cruise_bow_quarter.png)
 
@@ -205,6 +205,7 @@ bias.
 | Interior fit-out incl. appliances, heads, AC | 12 000 | 16 000 | est. |
 | Paint, antifoul, deck finish | 2 000 | 3 000 | est. |
 | Approvals: national individual approval + engineering evidence | 3 000 | 12 000 | [construction.md](docs/construction.md) | foam-core GRP: panel schedule, build sequence, shop, suppliers |
+| [weight.md](docs/weight.md) | the mass problem and the 600 kg package that fixes it |
 | [homologation.md](docs/homologation.md) |
 | **Materials total** | **72 900** | **107 200** | |
 
@@ -262,9 +263,14 @@ fit-out.
      3 kn instead of 240. The hull swallows the weight: draft goes from
      260 mm to **369 mm**, freeboard is still 781 mm.
 
-   Resolution is an owner decision, not a modelling one.
-   → [construction.md](docs/construction.md),
-   [interior.md §8](docs/interior.md)
+   **There is a package that fixes it without deleting a feature**:
+   make the water and 20 kWh of the bank removable for the road
+   (−343 kg), then six measured structural levers (−259 kg) — roof core
+   on beams, foam-core joinery, walk-on glass only where you walk,
+   thinner dome glass, lighter float shell, lighter bottom skin. That
+   lands at **3 023 kg empty, 3 323 loaded, 2 680 on the road** — inside
+   category O2 with 820 kg to spare.
+   → [weight.md](docs/weight.md)
 2. **Road beam tolerance.** 2 535 mm nominal against a 2 550 mm limit is
    **7.5 mm per side**, and a hand-laid laminate plus a fair coat eats
    5 mm of it. `checks()` now asserts the as-built beam. This is the

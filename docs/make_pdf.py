@@ -158,7 +158,7 @@ class Doc:
                              else widths[i] - deficit * (widths[i] - MINW) /
                              max(spare, 1e-6))
         fs = 8.1 if ncol <= 5 else (7.4 if ncol <= 7 else 6.8)
-        cw = 0.053 * fs / 8.1
+        cw = 0.061 * fs / 8.1
         wrapped = []
         for r in rows:
             cells = [textwrap.wrap(r[c], max(int((widths[c] - 0.12) / cw), 6))
@@ -244,7 +244,7 @@ class Doc:
 PR_DIR = "docs/photo-realistic"
 PHOTOREAL = [
     ("docs/photo-realistic/ChatGPT Image Aug 5, 2026, 12_10_01 PM (2).png",
-     "Lying to the anchor",
+     "At anchor",
      "The sky dome forward is a room, not a windscreen: no wall between "
      "it and the saloon, the sole runs straight through, 2 050 mm of "
      "headroom under 4 m² of glass."),
@@ -311,61 +311,92 @@ def photoreal(pdf, doc=None):
 
 
 def title_page(pdf, doc=None):
-    """Cover: hero image, title block, and who to talk to."""
+    """Cover: what it is, what it weighs, what stage it is at, who to ask."""
     fig = plt.figure(figsize=(PW, PH))
     fig.patch.set_facecolor("white")
+    L, R = 0.072, 0.928
 
-    fig.text(0.078, 0.945, "BOAT-HOME", fontsize=38, fontweight="bold",
+    # masthead
+    fig.add_artist(plt.Rectangle((0, 0.962), 1, 0.038,
+                                 transform=fig.transFigure, fc=INK, ec="none"))
+    fig.text(L, 0.9805, "DESIGN PACKAGE FOR DISCUSSION WITH A BUILDER",
+             fontsize=8.2, color="white", va="center", fontweight="bold")
+    fig.text(R, 0.9805, f"{REV}  ·  {DATE}", fontsize=8.2, color="white",
+             va="center", ha="right")
+
+    fig.text(L, 0.935, "BOAT-HOME", fontsize=44, fontweight="bold",
              color=INK, va="top")
-    fig.text(0.078, 0.885, "Road-Towable Solar Trimaran", fontsize=15,
+    fig.text(L, 0.868, "Road-towable solar trimaran", fontsize=16,
              color=ACCENT, va="top")
-    fig.text(0.078, 0.858, "7.2 m  ·  solar-electric  ·  its own trailer",
-             fontsize=10.5, color=MUTED, va="top")
-    fig.add_artist(plt.Line2D([0.078, 0.922], [0.845, 0.845],
-                              transform=fig.transFigure, color=INK, lw=1.4))
+    fig.text(L, 0.840,
+             "A 7.2 m boat-home that is its own trailer: the floats fold under "
+             "the hull and carry six wheels,\nso one car tows it and it drives "
+             "itself in and out of the water.",
+             fontsize=10, color=MUTED, va="top", linespacing=1.55)
 
     for cand in (PHOTOREAL[0][0], "freecad/shots/beauty/cruise_bow_quarter.png"):
         hero = os.path.join(ROOT, cand)
         if os.path.exists(hero):
             img = mpimg.imread(hero)
-            ax = fig.add_axes([0.078, 0.475, 0.844, 0.35])
+            h, w = img.shape[0], img.shape[1]
+            disp_w = R - L
+            disp_h = disp_w * (h / w) * (PW / PH)
+            if disp_h > 0.335:                       # keep the page breathing
+                disp_h = 0.335
+                disp_w = disp_h * (w / h) * (PH / PW)
+            ax = fig.add_axes([L + (R - L - disp_w) / 2, 0.775 - disp_h,
+                               disp_w, disp_h])
             ax.imshow(img)
             ax.axis("off")
+            bottom = 0.775 - disp_h
             break
+    else:
+        bottom = 0.60
 
-    # ---- title block, the way a drawing carries one
-    x0, x1 = 0.078, 0.922
-    top, row = 0.425, 0.038
-    rows = [("PROJECT", "Boat-home, 7.2 m solar trimaran"),
-            ("DOCUMENT", "Design package for discussion with a builder"),
-            ("STAGE", "Detailed concept — geometry complete, scantlings open"),
-            ("REVISION", f"{REV}   ·   {DATE}"),
-            ("OWNER", AUTHOR),
-            ("CONTACT", EMAIL),
-            ("MODEL", "Parametric FreeCAD; limits asserted in params.checks()")]
-    fig.add_artist(plt.Rectangle((x0, top - row * len(rows)), x1 - x0,
-                                 row * len(rows), transform=fig.transFigure,
-                                 fc="#f4f6f8", ec=RULE, lw=0.8))
-    for i, (k, v) in enumerate(rows):
-        y = top - row * (i + 0.62)
-        fig.text(x0 + 0.018, y, k, fontsize=7.6, color=MUTED,
-                 fontweight="bold", va="center")
-        fig.text(x0 + 0.20, y, v, fontsize=9.2, color=INK, va="center")
-        if i:
-            fig.add_artist(plt.Line2D([x0, x1], [top - row * i] * 2,
-                                      transform=fig.transFigure,
-                                      color=RULE, lw=0.5))
+    # ---- headline numbers, four across
+    stats = [("7.2 m", "length over hull"),
+             ("2 535 mm", "beam on the road"),
+             ("4.40 kWp", "solar, walk-on glass over it"),
+             ("50 kWh", "battery, 48 V LiFePO4"),
+             ("4.7 kn", "maximum, 233 NM at 3 kn"),
+             ("5", "berths, 12.1 m2 of floor"),
+             ("3 582 kg", "computed, loaded"),
+             ("369 mm", "draft, 781 mm freeboard")]
+    top = bottom - 0.035
+    colw = (R - L) / 4
+    for i, (big, small) in enumerate(stats):
+        col, row = i % 4, i // 4
+        x = L + col * colw
+        y = top - row * 0.062
+        fig.text(x, y, big, fontsize=15, fontweight="bold", color=INK,
+                 va="top")
+        fig.text(x, y - 0.028, small, fontsize=7.4, color=MUTED, va="top")
+    strip_bottom = top - 0.062 - 0.045
+    fig.add_artist(plt.Line2D([L, R], [strip_bottom] * 2,
+                              transform=fig.transFigure, color=RULE, lw=0.8))
 
-    facts = ["3 582 kg loaded  ·  369 mm draft  ·  2 535 mm on the road",
-             "4.40 kWp solar  ·  50 kWh battery  ·  4.7 kn  ·  233 NM at 3 kn",
-             "5 berths  ·  1 850 mm headroom  ·  12.1 m² floor",
-             "foam-core GRP sandwich, 103 m² of panel, 754 kg"]
-    for i, ln in enumerate(facts):
-        fig.text(0.5, 0.145 - i * 0.026, ln, ha="center", fontsize=9.5,
-                 color=INK)
+    # ---- what stage this is at, and what the reader is being asked
+    rows = [("STAGE", "Detailed concept - geometry complete, scantlings open"),
+            ("ASKING FOR", "A split build: yard lays up and assembles the "
+                           "shell, owner fits out"),
+            ("STRUCTURE", "Foam-core GRP sandwich, 103 m2 of panel, 754 kg"),
+            ("MODEL", "Parametric FreeCAD; legal and structural limits "
+                      "asserted in code"),
+            ("CONTACT", EMAIL)]
+    y = strip_bottom - 0.042
+    for k, v in rows:
+        if k:
+            fig.text(L, y, k, fontsize=7.6, color=ACCENT, fontweight="bold",
+                     va="top")
+        fig.text(L + 0.155, y, v, fontsize=9.0, color=INK, va="top")
+        y -= 0.0305
 
-    fig.text(0.5, 0.032, f"{COPYRIGHT}  ·  {EMAIL}  ·  all rights reserved",
-             ha="center", fontsize=7.5, color=MUTED)
+    fig.add_artist(plt.Line2D([L, R], [0.052, 0.052],
+                              transform=fig.transFigure, color=RULE, lw=0.8))
+    fig.text(L, 0.036, f"{COPYRIGHT}  ·  all rights reserved", fontsize=7.5,
+             color=MUTED, va="top")
+    fig.text(R, 0.036, "generated from the model - python3 docs/make_pdf.py",
+             fontsize=7.5, color=MUTED, va="top", ha="right")
     pdf.savefig(fig)
     plt.close(fig)
     if doc is not None:
@@ -550,7 +581,7 @@ def gallery(pdf, doc=None):
     shots = [(p, c) for p, c in shots
              if os.path.exists(os.path.join(ROOT, p))]
     if doc is not None:
-        doc.divider("10", "Drawings and renders",
+        doc.divider("11", "Drawings and renders",
                     f"{len(shots)} plates - five configurations, "
                     "then the drawings")
 
@@ -579,18 +610,20 @@ PARTS = [
      "README.md", "Part 2 — the boat"),
     ("3", "Construction", "laminate schedule, build sequence, shop, suppliers",
      "docs/construction.md", "Part 3 — construction"),
-    ("4", "Structure", "exoskeleton, tow arch, steel-to-laminate rules",
-     "docs/structure.md", "Part 4 — structure"),
-    ("5", "Roof deck", "walk-on glass over the solar array",
-     "docs/roof.md", "Part 5 — roof deck"),
-    ("6", "Interior", "layout, stowage, services, mass",
-     "docs/interior.md", "Part 6 — interior"),
-    ("7", "Front dome", "flat glazing on two tube purlins",
-     "docs/dome.md", "Part 7 — front dome"),
-    ("8", "Performance", "the resistance model behind the speed and range",
-     "docs/performance.md", "Part 8 — performance"),
-    ("9", "Road approval", "trailer vs amphibian, brakes, DE / PT / NL",
-     "docs/homologation.md", "Part 9 — road approval"),
+    ("4", "Weight", "how to take 350 kg out without deleting anything",
+     "docs/weight.md", "Part 4 — weight"),
+    ("5", "Structure", "exoskeleton, tow arch, steel-to-laminate rules",
+     "docs/structure.md", "Part 5 — structure"),
+    ("6", "Roof deck", "walk-on glass over the solar array",
+     "docs/roof.md", "Part 6 — roof deck"),
+    ("7", "Interior", "layout, stowage, services, mass",
+     "docs/interior.md", "Part 7 — interior"),
+    ("8", "Front dome", "flat glazing on two tube purlins",
+     "docs/dome.md", "Part 8 — front dome"),
+    ("9", "Performance", "the resistance model behind the speed and range",
+     "docs/performance.md", "Part 9 — performance"),
+    ("10", "Road approval", "trailer vs amphibian, brakes, DE / PT / NL",
+     "docs/homologation.md", "Part 10 — road approval"),
 ]
 
 
@@ -613,7 +646,7 @@ def build(pdf, toc_in=None, toc_out=None, total=None):
         render(open(full).read(), doc, part=part)
     doc.end_document()
     if toc_out is not None:
-        toc_out.append((1, "Part 10 — Drawings and renders", doc.n + 1))
+        toc_out.append((1, "Part 11 — Drawings and renders", doc.n + 1))
     gallery(pdf, doc)
     return doc.n
 

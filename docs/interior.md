@@ -66,7 +66,7 @@ separate cubicle would cost the corridor.
 
 ## 4a. The bunk (port settee)
 
-Max wants the port settee to be a bunk bed. A **fixed** two-tier bunk
+The port settee has to work as a bunk bed. A **fixed** two-tier bunk
 does not fit and the numbers say so plainly: there are **1 290 mm**
 between the lower berth cushion (910) and the deckhead (2 200), while a
 real bunk wants 900 to sit under + 150 of structure + 600 over the

@@ -62,7 +62,7 @@ Shared language for the design. Geometry values live in
 - **Dinette** — the saloon: two settee berths facing each other with a
   removable table between them; drop the table onto its bearers and the
   filler cushions make a second double.
-- **Athwartships bed** — a bed lying ACROSS the boat. A 2 000 mm body
+- **Athwartships bed** — a bed set ACROSS the boat. A 2 000 mm body
   fits the 2 280 mm beam, so the double eats only 1 400 mm of length.
 - **Wetroom** — a heads compartment with no separate shower cubicle:
   the whole floor is the shower tray and drains to a sump.
@@ -79,7 +79,7 @@ Shared language for the design. Geometry values live in
 - **Float (floater, ama)** — one of the two 6.2 m outboard buoyancy
   bodies. Doubles as the road bogie: it carries the wheels ("the boat IS
   its own trailer" = the **hangar** concept).
-- **Hangar** — Max's term for the integrated road-carriage function:
+- **Hangar** — the project's term for the integrated road-carriage function:
   floats + arms + wheels acting as the trailer and slipway carriage.
 - **Arm** — rigid welded steel member connecting the hull to a float.
   Made of straight segments cut and welded at angles that follow the
@@ -160,7 +160,7 @@ Shared language for the design. Geometry values live in
 - **Stub axle** — short fixed shaft carrying one wheel; no through-axle.
 - **Wheel well** — recess in the float deck the wheel disc half-sinks
   into.
-- **Wheel cover / fender cover** — low lid over each flat-lying wheel in
+- **Wheel cover / fender cover** — low lid over each flat wheel in
   water pose, open on the outboard side so the tire edge stays exposed.
 - **Rolling fender** — the exposed tire edge standing proud of the hull
   in harbor pose; touches the quay wall first and rolls as the boat

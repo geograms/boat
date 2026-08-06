@@ -43,7 +43,7 @@ CABIN_CEIL_Z = CABIN_ROOF_Z - ROOF_STRUCT
 DECK_BUILDUP = 60 + 55 + 12   # air box (holds the module) + grid + glass
 CANOPY_OVERHANG = -20    # kept: the folded balcony clearance references it
 WIN_Z0, WIN_H = 1500, 600          # window band (taller with the new roof)
-# FEWER, BIGGER windows (Max): two picture windows per side instead of
+# FEWER, BIGGER windows: two picture windows per side instead of
 # six small ones — one over the whole saloon, one over the bed. They
 # land where no full-height joinery can ever go, so the interior can be
 # rearranged later without touching the glass.
@@ -53,9 +53,9 @@ PORTHOLE = (1500, 1780, 360)       # service zone: light + ventilation
 
 # Real catalogue modules (datasheets checked, not estimated):
 #   ROOF  — 500 W mono, Trina Vertex N class: 1961 x 1134 x 30, 27 kg.
-#           Its 1961 long side fits the 2100 mm field width lying
+#           Its 1961 long side fits the 2100 mm field width set
 #           athwartships, so four cover the roof.
-#   SIDES — 400 W BIFACIAL (Max), Photonic Universe / Longi class:
+#   SIDES — 400 W BIFACIAL, Photonic Universe / Longi class:
 #           1722 x 1134 x 30, 21 kg. 239 mm shorter than the 500 W, and
 #           that is exactly what lets THREE fit each balcony instead of
 #           two. Bifacial earns its keep here: folded up over the
@@ -76,7 +76,7 @@ PANEL_W = 1130
 PANEL_T = 4
 
 # ---- movable stabilizers = the hangar, fully under the hull on road ----
-# ONE FULLY RIGID welded arm per station (Max: no rotating parts in the
+# ONE FULLY RIGID welded arm per station (no rotating parts in the
 # middle or at the float — straight segments cut at angles, welded with
 # gussets; the float attachment is static). The ONLY pivot is the
 # shoulder pin at the top, on the upper hull side. Because the float is
@@ -85,7 +85,7 @@ PANEL_T = 4
 #   road (phi 0):    float on its SIDE flush under the hull, wheels
 #                    vertical and rolling (also the launch/harbor pose)
 #   water (phi 90):  float swung out and flat on the water, wheels
-#                    lying flat on the deck, dry
+#                    flat on the deck, dry
 # Launching happens IN the road configuration: drive in until the boat
 # floats off the wheels, then swing the arms out in deeper water.
 ARM_X = (1400, 5400)
@@ -163,7 +163,7 @@ PASSAGE_X = 900                # it widens to the full balcony only from
 BALC_SPAN = 1200
 BALC_T = 40                    # ladder-frame depth; modules drop INTO it
 
-# FULL-WIDTH balcony panels (Max, after seeing what a walkway costs):
+# FULL-WIDTH balcony panels, after seeing what a walkway costs:
 # the side decks give up walking so that a 1134 mm 500 W module fits
 # across the whole 1200 mm span. The aft PASSAGE_W strip stays as the
 # route out of the cockpit; forward of the cabin wall the balcony is a
@@ -188,7 +188,7 @@ BALC_FOLDED_T = BALC_T + 8     # frame depth + module lip + tread proud
 BALC_HINGE_Y = 1200                # folded outer face 1256 <= 1275
 BALC_HINGE_Z = 1150
 
-# low-profile boxes over the flat-lying wheels (water pose only);
+# low-profile boxes over the flat wheels (water pose only);
 # balcony stays horizontal and stands on legs down to the box lids
 WHEELBOX_L = 780
 WHEELBOX_W = 780
@@ -198,7 +198,7 @@ WHEELBOX_Y0, WHEELBOX_Y1 = -350, 250   # OPEN outboard: tire edge exposed
 WHEELBOX_TOP_Z = POD_WATER[1] + FLOAT_H / 2 + WHEELBOX_H
 
 # ---- propulsion: 3x flush-intake WATERJETS (docs/propulsion.md) ----
-# Max's architecture: large flush perforated grids on BOTH SIDES of
+# The architecture: large flush perforated grids on BOTH SIDES of
 # each float (low face velocity ~0.5 m/s -> weed drifts past, 14 mm
 # holes pass no strands) -> internal plenum -> D200 duct -> enclosed
 # 2 kW rim-driven inline pump -> jet nozzle out the tail. Same
@@ -229,9 +229,9 @@ def keel_z_at(x):
     return STATIONS[-1][3]
 
 # ---- front dome: faceted glass bow screen ----
-# Replaces the old wrap-the-whole-cabin envelope, which Max judged
+# Replaces the old wrap-the-whole-cabin envelope, which was judged
 # clunky and which double-glazed over the picture windows anyway.
-# Max's definition fixes the geometry completely: the dome STARTS at
+# The brief fixes the geometry completely: the dome STARTS at
 # the two upper corners of the living-quarters box and LANDS on the two
 # lower corners where the hull starts, then sweeps forward over the
 # foredeck. Flat glass cut to size, so it is faceted, not bent.
@@ -583,7 +583,7 @@ LOCKER_DEPTH = 300
 # The pop-top lift is gone (see docs/roof.md for why: the scissor
 # breakout force is W/tan(theta), which blows up as the arms go flat,
 # and four salt-exposed mechanisms had to carry a 7.7 kN gale uplift).
-# Max's replacement has NO MOVING PARTS: flexible laminates bonded flat
+# The replacement has NO MOVING PARTS: flexible laminates bonded flat
 # on the roof sandwich, and a framed walk-on glass lid 60 mm above them.
 # People walk on the glass; the panels can never be touched, and the
 # air box ventilates the cells so they run cooler than bonded ones.
@@ -605,7 +605,7 @@ DECK_VENT_H = 25                   # mesh slots fore and aft of the box
 TERRACE_TOERAIL = 80
 TERRACE_SCUPPER = 60               # corner drains
 
-# NO guardrail on the roof deck (Max: the stanchions and lifelines
+# NO guardrail on the roof deck (the stanchions and lifelines
 # looked awful). The edge carries the toe rail and nothing else — a sun
 # deck to sit on, not a working deck; the fall risk is accepted.
 
@@ -747,7 +747,7 @@ BERTH_X = (2450, 4350)             # 1900 single berth each side
 TABLE_L, TABLE_W = 900, 700        # removable, drops to make a double
 TABLE_Z = 1050
 
-# BUNK on the PORT settee (Max), i.e. the side opposite the galley. A fixed two-tier bunk does not fit:
+# BUNK on the PORT settee, i.e. the side opposite the galley. A fixed two-tier bunk does not fit:
 # there are only 1290 mm between the lower berth and the deckhead, and a
 # real bunk wants 900 to sit under + 150 of structure + 600 over the
 # upper = 1650. So the upper berth FOLDS: hinged on the hull side, it
@@ -782,7 +782,7 @@ BED_RAIL = 45                      # corner guide rail section
 BED_CABLE = 6                      # stainless hoist cable
 BED_SHAFT = 25                     # common drive shaft = mechanical sync
 
-# ---- 48 V house bank: 50 kWh (Max) ----
+# ---- 48 V house bank: 50 kWh ----
 # Split symmetrically under BOTH settees: low, amidships, and no list.
 # 50 kWh of LiFePO4 is ~360 kg — 18% of the whole mass budget, so it is
 # also the single biggest threat to staying road legal (see checks()).
@@ -809,7 +809,7 @@ INT_MASS = dict(joinery=180, batteries=round(BATT_MASS), water=WATER_L,
 # point and the boat hauls itself out even with no wheel grip.
 # Anchor: stern roller on the gantry leg, rode to the same drum family.
 WINCH_PULL_KG = 2000          # 4500 lb class, 12/24 V
-# BOTH ON THE CENTERLINE (Max): an off-centre winch pulls the boat
+# BOTH ON THE CENTERLINE: an off-centre winch pulls the boat
 # with a yaw bias — on a slipway that fights the wheels and makes the
 # recovery harder. Drum athwartships on a stern-tie bracket, rode
 # leading aft and down over the anchor roller directly beneath it, so

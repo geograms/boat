@@ -260,7 +260,7 @@ def build_terrace():
                               -fhw + j * py + P.DECK_FRAME_W / 2 + 3,
                               tz - P.DECK_GLASS_T)))
 
-    # 5. NO guardrail (Max): the deck edge is clean, with only the toe
+    # 5. NO guardrail: the deck edge is clean, with only the toe
     #    rail. Nothing stands up off this deck.
 
     return (Part.makeCompound(deck), Part.makeCompound(lam),
@@ -291,7 +291,7 @@ FLOAT_STATIONS = [
 def build_float(pod, roll):
     """Stabilizer float with CASTER wheels (stub axles perpendicular to
     the deck): roll 90 = float on its side, wheels vertical (road);
-    roll 0 = float flat, wheels lying flat on the deck (water).
+    roll 0 = float flat, wheels flat on the deck (water).
     Starboard, posed."""
     ty, tz = pod
     # -roll about x maps the local deck normal (+z) outboard (+y)
@@ -749,7 +749,7 @@ def build_aft_entry(rail_up=False, door_open=False):
                          (tx - 95, y_lo + (P.STAIR_Y1 - P.STAIR_Y0) / 2 - 40,
                           tz - 20), 40))
 
-    # Handrail that FOLLOWS THE LADDER (Max's reference photo): a
+    # Handrail that FOLLOWS THE LADDER: a
     # second side rail parallel to the stringer, offset 220 mm on short
     # standoffs, terminating exactly AT deck level — nothing sticks up
     # above the roof deck.
