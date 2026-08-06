@@ -6,9 +6,13 @@ matters — what a technical service will actually charge to approve
 *this* vehicle — can only come from a paid pre-assessment, and §9 says
 how to buy one.
 
-The question: the running gear (the "hangar" — two floats carrying six
-wheels on swinging arms) is **part of the boat**, not a separate
-trailer. So what is being registered, and how hard is it?
+**This document describes the problem the design has since solved.** The
+hangar is now **detachable** ([hangar.md](hangar.md)): it is a complete
+trailer in its own right, and the boat is cargo on it. That removes the
+amphibian question, the 6 km/h rule and the swinging-arm brake problem
+in one move — a boat trailer carrying a boat is the most ordinary
+vehicle in Europe. What follows is the reasoning that led there, and it
+still governs the trailer itself.
 
 ---
 

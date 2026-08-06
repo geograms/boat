@@ -506,6 +506,76 @@ def build_curtains(deg):
             Part.makeCompound(hinges))
 
 
+def build_hangar(phi, coupled=True):
+    """The U-frame hangar as its own vehicle: two spine beams along the
+    hull sides carrying the four arm shoulders, joined aft of the
+    transom by the bight, which carries the drawbar.
+
+    phi     arm swing, 0 = floats under the hull (road),
+            90 = splayed (dinghy / approach pose)
+    coupled False shifts the whole frame aft and out, the way it sits
+            while the boat is being driven in
+
+    Returns (frame, locks) — the arms, floats and wheels stay with
+    build_float()/build_arms(), which the hangar carries."""
+    sy = P.hangar_spine_y()
+    sb, sh = P.HANGAR_SPINE
+    x0, x1 = P.HANGAR_SPINE_X
+    parts, locks = [], []
+
+    for s_ in (-1, 1):
+        # spine beam, hollow alu box
+        beam = box(x1 - x0, sb, sh, (x0, s_ * sy - sb / 2, P.LOCK_Z - sh / 2))
+        beam = beam.cut(box(x1 - x0 - 2 * 8, sb - 16, sh - 16,
+                            (x0 + 8, s_ * sy - sb / 2 + 8,
+                             P.LOCK_Z - sh / 2 + 8)))
+        parts.append(beam)
+        # the spine runs aft to the bight
+        parts.append(box(x0 - P.HANGAR_BIGHT_X, sb, sh,
+                         (P.HANGAR_BIGHT_X, s_ * sy - sb / 2,
+                          P.LOCK_Z - sh / 2)))
+        # shoulder housings: the worm slew drive at each arm station
+        for ax in P.ARM_X:
+            parts.append(Part.makeCylinder(
+                P.ARM_DRIVE_D / 2, sb + 60,
+                Vector(ax - (sb + 60) / 2, s_ * sy, P.LOCK_Z),
+                Vector(1, 0, 0)))
+
+    # the bight: cross beam aft of the transom, carrying the drawbar
+    bb, bh = P.HANGAR_BIGHT
+    parts.append(box(bb, 2 * sy + sb, bh,
+                     (P.HANGAR_BIGHT_X - bb, -sy - sb / 2, P.LOCK_Z - bh / 2)))
+    parts.append(rod((P.HANGAR_BIGHT_X - bb / 2, 0, P.LOCK_Z),
+                     (P.HANGAR_BIGHT_X - 900, 0, P.LOCK_Z - 200), 90))
+
+    # four cone-and-bayonet locks, pointing INBOARD off the spines
+    for (lx, ly, lz) in P.lock_points():
+        s_ = 1 if ly > 0 else -1
+        root = s_ * (sy - sb / 2)
+        cone = Part.makeCone(P.LOCK_CONE_D1 / 2, P.LOCK_CONE_D0 / 2,
+                             P.LOCK_CONE_L, Vector(lx, root, lz),
+                             Vector(0, -s_, 0))
+        locks.append(cone)
+        # the T-head that turns 90 deg behind the keeper in the hull
+        tip = root - s_ * P.LOCK_CONE_L
+        locks.append(Part.makeCylinder(P.LOCK_TWIST_D / 2, 90,
+                                       Vector(lx, tip, lz), Vector(0, -s_, 0)))
+        locks.append(box(30, 120, 26, (lx - 15, tip - s_ * 90 - 60, lz - 13)))
+        # 24 V worm gearmotor on the outboard face
+        md, ml = P.LOCK_MOTOR
+        locks.append(Part.makeCylinder(
+            md / 2, ml, Vector(lx, s_ * (sy + sb / 2), lz), Vector(0, s_, 0)))
+
+    if not coupled:                      # stood off, ready to take the boat
+        off = Placement(Vector(P.HANGAR_STANDOFF, 0, P.hangar_standoff_z()),
+                           Rotation())
+        for grp in (parts, locks):
+            for shp in grp:
+                shp.Placement = off.multiply(shp.Placement)
+
+    return Part.makeCompound(parts), Part.makeCompound(locks)
+
+
 def build_frame():
     """EXTERNAL space frame (docs/structure.md). Nothing crosses the
     living volume: two chassis rails half-buried in the topsides at
@@ -1144,12 +1214,25 @@ def build_mode(mode):
     (fl, strips, forks, tires, rims, wboxes,
      hatch, hydraulics, thruster) = build_float(pod, roll)
     arms, acts = build_arms(cfg["phi"])
+    hframe, hlocks = build_hangar(cfg["phi"], cfg.get("coupled", True))
+    add("HangarFrame", hframe, (0.55, 0.57, 0.60), group=g_gear)
+    add("HangarLocks", hlocks, (0.80, 0.65, 0.20), group=g_gear)
     cframe, cpanels, chinges = build_curtains(cfg["curt"])
     add("CurtainFrames", cframe, (0.62, 0.64, 0.67), group=g_gear)
     add("CurtainPanels", cpanels, PANEL, group=g_gear)
     add("CurtainHinges", chinges, GRAY, group=g_gear)
+    stand_off = (None if cfg.get("coupled", True) else
+                 Placement(Vector(P.HANGAR_STANDOFF, 0, P.hangar_standoff_z()),
+                           Rotation()))
+
+    def _off(shape):
+        if stand_off is not None and shape is not None:
+            shape = shape.copy()
+            shape.Placement = stand_off.multiply(shape.Placement)
+        return shape
+
     for side, mir in (("Stb", False), ("Port", True)):
-        m = mirror_y if mir else (lambda s: s)
+        m = (lambda s: _off(mirror_y(s))) if mir else _off
         add(f"Float{side}", m(fl), ORANGE, group=g_gear)
         add(f"FloatSolar{side}", m(strips), PANEL, group=g_gear)
         add(f"WheelForks{side}", m(forks), GRAY, group=g_gear)

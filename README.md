@@ -26,9 +26,11 @@ drift without the build failing.
 | Beam, afloat (floats out) | **4 716 mm** |
 | Height on the road | **3 002 mm** (limit 4 000) |
 | Air draft afloat | **2 260 mm** |
-| Draft | **328 mm** empty, **348 mm** loaded (computed from the mass) |
-| Freeboard, loaded | 802 mm |
-| Mass, computed | **2 948 kg** empty · **3 248 kg** with crew and stores |
+| Draft | **279 mm** empty, **299 mm** loaded (hull carries the boat only) |
+| Freeboard, loaded | 851 mm |
+| Mass, boat alone | **2 228 kg** empty (the hangar floats itself) |
+| Mass, hangar | **901 kg** — a complete trailer |
+| Mass, combination | **3 429 kg** with crew and stores |
 | Road category | **O2 trailer, ≤ 3 500 kg** — 252 kg of margin loaded |
 | Ground clearance, road | 482 mm |
 | Track / wheelbase | 2 270 / 3 400 mm |
@@ -128,7 +130,15 @@ They are the plates at the front of the PDF gallery.
 
 ## 4. Key systems
 
-**Hangar / running gear** — one rigid welded arm per station, a single
+**Detachable hangar** — the running gear is a **separate vehicle**: two
+spine beams along the hull sides carrying the four arm shoulders, joined
+aft of the transom by a bight that carries the drawbar. It couples on the
+water — cone guides, then four 24 V worm bayonet locks — and detached it
+is a **4.7 m catamaran dinghy** with a motor in each float. The point is
+certification: the hangar is the trailer, **the boat is cargo**.
+→ [docs/hangar.md](docs/hangar.md)
+
+**Running gear** — one rigid welded arm per station, a single
 shoulder pin, 90° swing. Road: float on its side flush under the hull,
 wheels vertical. Water: float flat, wheels dry above the waterline. Six
 205/70 R15 all-terrain wheels, electric-over-hydraulic drive with the
@@ -197,7 +207,8 @@ bias.
 
 | Item | Low | High | Source |
 |---|---|---|---|
-| Foam core, PVC + PET, by zone | 3 800 | 5 200 | [construction.md](docs/construction.md) |
+| Foam core, PVC + PET, by zone | 3 800 | 5 200 | [hangar.md](docs/hangar.md) | detachable U-frame: coupling, electric locks, dinghy mode |
+| [construction.md](docs/construction.md) |
 | Glass fabric, biax NCF, roll quantities | 2 200 | 3 000 | 203 kg dry |
 | Epoxy resin, hardener, fillers | 4 500 | 6 500 | 248 kg mixed |
 | Vacuum consumables | 1 200 | 2 000 | €10–20/m² per shot |
@@ -213,7 +224,8 @@ bias.
 | Glazing: front sky dome + windows | 6 000 | 9 000 | [dome.md](docs/dome.md) |
 | Interior fit-out incl. appliances, heads, AC | 12 000 | 16 000 | est. |
 | Paint, antifoul, deck finish | 2 000 | 3 000 | est. |
-| Approvals: national individual approval + engineering evidence | 3 000 | 12 000 | [construction.md](docs/construction.md) | foam-core GRP: panel schedule, build sequence, shop, suppliers |
+| Approvals: national individual approval + engineering evidence | 3 000 | 12 000 | [hangar.md](docs/hangar.md) | detachable U-frame: coupling, electric locks, dinghy mode |
+| [construction.md](docs/construction.md) | foam-core GRP: panel schedule, build sequence, shop, suppliers |
 | [weight.md](docs/weight.md) | the mass problem and the 600 kg package that fixes it |
 | [homologation.md](docs/homologation.md) |
 | **Materials total** | **70 090** | **103 900** | |

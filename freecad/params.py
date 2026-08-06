@@ -127,6 +127,104 @@ FLOAT_W = 600                      # vertical extent when on its side
 FLOAT_H = 900                      # deep ama; sized so the bevel keeps 80% reserve
 FLOAT_X = sum(ARM_X) / 2
 
+# ---- detachable hangar: a U-frame that is its own trailer ----
+# The running gear is no longer welded to the hull. Two spine beams run
+# along the hull sides at the old shoulder height and carry the four arm
+# shoulders; aft of the transom a cross beam - the bight of the U -
+# joins them and carries the drawbar. Detached and afloat, spines +
+# bight + floats are a 4.7 m catamaran with a motor in each float.
+#
+# Why it matters: the hangar is then a COMPLETE trailer and the boat is
+# cargo. A boat trailer carrying a boat is the most ordinary vehicle in
+# Europe - no amphibian question, no 6 km/h rule, no swinging-arm brake
+# problem. See docs/hangar.md and docs/homologation.md.
+HANGAR_SPINE_X = (ARM_X[0] - 500, ARM_X[1] + 500)   # 900 .. 5900
+HANGAR_SPINE = (55, 200)           # section b x h, alu box: NARROW in y,
+                                   # because every mm of it is road width
+HANGAR_BIGHT_X = -320              # cross beam, aft of the transom
+HANGAR_BIGHT = (140, 180)
+HANGAR_CLEAR = 8                   # spine face to hull side when locked;
+                                   # the cone taper takes the approach slop
+
+# the four locks sit exactly on the old shoulder stations
+LOCK_X = ARM_X
+LOCK_Y, LOCK_Z = SH_Y, SH_Z
+LOCK_CONE_D0 = 60                  # tip diameter
+LOCK_CONE_D1 = 120                 # root diameter: 30 mm of taper a side
+LOCK_CONE_L = 180                  # length: takes +/-40 mm and 3 deg of
+                                   # approach error so the lock never has to
+LOCK_TWIST_D = 46                  # bayonet T-head shaft
+LOCK_MOTOR = (90, 110)             # 24 V worm gearmotor, d x l
+LOCK_MOTOR_KG = 2.6
+LOCK_TORQUE_NM = 25                # to turn the T-head under preload
+ARM_DRIVE_D = 180                  # worm slew drive at each shoulder
+ARM_DRIVE_KG = 9.0
+
+HANGAR_STANDOFF = -7400            # how far astern the hangar lies
+                                   # while the boat is driven in
+
+
+def hangar_standoff_z():
+    """How far to lift the hangar so it floats at ITS own waterline
+    when detached, instead of at the boat's."""
+    _beam, _mass, free = dinghy_stats()
+    want = WL_Z - (FLOAT_W - free) + FLOAT_W / 2
+    return want - pod_at(PHI_SPLAY)[1]
+PHI_SPLAY = 90.0                   # dinghy / approach: arms wide open
+PHI_ALONGSIDE = 55.0               # floats hugging the hull in harbour
+
+# dinghy: what goes inside the float when it runs on its own
+DINGHY_BATT_WH = 2 * 1200          # 2 x 12 V 100 Ah motorcycle-class packs
+DINGHY_BATT_KG = 2 * 13
+DINGHY_PANEL = (1160, 540, 3)      # small flexible panel on each float deck
+DINGHY_PANEL_W = 100
+DINGHY_CREW_KG = 2 * 85
+
+
+def hangar_spine_y():
+    """Half-spacing of the spine beams.
+
+    The spines ride at the LOCK height, not at the sheer: the hull is
+    1 202 mm half-beam down there against 1 250 at the gunwale, and
+    those 48 mm are the only reason the U fits inside the road limit."""
+    hull_half = max(_hw_at(x, LOCK_Z)
+                    for x in range(HANGAR_SPINE_X[0], HANGAR_SPINE_X[1], 50))
+    return hull_half + HANGAR_CLEAR + HANGAR_SPINE[0] / 2
+
+
+def lock_points():
+    """(x, y, z) of the four cone-and-bayonet locks, both sides."""
+    return [(x, sy * LOCK_Y, LOCK_Z) for x in LOCK_X for sy in (-1, 1)]
+
+
+def hangar_mass():
+    """kg of the hangar as a vehicle: floats, arms, wheels, drive,
+    spines, bight and the coupling hardware."""
+    import laminate as L
+    areas = laminate_areas()
+    floats = (L.zone_mass("float_shell", areas.get("float_shell", 0.0)) +
+              L.zone_mass("float_deck", areas.get("float_deck", 0.0)))
+    spine_m = 2 * (HANGAR_SPINE_X[1] - HANGAR_SPINE_X[0]) / 1000
+    bight_m = 2 * hangar_spine_y() / 1000
+    alu = (spine_m * HANGAR_SPINE[0] * HANGAR_SPINE[1] * 0.15 +
+           bight_m * HANGAR_BIGHT[0] * HANGAR_BIGHT[1] * 0.15) * 2.7e-3
+    locks = 4 * (LOCK_MOTOR_KG + 3.5)
+    drives = 4 * ARM_DRIVE_KG
+    return (floats + MASS_WHEELS_HUBS + MASS_ARMS + MASS_HYDRAULICS +
+            alu + locks + drives + DINGHY_BATT_KG + 25)
+
+
+def dinghy_stats():
+    """(beam m, displacement kg, freeboard mm) of the detached hangar
+    carrying two people."""
+    beam = (2 * pod_at(PHI_SPLAY)[0] + FLOAT_W) / 1000
+    mass = hangar_mass() + DINGHY_CREW_KG
+    # two prismatic floats, immersion by displaced volume
+    area = 2 * FLOAT_LEN * FLOAT_H / 1e6            # m2 of waterplane
+    sink = mass / 1000 / area * 1000                # mm
+    return beam, mass, FLOAT_W - sink
+
+
 # ---- caster wheels (electric hub motors, sealed) ----
 # 205/70 R15 ALL-TERRAIN (General Grabber AT3 class): sand/mud traction
 # plus normal road use; still a standard 15-inch size, any tire shop
@@ -964,6 +1062,10 @@ MODES = {
     "cruise":  dict(phi=PHI_WATER, curt=78,  tow="sea",  lift=0, rails=0),
     "anchor":  dict(phi=PHI_WATER, curt=78,  tow="sea",  lift=0, rails=0),
     "deck":    dict(phi=PHI_WATER, curt=78,  tow="sea",  lift=0, rails=90),
+    # hangar stood off astern, arms splayed: the coupling pose, and the
+    # dinghy pose - the boat floats free on its own hull
+    "detached": dict(phi=PHI_SPLAY, curt=78, tow="sea", lift=0, rails=0,
+                     coupled=False),
 }
 
 
@@ -1096,14 +1198,18 @@ def laminate_areas():
 
 
 def mass_budget():
-    """(dict of every mass item in kg, total). Structure is computed."""
+    """(dict of every mass item in kg, total).
+
+    The hangar is a separate VEHICLE now, so its mass is reported apart
+    from the boat's and only summed for the towing combination."""
     import laminate as L
     areas = laminate_areas()
-    items = {"laminate structure": L.structural_mass(areas)}
+    boat_struct = (L.structural_mass(areas)
+                   - L.zone_mass("float_shell", areas.get("float_shell", 0.0))
+                   - L.zone_mass("float_deck", areas.get("float_deck", 0.0)))
+    items = {"laminate structure (boat)": boat_struct}
     items["exoskeleton (steel)"] = MASS_EXOSKELETON
-    items["wheels, hubs, axles"] = MASS_WHEELS_HUBS
-    items["arms + shoulder pins"] = MASS_ARMS
-    items["hydraulic drive"] = MASS_HYDRAULICS
+    items["HANGAR, complete vehicle"] = hangar_mass()
     items["waterjets"] = MASS_JETS
     items["electrics"] = MASS_ELECTRICS
     items["solar curtains"] = curtain_mass()
@@ -1120,6 +1226,7 @@ def checks(verbose=True, strict=True):
     float_outer_road = POD_ROAD[0] + FLOAT_H / 2               # sideways
     road_width = 2 * max(HULL_BEAM / 2, wheel_outer, float_outer_road,
                          CURT_HINGE_Y + MODULE_FLEX[2] + CURT_FRAME_W,
+                         hangar_spine_y() + HANGAR_SPINE[0] / 2,
                          GATE_PLATE_Y)            # gate threshold plate
     road_height = CABIN_ROOF_Z + DECK_BUILDUP - GROUND_Z
     track = 2 * wheel_disc_y
@@ -1473,8 +1580,10 @@ def checks(verbose=True, strict=True):
 
     # ---- mass budget and the waterline that follows from it ----
     items, all_up = mass_budget()
-    wl = draft_for(all_up)
-    wl_loaded = draft_for(all_up + CREW_STORES)
+    hangar_kg = items["HANGAR, complete vehicle"]
+    boat_kg = all_up - hangar_kg          # what the HULL has to float
+    wl = draft_for(boat_kg)
+    wl_loaded = draft_for(boat_kg + CREW_STORES)
     freeboard = min(s_[5] for s_ in STATIONS[:6]) - wl_loaded
     buoy = float_buoyancy()
     if verbose:
@@ -1482,10 +1591,11 @@ def checks(verbose=True, strict=True):
         print("MASS BUDGET     computed from measured areas x laminate schedule")
         for k, v in sorted(items.items(), key=lambda kv: -kv[1]):
             print(f"  {k:34s} {v:6.0f} kg")
-        print(f"  {'TOTAL, empty':34s} {all_up:6.0f} kg "
+        print(f"  {'BOAT alone, empty':34s} {boat_kg:6.0f} kg")
+        print(f"  {'HANGAR alone (the trailer)':34s} {hangar_kg:6.0f} kg")
+        print(f"  {'COMBINATION, crew and stores':34s} "
+              f"{all_up + CREW_STORES:6.0f} kg "
               f"(design figure {DESIGN_ALL_UP})")
-        print(f"  {'TOTAL, crew and stores aboard':34s} "
-              f"{all_up + CREW_STORES:6.0f} kg")
         print(f"waterline       {wl:.0f} mm empty, {wl_loaded:.0f} mm loaded; "
               f"freeboard {freeboard:.0f} mm")
         print(f"jack-up         float buoyancy {buoy:.0f} kg = "
@@ -1493,8 +1603,83 @@ def checks(verbose=True, strict=True):
               f"(1.40 wanted)")
         print(f"road            trailer category O2 needs <= 3500 kg; "
               f"loaded {all_up + CREW_STORES:.0f} kg")
+        print(f"deck edge       toe rail {TERRACE_TOERAIL} mm; the panels "
+              f"are the guardrail")
+        print(f"deck loads      crew one side {m_heel_crew:.1f} vs righting "
+              f"{m_right:.1f} kNm")
+        print(f"curtains        {2 * CURT_N_SIDE} x the same panel on the roof "
+              f"corner, band {curt_run:.0f} mm, closed bottom z {curt_bottom:.0f} "
+              f"(windows {WIN_Z0}..{WIN_Z0 + WIN_H}), {curtain_mass():.0f} kg; "
+              f"awning {CURT_AWNING_DEG} deg")
+        print(f"solar           deck {kwp_deck:.2f} + curtains {kwp_balc:.2f} "
+              f"= {kwp_deck + kwp_balc:.2f} kWp nominal, {kwp_eff:.2f} "
+              f"effective;  air draft {air_draft:.0f} mm")
+        print(f"jack-up stance  floats {jack_frac * 100:.0f}% deep, "
+              f"keel {-harbor_wl:.0f} mm above water (awash), "
+              f"pontoon GM ~{gm_est:.1f} m")
 
-    assert freeboard >= 500, f"only {freeboard:.0f} mm of freeboard when loaded"
+    # ---- mass budget and the waterline that follows from it ----
+    items, all_up = mass_budget()
+    hangar_kg = items["HANGAR, complete vehicle"]
+    boat_kg = all_up - hangar_kg          # what the HULL has to float
+    wl = draft_for(boat_kg)
+    wl_loaded = draft_for(boat_kg + CREW_STORES)
+    freeboard = min(s_[5] for s_ in STATIONS[:6]) - wl_loaded
+    buoy = float_buoyancy()
+    if verbose:
+        print("")
+        print("MASS BUDGET     computed from measured areas x laminate schedule")
+        for k, v in sorted(items.items(), key=lambda kv: -kv[1]):
+            print(f"  {k:34s} {v:6.0f} kg")
+        print(f"  {'BOAT alone, empty':34s} {boat_kg:6.0f} kg")
+        print(f"  {'HANGAR alone (the trailer)':34s} {hangar_kg:6.0f} kg")
+        print(f"  {'COMBINATION, crew and stores':34s} "
+              f"{all_up + CREW_STORES:6.0f} kg "
+              f"(design figure {DESIGN_ALL_UP})")
+        print(f"waterline       {wl:.0f} mm empty, {wl_loaded:.0f} mm loaded; "
+              f"freeboard {freeboard:.0f} mm")
+        print(f"jack-up         float buoyancy {buoy:.0f} kg = "
+              f"{buoy / (all_up + CREW_STORES):.2f} x loaded mass "
+              f"(1.40 wanted)")
+        print(f"road            trailer category O2 needs <= 3500 kg; "
+              f"loaded {all_up + CREW_STORES:.0f} kg")
+    # ---- detachable hangar ----
+    sy_ = hangar_spine_y()
+    u_gap = 2 * (sy_ - HANGAR_SPINE[0] / 2)
+    hull_at_lock = max(_hw_at(x, LOCK_Z)
+                       for x in range(HANGAR_SPINE_X[0], HANGAR_SPINE_X[1], 50))
+    cone_reach = sy_ - HANGAR_SPINE[0] / 2 - LOCK_Y
+    dg_beam, dg_mass, dg_free = dinghy_stats()
+    hangar_kg2 = hangar_mass()
+    assert u_gap >= 2 * hull_at_lock, \
+        f"U opening {u_gap:.0f} mm will not pass the hull ({2 * hull_at_lock:.0f})"
+    assert 2 * (sy_ + HANGAR_SPINE[0] / 2) <= 2550, \
+        f"spines put the road width at {2 * (sy_ + HANGAR_SPINE[0] / 2):.0f} mm"
+    assert LOCK_CONE_L > cone_reach + 60, \
+        f"cone {LOCK_CONE_L} mm too short to bridge {cone_reach:.0f} mm and " \
+        "still seat in the socket"
+    assert LOCK_CONE_D1 > LOCK_CONE_D0 + 40, "cone taper too shallow to guide"
+    assert len(lock_points()) == 4, "four locks, one per shoulder station"
+    assert all(abs(abs(y) - SH_Y) < 1 and abs(z - SH_Z) < 1
+               for _x, y, z in lock_points()), \
+        "locks must land on the existing shoulder load path"
+    assert HANGAR_BIGHT_X < -HANGAR_BIGHT[1], \
+        "the bight must sit clear aft of the transom, not across it"
+    assert dg_free >= 250, \
+        f"dinghy freeboard only {dg_free:.0f} mm with two aboard"
+    assert dg_beam >= 3.5, f"dinghy beam {dg_beam:.1f} m - not stable enough"
+    assert PHI_SPLAY >= PHI_ALONGSIDE, "splayed must be wider than alongside"
+    if verbose:
+        print(f"hangar          U-frame trailer: spines at y +/-{sy_:.0f} "
+              f"(U opening {u_gap:.0f} vs hull {2 * hull_at_lock:.0f}), bight "
+              f"{-HANGAR_BIGHT_X:.0f} mm aft of the transom, "
+              f"{hangar_kg2:.0f} kg")
+        print(f"coupling        4 x cone {LOCK_CONE_D0}->{LOCK_CONE_D1} over "
+              f"{LOCK_CONE_L} mm, then a 24 V worm bayonet; self-locking, "
+              f"limit-switched, manual override")
+        print(f"dinghy          {dg_beam:.2f} m beam, {dg_mass:.0f} kg with two "
+              f"aboard, {dg_free:.0f} mm freeboard, {DINGHY_BATT_WH} Wh + "
+              f"2 x {DINGHY_PANEL_W} W")
     assert all_up + CREW_STORES <= 3500, (
         f"{all_up + CREW_STORES:.0f} kg exceeds the 3500 kg category O2 limit - "
         "the whole homologation route changes, see docs/homologation.md")

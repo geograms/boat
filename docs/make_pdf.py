@@ -550,6 +550,7 @@ def gallery(pdf, doc=None):
     """Every render and drawing, one per page, after the text."""
     shots = []
     for mode, label in (("cruise", "cruise — trimaran, floats out"),
+                        ("detached", "detached — hangar stood off, arms splayed"),
                         ("road", "road — folded, towed stern-first"),
                         ("harbor", "harbour — jack-up stance"),
                         ("launch", "launch — on the slipway"),
@@ -581,7 +582,7 @@ def gallery(pdf, doc=None):
     shots = [(p, c) for p, c in shots
              if os.path.exists(os.path.join(ROOT, p))]
     if doc is not None:
-        doc.divider("11", "Drawings and renders",
+        doc.divider("12", "Drawings and renders",
                     f"{len(shots)} plates - five configurations, "
                     "then the drawings")
 
@@ -610,20 +611,22 @@ PARTS = [
      "README.md", "Part 2 — the boat"),
     ("3", "Construction", "laminate schedule, build sequence, shop, suppliers",
      "docs/construction.md", "Part 3 — construction"),
-    ("4", "Weight", "how to take 350 kg out without deleting anything",
-     "docs/weight.md", "Part 4 — weight"),
-    ("5", "Structure", "exoskeleton, tow arch, steel-to-laminate rules",
-     "docs/structure.md", "Part 5 — structure"),
-    ("6", "Roof deck", "walk-on glass over the solar array",
-     "docs/roof.md", "Part 6 — roof deck"),
-    ("7", "Interior", "layout, stowage, services, mass",
-     "docs/interior.md", "Part 7 — interior"),
-    ("8", "Front dome", "flat glazing on two tube purlins",
-     "docs/dome.md", "Part 8 — front dome"),
-    ("9", "Performance", "the resistance model behind the speed and range",
-     "docs/performance.md", "Part 9 — performance"),
-    ("10", "Road approval", "trailer vs amphibian, brakes, DE / PT / NL",
-     "docs/homologation.md", "Part 10 — road approval"),
+    ("4", "The hangar", "detachable U-frame, electric locks, dinghy mode",
+     "docs/hangar.md", "Part 4 — the hangar"),
+    ("5", "Weight", "how to take 350 kg out without deleting anything",
+     "docs/weight.md", "Part 5 — weight"),
+    ("6", "Structure", "exoskeleton, tow arch, steel-to-laminate rules",
+     "docs/structure.md", "Part 6 — structure"),
+    ("7", "Roof deck", "walk-on glass over the solar array",
+     "docs/roof.md", "Part 7 — roof deck"),
+    ("8", "Interior", "layout, stowage, services, mass",
+     "docs/interior.md", "Part 8 — interior"),
+    ("9", "Front dome", "flat glazing on two tube purlins",
+     "docs/dome.md", "Part 9 — front dome"),
+    ("10", "Performance", "the resistance model behind the speed and range",
+     "docs/performance.md", "Part 10 — performance"),
+    ("11", "Road approval", "trailer vs amphibian, brakes, DE / PT / NL",
+     "docs/homologation.md", "Part 11 — road approval"),
 ]
 
 
@@ -646,7 +649,7 @@ def build(pdf, toc_in=None, toc_out=None, total=None):
         render(open(full).read(), doc, part=part)
     doc.end_document()
     if toc_out is not None:
-        toc_out.append((1, "Part 11 — Drawings and renders", doc.n + 1))
+        toc_out.append((1, "Part 12 — Drawings and renders", doc.n + 1))
     gallery(pdf, doc)
     return doc.n
 

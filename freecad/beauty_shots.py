@@ -26,7 +26,7 @@ os.makedirs(OUT, exist_ok=True)
 for old in glob.glob(OUT + "/*.png"):
     os.remove(old)
 
-MODES = ["cruise", "deck", "road", "harbor", "launch", "anchor"]
+MODES = ["cruise", "detached", "deck", "road", "harbor", "launch", "anchor"]
 # Build one mode at a time and close it again: six documents' worth of
 # view providers open at once is what killed the GUI process.
 sys.argv = ["beauty"]
@@ -70,10 +70,27 @@ def look_at(view, eye, target):
         f"  focalDistance {dist:.1f}\n  heightAngle 0.82\n}}\n")
 
 
-def view_points(sea):
-    """(name, eye, target) — natural viewpoints for an outside observer."""
+def view_points(sea, spread=0.0):
+    """(name, eye, target) — natural viewpoints for an outside observer.
+
+    `spread` shifts the aim point aft and pulls the camera back, for the
+    modes where boat and hangar are floating apart."""
     z0 = P.WL_Z if sea else P.GROUND_Z
-    aim = (CX, 0, z0 + 1200)
+    cx = CX + spread / 2
+    k = 1.0 + abs(spread) / 9000.0
+    aim = (cx, 0, z0 + 1200)
+
+    def e(dx, dy, dz):
+        return (cx + dx * k, dy * k, z0 + dz)
+
+    if spread:
+        return [
+            ("bow_quarter", e(7600, -5400, 2200), aim),
+            ("stern_quarter", e(-7200, 5600, 2300), aim),
+            ("beam", e(600, -9200, 2100), (cx, 0, z0 + 1250)),
+            ("drone", e(6200, -6200, 7600), (cx, 0, z0 + 800)),
+            ("low", e(5200, -3800, 700), (cx, 0, z0 + 1400)),
+        ]
     return [
         ("bow_quarter", (CX + 7600, -5400, z0 + 1700), aim),
         ("stern_quarter", (CX - 7200, 5600, z0 + 1750), aim),
@@ -119,7 +136,8 @@ for mode in MODES:
     view = Gui.ActiveDocument.ActiveView
     Gui.updateGui()
 
-    for name, eye, target in view_points(sea):
+    for name, eye, target in view_points(
+            sea, P.HANGAR_STANDOFF if mode == "detached" else 0.0):
         look_at(view, eye, target)
         Gui.updateGui()
         time.sleep(0.6)
