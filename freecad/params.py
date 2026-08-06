@@ -115,47 +115,51 @@ ARM_R = math.hypot(*_V0)           # rigid chord shoulder->wrist ~1572
 # and a wide sea stance: rotating 90 deg from the road position puts the
 # float 508 mm off the hull, and 508 mm of lever is not what keeps a
 # 7.2 m boat upright in a seaway. So the arm extends after it swings.
-# ELBOWED ARM - the inverted V. A single-pivot arm cannot reach both a
-# 2 m sea stance and the under-hull road pose (the radii differ: 2395 vs
-# 990 mm), so each arm has a SHOULDER and an ELBOW, both 24 V worm slew
-# drives. At sea the arm stands as an inverted V - up from the spine,
-# elbow ~2 m above the water, down to the float 2 m off the hull. To
-# stow, both joints close together and the float sweeps in and UNDER the
-# hull. The folded elbows cross the centreline under the keel, so the
-# port stations are staggered aft of the starboard ones and the arms
-# pass each other.
-ARM_LA = 2480                      # shoulder -> elbow
-ARM_LB = 1760                      # elbow -> float centre
-ARM_STAGGER = 350                  # port stations aft of starboard
+# CARRIAGE + FIXED ARM. A rigid one-pivot arm cannot give both the wide
+# sea stance and the under-hull stow (the pivot would have to be
+# equidistant from both float positions, and inside the road envelope
+# that caps the standoff at ~580 mm). So the ORIGINAL fixed arm is kept
+# exactly - radius 990, one 90 deg rotation to flush under the hull -
+# and its SHOULDER rides on a transverse RAIL in the U-frame:
+#
+#   sea    carriage locked at the outboard end: float 2000 mm off the
+#          hull, full righting arm
+#   stow   1) a 24 V leadscrew pulls the carriage inboard - the float
+#             skims the surface to the hull side (the ALONGSIDE pose,
+#             lockable anywhere: worm, self-locking)
+#          2) the original rotation drive swings the fixed arm 90 deg
+#             and the float goes flush under
+#   road   rail fully inside the frame, nothing protrudes; the fold is
+#          the original design, wheels down
+#
+# Two powered motions, both self-locking, no articulation in the arm.
+CARRIAGE_TRAVEL = 1492             # rail stroke, sized so the float
+                                   # sits exactly 2000 mm off the hull
+CARRIAGE_RAIL = (120, 140)         # rail box section b x h
+CARRIAGE_LEN = 260                 # carriage block along the rail
+CARRIAGE_SCREW_D = 32              # leadscrew, 24 V worm drive
+CARRIAGE_KG = 14                   # carriage + screw + motor, per station
 ARM_GAP_SEA = 2000                 # clear water, hull side to float face
-
-# joint angles (deg from horizontal, starboard side) solved from the
-# two poses; segment B rotates 89.3 deg between them, which is what
-# rolls the float from flat (sea) to on-its-side (road)
-ARM_TH_SEA = (30.0, -83.7)         # (shoulder, elbow-segment direction)
-ARM_TH_UND = (-155.8, 5.5)
+ARM_STAGGER = 350                  # port stations aft of starboard, so
+                                   # the retracted beam tails pass
 
 
-def arm_joints(phi):
-    """(elbow yz, float-centre yz) for a pose parameter phi:
-    90 = sea (inverted V, float 2 m out), 0 = folded under the hull.
-    Both joints interpolate together - one motion, two motors."""
-    t = max(0.0, min(1.0, phi / 90.0))
-    th1 = math.radians(ARM_TH_UND[0] + t * (ARM_TH_SEA[0] - ARM_TH_UND[0]))
-    th2 = math.radians(ARM_TH_UND[1] + t * (ARM_TH_SEA[1] - ARM_TH_UND[1]))
-    J = (SH_Y + ARM_LA * math.cos(th1), SH_Z + ARM_LA * math.sin(th1))
-    Pod = (J[0] + ARM_LB * math.cos(th2), J[1] + ARM_LB * math.sin(th2))
-    return J, Pod
+def pod_at(phi_deg, travel=0.0):
+    """Float centre: the ORIGINAL rigid-arm swing about the shoulder,
+    with the shoulder displaced outboard by the carriage `travel`."""
+    c, s = math.cos(math.radians(phi_deg)), math.sin(math.radians(phi_deg))
+    vy, vz = _V0
+    return (SH_Y + travel + vy * c - vz * s, SH_Z + vy * s + vz * c)
 
 
-def pod_at(phi_deg, extend=0.0):
-    """Float centre for the pose parameter (extend kept for signature
-    compatibility; the elbow replaced the slide)."""
-    return arm_joints(phi_deg)[1]
+def arm_joints(phi, travel=0.0):
+    """(shoulder yz, float yz) - kept for the builders."""
+    return ((SH_Y + travel, SH_Z), pod_at(phi, travel))
 
 
 PHI_WATER = 90.0                   # exact, by rigid-arm construction
-POD_WATER = pod_at(PHI_WATER)      # (3550, 250) - 2 m of clear water
+POD_WATER = pod_at(PHI_WATER, CARRIAGE_TRAVEL)  # (3550, 250): 2 m clear
+POD_ALONGSIDE = pod_at(PHI_WATER)               # carriage in, float at the hull
 
 FLOAT_LEN = 6200
 FLOAT_W = 600                      # vertical extent when on its side
@@ -252,8 +256,8 @@ def hangar_mass():
            bight_m * HANGAR_BIGHT[0] * HANGAR_BIGHT[1] * 0.15) * 2.7e-3
     locks = 4 * (LOCK_MOTOR_KG + 3.5)
     drives = 4 * ARM_DRIVE_KG
-    return (floats + MASS_WHEELS_HUBS + MASS_ARMS + MASS_HYDRAULICS +
-            alu + locks + drives + DINGHY_BATT_KG + 25)
+    return (floats + MASS_WHEELS_HUBS + MASS_ARMS + MASS_CARRIAGES +
+            MASS_HYDRAULICS + alu + locks + drives + DINGHY_BATT_KG + 25)
 
 
 def dinghy_stats():
@@ -961,8 +965,8 @@ BULKHEAD_X = (900, 2400, 3900, 5400, 6200)
 # masses that are NOT laminate, kg. Sources in the docs named alongside.
 MASS_EXOSKELETON = 260     # S355 tube frame 180 + brackets + tow arch, galvanised
 MASS_WHEELS_HUBS = 270     # 6 x (tire 14 + rim 8 + hub motor 11 + stub axle 12)
-MASS_ARMS = 240            # telescopic arms: the shoulder bending goes
-                           # from 17 to 48 kNm with the wide stance
+MASS_ARMS = 150            # the ORIGINAL rigid welded arms
+MASS_CARRIAGES = 4 * CARRIAGE_KG   # rails, carriages, leadscrews
 MASS_HYDRAULICS = 120      # 2 x (BLDC + pump + manifold), hoses, oil, reservoir
 MASS_JETS = 75             # 3 x 2 kW waterjet cartridges incl. ducting
 MASS_ELECTRICS = 120       # inverter/charger, MPPTs, busbars, cabling
@@ -1102,13 +1106,16 @@ MODES = {
     "road":    dict(phi=0,         curt=0, tow="land", lift=0, rails=0),
     "launch":  dict(phi=0, curt=0, tow="land", lift=0, rails=0),
     "harbor":  dict(phi=0, curt=0, tow="sea",  lift=0, rails=0),
-    "cruise":  dict(phi=PHI_WATER, curt=78, tow="sea", lift=0, rails=0),
-    "anchor":  dict(phi=PHI_WATER, curt=78, tow="sea", lift=0, rails=0),
-    "deck":    dict(phi=PHI_WATER, curt=78, tow="sea", lift=0, rails=90),
+    "cruise":  dict(phi=PHI_WATER, trav=CARRIAGE_TRAVEL, curt=78, tow="sea", lift=0, rails=0),
+    "anchor":  dict(phi=PHI_WATER, trav=CARRIAGE_TRAVEL, curt=78, tow="sea", lift=0, rails=0),
+    "deck":    dict(phi=PHI_WATER, trav=CARRIAGE_TRAVEL, curt=78, tow="sea", lift=0, rails=90),
     # hangar stood off astern, arms splayed: the coupling pose, and the
     # dinghy pose - the boat floats free on its own hull
-    "detached": dict(phi=PHI_SPLAY, curt=78, tow="sea",
-                     lift=0, rails=0, coupled=False),
+    "detached": dict(phi=PHI_SPLAY, trav=CARRIAGE_TRAVEL, curt=78,
+                     tow="sea", lift=0, rails=0, coupled=False),
+    # carriage pulled in, arm not yet rotated: float at the hull side
+    "alongside": dict(phi=PHI_WATER, trav=0, curt=78, tow="sea",
+                      lift=0, rails=0),
 }
 
 
@@ -1308,7 +1315,7 @@ def checks(verbose=True, strict=True):
     assert POD_WATER[0] - FLOAT_W / 2 - HULL_BEAM / 2 >= ARM_GAP_SEA - 5, \
         f"only {POD_WATER[0] - FLOAT_W / 2 - HULL_BEAM / 2:.0f} mm of clear water"
     assert abs(POD_WATER[1] - pod_at(PHI_WATER)[1]) < 1, \
-        "the slide must run HORIZONTALLY, not along the arm axis"
+        "the carriage must run HORIZONTALLY: same float draft at any travel"
     assert 1700 < disp < 2400, f"displacement {disp}"
     assert reserve_kg >= 0.80 * 1900, f"ama reserve {reserve_kg:.0f}"
     assert m_right / m_heel >= 3, f"righting SF {m_right / m_heel:.1f}"

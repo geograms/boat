@@ -424,31 +424,55 @@ def build_float(pod, roll):
         hatch, hydraulics, thruster
 
 
-def build_arms(phi, dx=0.0):
-    """Elbowed arm per station - the inverted V. Two tube segments,
-    shoulder and elbow both 24 V worm slew drives; phi 90 = sea stance,
-    phi 0 = folded under the hull. `dx` staggers the stations so the
-    folded elbows of the two sides pass each other. Starboard, posed."""
-    J, Pod = P.arm_joints(phi)
+def build_arms(phi, trav=0.0, dx=0.0):
+    """The ORIGINAL rigid welded arm - straight segments cut at angles,
+    one 90 deg swing about the shoulder - with the shoulder riding on a
+    transverse RAIL. `trav` is the carriage position: 0 = inboard
+    (alongside/stow), CARRIAGE_TRAVEL = sea stance. Starboard, posed."""
+    c = math.cos(math.radians(phi))
+    s = math.sin(math.radians(phi))
+
+    def rot(p):
+        vy, vz = p[0] - P.SH_Y, p[1] - P.SH_Z
+        return (P.SH_Y + trav + vy * c - vz * s, P.SH_Z + vy * s + vz * c)
+
+    pts = [rot(p) for p in P.ARM_POLY_ROAD]
     parts, drives = [], []
+    rb, rh = P.CARRIAGE_RAIL
     for ax0 in P.ARM_X:
         ax = ax0 + dx
-        # shoulder slew drive on the spine
+        # crane-style outrigger: the BEAM slides through a sleeve on
+        # the spine. At sea it cantilevers 2 m out; stowed it runs back
+        # across the centreline under the hull (stations staggered, so
+        # port and starboard beams pass each other).
+        rb, rh = P.CARRIAGE_RAIL
+        beam_len = P.CARRIAGE_TRAVEL + 420
+        outer = P.SH_Y + trav + 140
+        parts.append(box(rb, beam_len, rh,
+                         (ax - rb / 2, outer - beam_len, P.SH_Z - rh / 2)))
+        # the sleeve, fixed on the spine
+        parts.append(box(rb + 50, 320, rh + 50,
+                         (ax - (rb + 50) / 2, P.SH_Y - 160,
+                          P.SH_Z - (rh + 50) / 2)))
+        # 24 V leadscrew drive on the sleeve
+        drives.append(Part.makeCylinder(
+            55, 120, Vector(ax, P.SH_Y - 220, P.SH_Z + rh / 2 + 40),
+            Vector(0, 1, 0)))
+        # shoulder rotation drive at the beam's outer end - the ONLY
+        # pivot of the original fixed arm
         drives.append(Part.makeCylinder(
             P.ARM_DRIVE_D / 2, P.ARM_T + 120,
-            Vector(ax - (P.ARM_T + 120) / 2, P.SH_Y, P.SH_Z),
+            Vector(ax - (P.ARM_T + 120) / 2, P.SH_Y + trav, P.SH_Z),
             Vector(1, 0, 0)))
-        # upper segment, shoulder -> elbow
-        parts.append(rod((ax, P.SH_Y, P.SH_Z), (ax, J[0], J[1]), P.ARM_T))
-        # elbow slew drive
-        drives.append(Part.makeCylinder(
-            P.ARM_DRIVE_D / 2 - 20, P.ARM_T + 90,
-            Vector(ax - (P.ARM_T + 90) / 2, J[0], J[1]), Vector(1, 0, 0)))
-        # lower segment, elbow -> float
-        parts.append(rod((ax, J[0], J[1]), (ax, Pod[0], Pod[1]), P.ARM_T))
-        # welded foot at the float
+        # the original welded segments, gussets, and float foot
+        for a_, b_ in zip(pts, pts[1:]):
+            parts.append(rod((ax, a_[0], a_[1]), (ax, b_[0], b_[1]), P.ARM_T))
+        for j in pts[1:-1]:
+            parts.append(box(P.ARM_T + 40, 130, 130,
+                             (ax - (P.ARM_T + 40) / 2, j[0] - 65, j[1] - 65)))
         parts.append(box(P.ARM_T + 80, 170, 60,
-                         (ax - (P.ARM_T + 80) / 2, Pod[0] - 85, Pod[1] - 30)))
+                         (ax - (P.ARM_T + 80) / 2, pts[-1][0] - 85,
+                          pts[-1][1] - 30)))
     return parts, drives
 
 
@@ -1220,12 +1244,13 @@ def build_mode(mode):
     add("DeckLaminates", tlam, PANEL, group=g_roof)
     add("DeckFrame", tframe, (0.62, 0.64, 0.67), group=g_roof)
 
-    pod = P.pod_at(cfg["phi"])
+    pod = P.pod_at(cfg["phi"], cfg.get("trav", 0.0))
     roll = 90 - cfg["phi"]          # rigid arm: roll locked to swing
     (fl, strips, forks, tires, rims, wboxes,
      hatch, hydraulics, thruster) = build_float(pod, roll)
-    arms_s, drv_s = build_arms(cfg["phi"])
-    arms_p, drv_p = build_arms(cfg["phi"], P.ARM_STAGGER)
+    arms_s, drv_s = build_arms(cfg["phi"], cfg.get("trav", 0.0))
+    arms_p, drv_p = build_arms(cfg["phi"], cfg.get("trav", 0.0),
+                               P.ARM_STAGGER)
     hframe, hlocks = build_hangar(cfg["phi"], cfg.get("coupled", True))
     add("HangarFrame", hframe, (0.55, 0.57, 0.60), group=g_gear)
     add("HangarLocks", hlocks, (0.80, 0.65, 0.20), group=g_gear)

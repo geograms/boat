@@ -49,39 +49,54 @@ PLAN — the U                          SECTION at a lock
 | U opening | **2 419 mm** against a hull 2 403 mm wide at that height |
 | Bight | 140 × 180 cross beam, **320 mm aft of the transom**, carrying the drawbar |
 | Road width | **2 529 mm** with the spines included — inside 2 550 |
-| Mass | **991 kg** complete: floats, wheels, elbowed arms, drives, spines, bight, drawbar, locks |
+| Mass | **957 kg** complete: floats, wheels, arms, outrigger beams, drives, spines, bight, drawbar, locks |
 
 The spines ride at the **lock height, not the sheer**. The hull is
 1 202 mm half-beam down there against 1 250 at the gunwale, and those
 48 mm a side are the only reason the U fits inside the road limit at
 all.
 
-## 2b. The arms — an inverted V that folds under
+## 2b. The arms — the original fixed arm on a sliding outrigger
 
-A single-pivot arm cannot reach both poses: the sea stance is 2 395 mm
-from the shoulder, the under-hull pose 990 mm. So each arm has a
-**shoulder and an elbow**, both 24 V worm slew drives:
+A rigid one-pivot arm cannot give both the wide stance and the
+under-hull stow: the pivot would have to sit equidistant from both
+float positions, and inside the road envelope that caps the standoff at
+**~580 mm**. Articulating the arm fixes the geometry and ruins the
+machine. The resolution keeps the arm **exactly as originally designed**
+— rigid, welded, radius 990 mm, one 90° swing — and moves its
+**shoulder** instead:
 
 ```
-SEA — the inverted V                 FOLDED — under the hull
-        J  elbow, 2 m above WL
-       / \                                o  shoulder
-      /   \  La 2480                     / \_
-     o     \  Lb 1760                   |    \__ elbows cross the
-  spine     \                        [float]     centreline under
-             [float]  2 m clear         the keel; port stations sit
-              of the hull               350 mm aft, so they pass
+SEA                          STOW 1 - slide in          STOW 2 - rotate
+sleeve                        (on the water)             (the original fold)
+  ╠══════beam══════o pivot      ╠══o                       ╠══o
+  ║          fixed  \           ║  |fixed arm              ║ / arm swings 90
+[spine]        arm  [float]     ║ [float] at the hull      [float] flush
+         2 000 mm out           ║  side (ALONGSIDE pose)    UNDER the hull
+                              beam tail crosses under
+                              the keel - stations are
+                              staggered, so the two
+                              sides' beams pass
 ```
 
-- **2 000 mm of clear water** between hull and float: righting moment
-  goes from 31 to **54 kNm**, righting SF from 4.2 to **7.2** — that is
-  the capsize margin the wide stance buys.
-- Water beam 7.7 m at sea; folds to the same 2 529 mm road envelope.
-- Both joints move together under one controller — one motion, two
-  motors, self-locking at any angle, nothing hydraulic.
-- The float's 90° roll between poses comes **from the linkage itself**
-  (segment B rotates 89.3°), so there is still no wrist joint at the
-  float.
+Each station carries a **crane-style outrigger beam** sliding through a
+sleeve on the spine, driven by a **24 V leadscrew** (worm — self-locking
+at any extension). The arm's shoulder pivot and its rotation drive ride
+on the beam's outer end.
+
+| Pose | Beam | Arm |
+|---|---|---|
+| **Sea** | out 1 492 mm | down — float 2 000 mm off the hull |
+| **Alongside** | in | down — float at the hull side; lockable anywhere between, so narrow canals get a free intermediate stance |
+| **Under / road** | in | rotated 90° — the original fold, flush under the hull, wheels down |
+
+- Righting moment at sea: 31 → **54 kNm**, righting SF 4.2 → **7.2**.
+- Water beam 7.7 m at sea; nothing protrudes on the road — retracted,
+  the beam tails cross the centreline under the keel, and the port
+  stations sit 350 mm aft of the starboard ones so they pass.
+- Two powered motions, both self-locking, **no articulation in the arm**
+  and still no wrist at the float: the 90° roll comes from the original
+  single rotation.
 
 ## 3. Coupling — guide with a cone, lock with a motor
 
@@ -114,8 +129,7 @@ plate in the hull socket, exactly like a container twist-lock:
 2. The boat **reverses in**: the stern approaches the bight, the spines
    slide alongside the hull. The crew is in the cockpit, watching.
 3. Cones enter their sockets; **four locks turn** on one button.
-4. **Arms close** under power, taking the floats from y 2 058 alongside
-   the hull, and on to the road pose.
+4. **Beams slide in, arms fold** — the two-step stow, all under power.
 
 Uncoupling is the same list backwards, and the boat is never without
 either its own flotation or the hangar's.
@@ -136,8 +150,8 @@ hydraulic ram:
 | | kg |
 |---|---|
 | **Boat alone**, empty | **2 228** |
-| **Hangar**, the whole trailer | **991** |
-| Combination with crew and stores | **3 519** — **19 kg over the O2 limit**, an open item |
+| **Hangar**, the whole trailer | **957** |
+| Combination with crew and stores | **3 485** — inside category O2 |
 
 Detachability costs about **180 kg** (spines, bight, cones, gearmotors,
 slew drives) against welding it in. What it buys is a boat that is not a
@@ -149,9 +163,6 @@ hangar's 901 kg is carried by its own floats rather than by the hull.
 
 ## 6. Open points
 
-- **19 kg over category O2.** The elbowed arms cost 90 kg over the
-  rigid ones; find it back (the weight-study levers more than cover it)
-  or accept category O3.
 - **Brakes.** The trailer still needs a service brake over 750 kg. On a
   detachable hangar this is now a normal problem: the wheels are on the
   hangar, so a catalogue overrun set can be specified against the
