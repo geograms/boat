@@ -30,9 +30,13 @@ RULE = "#c9ced4"
 FS_BODY, FS_H1, FS_H2, FS_H3 = 9.2, 20, 14, 11
 LEAD = 0.150                          # inch per body line
 
+PROJECT = "BOAT-HOME — road-towable solar trimaran"
+REV = "Rev. A"
 AUTHOR = "Max Brito"
 EMAIL = "maxbrito@pm.me"
-YEAR = datetime.date.today().year
+TODAY = datetime.date.today()
+YEAR = TODAY.year
+DATE = TODAY.strftime("%d %B %Y")
 COPYRIGHT = f"© {YEAR} {AUTHOR}"
 
 
@@ -45,11 +49,14 @@ def strip_md(s):
 
 
 class Doc:
-    def __init__(self, pdf):
+    def __init__(self, pdf, toc=None, start_page=1):
         self.pdf = pdf
         self.page = None
         self.y = 0
-        self.n = 0
+        self.n = start_page - 1
+        self.part = ""            # running header, set per document
+        self.toc = toc            # [(level, title, page)] collected in pass 1
+        self.total = None         # filled in on pass 2 for "x / y"
 
     def new_page(self):
         if self.page is not None:
@@ -62,12 +69,23 @@ class Doc:
         self.n += 1
 
     def footer(self):
-        self.page.text(0.5, MB * 0.55 / PH, f"{self.n}", ha="center",
+        num = f"{self.n}" if self.total is None else f"{self.n} / {self.total}"
+        self.page.text(0.5, MB * 0.55 / PH, num, ha="center",
                        fontsize=8, color=MUTED)
-        self.page.text(ML / PW, MB * 0.55 / PH, "Boat-Home — design study",
+        self.page.text(ML / PW, MB * 0.55 / PH, PROJECT,
                        fontsize=7.5, color=MUTED)
         self.page.text(1 - MR / PW, MB * 0.55 / PH, COPYRIGHT,
                        fontsize=7.5, color=MUTED, ha="right")
+        # running header: which part of the package you are in
+        if self.part:
+            self.page.text(ML / PW, (PH - MT * 0.42) / PH, self.part.upper(),
+                           fontsize=7.5, color=MUTED, va="center")
+            self.page.text(1 - MR / PW, (PH - MT * 0.42) / PH, REV,
+                           fontsize=7.5, color=MUTED, va="center", ha="right")
+            self.page.add_artist(plt.Line2D(
+                [ML / PW, (PW - MR) / PW],
+                [(PH - MT * 0.62) / PH] * 2, transform=self.page.transFigure,
+                color=RULE, lw=0.6))
 
     def space(self, inches):
         self.y -= inches
@@ -91,6 +109,11 @@ class Doc:
         if level == 1:
             if self.y < PH - MT - 0.01:      # current page already used
                 self.new_page()
+        elif level == 2:
+            self.need(1.1)                   # never orphan a section head
+        if self.toc is not None and level <= 2:
+            self.toc.append((level, s, self.n))
+        if level == 1:
             self.page.text(ML / PW, self.y / PH, s, fontsize=FS_H1,
                            color=INK, fontweight="bold", va="top")
             self.y -= 0.52
@@ -120,10 +143,11 @@ class Doc:
         widths = []
         for c in range(ncol):
             w = max(len(rows[r][c]) for r in range(len(rows)))
-            widths.append(max(w, 4))
+            # clamp: one long prose column must not starve the numbers
+            widths.append(min(max(w, 5), 34))
         tot = sum(widths)
         widths = [avail * w / tot for w in widths]
-        MINW = 0.95
+        MINW = min(0.95, avail / ncol * 0.85)
         short = [i for i, w in enumerate(widths) if w < MINW]
         if short and len(short) < ncol:
             deficit = sum(MINW - widths[i] for i in short)
@@ -133,10 +157,11 @@ class Doc:
                 widths[i] = (MINW if i in short
                              else widths[i] - deficit * (widths[i] - MINW) /
                              max(spare, 1e-6))
+        fs = 8.1 if ncol <= 5 else (7.4 if ncol <= 7 else 6.8)
+        cw = 0.053 * fs / 8.1
         wrapped = []
         for r in rows:
-            cells = [textwrap.wrap(r[c],
-                                   max(int((widths[c] - 0.16) / 0.053), 6))
+            cells = [textwrap.wrap(r[c], max(int((widths[c] - 0.12) / cw), 6))
                      or [""] for c in range(ncol)]
             wrapped.append((cells, max(len(c) for c in cells)))
         self.space(0.06)
@@ -152,7 +177,7 @@ class Doc:
                 for k, ln in enumerate(cells[c]):
                     self.page.text((x + 0.05) / PW,
                                    (self.y - k * 0.135) / PH, ln,
-                                   fontsize=8.1, va="top", color=INK,
+                                   fontsize=fs, va="top", color=INK,
                                    fontweight="bold" if i == 0 else "normal")
                 x += widths[c]
             self.y -= rh
@@ -188,10 +213,32 @@ class Doc:
             self.y -= 0.20
         self.space(0.10)
 
-    def close(self):
-        self.footer()
-        self.pdf.savefig(self.page)
-        plt.close(self.page)
+    def end_document(self):
+        """Flush the current page; the Doc stays alive for the next one."""
+        if self.page is not None:
+            self.footer()
+            self.pdf.savefig(self.page)
+            plt.close(self.page)
+            self.page = None
+
+    def divider(self, number, title, subtitle=""):
+        """Full-page part divider, counted in the page numbering."""
+        self.end_document()
+        self.page = plt.figure(figsize=(PW, PH))
+        self.page.patch.set_facecolor("white")
+        self.n += 1
+        self.page.text(0.13, 0.60, number, fontsize=64, color="#e4e7ea",
+                       fontweight="bold", va="center")
+        self.page.text(0.13, 0.50, title.upper(), fontsize=23,
+                       fontweight="bold", color=INK, va="center")
+        if subtitle:
+            self.page.text(0.13, 0.445, subtitle, fontsize=11, color=MUTED,
+                           va="center")
+        self.page.add_artist(plt.Line2D([0.13, 0.60], [0.415, 0.415],
+                                        transform=self.page.transFigure,
+                                        color=ACCENT, lw=2.0))
+        self.y = 0
+        self.end_document()
 
 
 PR_DIR = "docs/photo-realistic"
@@ -213,13 +260,15 @@ PHOTOREAL = [
 ]
 
 
-def photoreal(pdf):
+def photoreal(pdf, doc=None):
     """Marketing plates at the front — what the thing is, before the
     engineering explains how."""
     plates = [(p, t, s) for p, t, s in PHOTOREAL
               if os.path.exists(os.path.join(ROOT, p))]
     if not plates:
         return
+    if doc is not None:
+        doc.n += 1 + len(plates)
     fig = plt.figure(figsize=(PW, PH))
     fig.patch.set_facecolor("white")
     fig.text(0.5, 0.62, "A HOUSE THAT SWIMS", ha="center", fontsize=26,
@@ -261,44 +310,137 @@ def photoreal(pdf):
         plt.close(fig)
 
 
-def title_page(pdf):
+def title_page(pdf, doc=None):
+    """Cover: hero image, title block, and who to talk to."""
     fig = plt.figure(figsize=(PW, PH))
     fig.patch.set_facecolor("white")
-    fig.text(0.5, 0.80, "BOAT-HOME", ha="center", fontsize=40,
-             fontweight="bold", color=INK)
-    fig.text(0.5, 0.755, "Road-Towable Solar Trimaran", ha="center",
-             fontsize=15, color=ACCENT)
-    fig.text(0.5, 0.727, "design study  ·  2026", ha="center", fontsize=10,
-             color=MUTED)
+
+    fig.text(0.078, 0.945, "BOAT-HOME", fontsize=38, fontweight="bold",
+             color=INK, va="top")
+    fig.text(0.078, 0.885, "Road-Towable Solar Trimaran", fontsize=15,
+             color=ACCENT, va="top")
+    fig.text(0.078, 0.858, "7.2 m  ·  solar-electric  ·  its own trailer",
+             fontsize=10.5, color=MUTED, va="top")
+    fig.add_artist(plt.Line2D([0.078, 0.922], [0.845, 0.845],
+                              transform=fig.transFigure, color=INK, lw=1.4))
+
     for cand in (PHOTOREAL[0][0], "freecad/shots/beauty/cruise_bow_quarter.png"):
         hero = os.path.join(ROOT, cand)
         if os.path.exists(hero):
             img = mpimg.imread(hero)
-            ax = fig.add_axes([0.06, 0.36, 0.88, 0.34])
+            ax = fig.add_axes([0.078, 0.475, 0.844, 0.35])
             ax.imshow(img)
             ax.axis("off")
             break
-    lines = ["7.2 m  ·  2.5 m beam  ·  2 535 mm on the road",
-             "4.40 kWp solar  ·  50 kWh battery  ·  4.8 kn maximum",
+
+    # ---- title block, the way a drawing carries one
+    x0, x1 = 0.078, 0.922
+    top, row = 0.425, 0.038
+    rows = [("PROJECT", "Boat-home, 7.2 m solar trimaran"),
+            ("DOCUMENT", "Design package for discussion with a builder"),
+            ("STAGE", "Detailed concept — geometry complete, scantlings open"),
+            ("REVISION", f"{REV}   ·   {DATE}"),
+            ("OWNER", AUTHOR),
+            ("CONTACT", EMAIL),
+            ("MODEL", "Parametric FreeCAD; limits asserted in params.checks()")]
+    fig.add_artist(plt.Rectangle((x0, top - row * len(rows)), x1 - x0,
+                                 row * len(rows), transform=fig.transFigure,
+                                 fc="#f4f6f8", ec=RULE, lw=0.8))
+    for i, (k, v) in enumerate(rows):
+        y = top - row * (i + 0.62)
+        fig.text(x0 + 0.018, y, k, fontsize=7.6, color=MUTED,
+                 fontweight="bold", va="center")
+        fig.text(x0 + 0.20, y, v, fontsize=9.2, color=INK, va="center")
+        if i:
+            fig.add_artist(plt.Line2D([x0, x1], [top - row * i] * 2,
+                                      transform=fig.transFigure,
+                                      color=RULE, lw=0.5))
+
+    facts = ["3 582 kg loaded  ·  369 mm draft  ·  2 535 mm on the road",
+             "4.40 kWp solar  ·  50 kWh battery  ·  4.7 kn  ·  233 NM at 3 kn",
              "5 berths  ·  1 850 mm headroom  ·  12.1 m² floor",
-             "its own trailer: six driven wheels inside the floats"]
-    for i, ln in enumerate(lines):
-        fig.text(0.5, 0.30 - i * 0.033, ln, ha="center", fontsize=10.5,
+             "foam-core GRP sandwich, 103 m² of panel, 754 kg"]
+    for i, ln in enumerate(facts):
+        fig.text(0.5, 0.145 - i * 0.026, ln, ha="center", fontsize=9.5,
                  color=INK)
-    fig.text(0.5, 0.145, f"{COPYRIGHT}", ha="center", fontsize=10,
-             color=INK)
-    fig.text(0.5, 0.118, f"contact  ·  {EMAIL}", ha="center", fontsize=9.5,
-             color=ACCENT)
-    fig.text(0.5, 0.085, "All rights reserved. Not for redistribution "
-             "without permission.", ha="center", fontsize=7.5, color=MUTED)
-    fig.text(0.5, 0.055, "generated from README.md — python3 docs/make_pdf.py",
-             ha="center", fontsize=8, color=MUTED, style="italic")
+
+    fig.text(0.5, 0.032, f"{COPYRIGHT}  ·  {EMAIL}  ·  all rights reserved",
+             ha="center", fontsize=7.5, color=MUTED)
     pdf.savefig(fig)
     plt.close(fig)
+    if doc is not None:
+        doc.n += 1
 
 
-def render(md, pdf):
-    doc = Doc(pdf)
+def contents_page_count(toc):
+    """How many pages the contents will take - same arithmetic as
+    contents_page(), so the page numbers it prints are right."""
+    pages, y = 1, PH - MT - 0.72
+    for level, _title, _page in toc:
+        if y < MB + 0.25:
+            pages += 1
+            y = PH - MT - 0.60
+        y -= 0.10 if level == 1 else 0.0
+        y -= 0.185 if level == 1 else 0.165
+    return pages
+
+
+def contents_page(pdf, doc, toc):
+    """Table of contents, continued over as many pages as it needs."""
+    def open_page(first):
+        fig = plt.figure(figsize=(PW, PH))
+        fig.patch.set_facecolor("white")
+        fig.text(ML / PW, 1 - MT / PH,
+                 "CONTENTS" if first else "CONTENTS  (continued)",
+                 fontsize=20 if first else 14, fontweight="bold", color=INK,
+                 va="top")
+        fig.add_artist(plt.Line2D([ML / PW, (PW - MR) / PW],
+                                  [(PH - MT - 0.34) / PH] * 2,
+                                  transform=fig.transFigure, color=ACCENT,
+                                  lw=1.6))
+        return fig
+
+    def close_page(fig, n):
+        fig.text(0.5, MB * 0.55 / PH, str(n), ha="center", fontsize=8,
+                 color=MUTED)
+        fig.text(ML / PW, MB * 0.55 / PH, PROJECT, fontsize=7.5, color=MUTED)
+        fig.text(1 - MR / PW, MB * 0.55 / PH, COPYRIGHT, fontsize=7.5,
+                 color=MUTED, ha="right")
+        pdf.savefig(fig)
+        plt.close(fig)
+
+    first = True
+    fig = open_page(True)
+    y = PH - MT - 0.72
+    for level, title, page in toc:
+        if y < MB + 0.25:
+            doc.n += 1
+            close_page(fig, doc.n)
+            first = False
+            fig = open_page(False)
+            y = PH - MT - 0.60
+        if level == 1:
+            y -= 0.10
+            fig.text(ML / PW, y / PH, title.upper(), fontsize=10.5,
+                     fontweight="bold", color=INK, va="top")
+        else:
+            fig.text((ML + 0.22) / PW, y / PH, title, fontsize=9.2,
+                     color=INK, va="top")
+        fig.text((PW - MR) / PW, y / PH, str(page), fontsize=9.2,
+                 color=MUTED, va="top", ha="right")
+        dots_y = (y - 0.045) / PH
+        fig.add_artist(plt.Line2D(
+            [(ML + (0.10 if level == 1 else 0.32)) / PW, (PW - MR - 0.22) / PW],
+            [dots_y, dots_y], transform=fig.transFigure, color="#e2e5e9",
+            lw=0.6, ls=(0, (1, 2))))
+        y -= 0.185 if level == 1 else 0.165
+    doc.n += 1
+    close_page(fig, doc.n)
+
+
+def render(md, doc, part=""):
+    """Render one markdown document into an open Doc."""
+    doc.part = part
     doc.new_page()
     lines = md.split("\n")
     i, in_code, code, table = 0, False, [], []
@@ -354,7 +496,8 @@ def render(md, pdf):
         elif raw.startswith("## "):
             doc.heading(2, strip_md(raw[3:]))
         elif raw.startswith("# "):
-            doc.heading(1, strip_md(raw[2:]))
+            if not part:                     # dividers carry the title
+                doc.heading(1, strip_md(raw[2:]))
         elif raw.strip() in ("---", "***"):
             doc.space(0.08)
         elif re.match(r"^\s*[-*]\s+", raw):
@@ -369,10 +512,10 @@ def render(md, pdf):
         i += 1
 
     flush_table()
-    doc.close()
+    doc.end_document()
 
 
-def gallery(pdf):
+def gallery(pdf, doc=None):
     """Every render and drawing, one per page, after the text."""
     shots = []
     for mode, label in (("cruise", "cruise — trimaran, floats out"),
@@ -404,21 +547,15 @@ def gallery(pdf):
         ("docs/images/rim_thruster.png", "rim thruster"),
         ("docs/images/weed_grille.png", "weed grille"),
     ]
-    fig = plt.figure(figsize=(PW, PH))
-    fig.patch.set_facecolor("white")
-    fig.text(0.5, 0.55, "DRAWINGS AND RENDERS", ha="center", fontsize=22,
-             fontweight="bold", color=INK)
-    fig.text(0.5, 0.50, f"{len(shots)} plates", ha="center", fontsize=11,
-             color=MUTED)
-    fig.text(0.5, 0.08, f"{COPYRIGHT}  ·  {EMAIL}", ha="center", fontsize=8,
-             color=MUTED)
-    pdf.savefig(fig)
-    plt.close(fig)
+    shots = [(p, c) for p, c in shots
+             if os.path.exists(os.path.join(ROOT, p))]
+    if doc is not None:
+        doc.divider("10", "Drawings and renders",
+                    f"{len(shots)} plates - five configurations, "
+                    "then the drawings")
 
     for path, cap in shots:
         full = os.path.join(ROOT, path)
-        if not os.path.exists(full):
-            continue
         img = mpimg.imread(full)
         h, w = img.shape[0], img.shape[1]
         land = w > h
@@ -435,16 +572,74 @@ def gallery(pdf):
         plt.close(fig)
 
 
+PARTS = [
+    ("1", "The proposal", "what this is, and what I am asking a builder for",
+     "docs/YARD-BRIEF.md", "Part 1 — the proposal"),
+    ("2", "The boat", "principal dimensions, performance, systems, cost, risks",
+     "README.md", "Part 2 — the boat"),
+    ("3", "Construction", "laminate schedule, build sequence, shop, suppliers",
+     "docs/construction.md", "Part 3 — construction"),
+    ("4", "Structure", "exoskeleton, tow arch, steel-to-laminate rules",
+     "docs/structure.md", "Part 4 — structure"),
+    ("5", "Roof deck", "walk-on glass over the solar array",
+     "docs/roof.md", "Part 5 — roof deck"),
+    ("6", "Interior", "layout, stowage, services, mass",
+     "docs/interior.md", "Part 6 — interior"),
+    ("7", "Front dome", "flat glazing on two tube purlins",
+     "docs/dome.md", "Part 7 — front dome"),
+    ("8", "Performance", "the resistance model behind the speed and range",
+     "docs/performance.md", "Part 8 — performance"),
+    ("9", "Road approval", "trailer vs amphibian, brakes, DE / PT / NL",
+     "docs/homologation.md", "Part 9 — road approval"),
+]
+
+
+def build(pdf, toc_in=None, toc_out=None, total=None):
+    """One full pass over the document. Pass 1 collects the TOC, pass 2
+    prints it with real page numbers."""
+    doc = Doc(pdf, toc=toc_out)
+    doc.total = total
+    title_page(pdf, doc)
+    photoreal(pdf, doc)
+    if toc_in is not None:
+        contents_page(pdf, doc, toc_in)
+    for number, title, subtitle, path, part in PARTS:
+        full = os.path.join(ROOT, path)
+        if not os.path.exists(full):
+            continue
+        doc.divider(number, title, subtitle)
+        if toc_out is not None:
+            toc_out.append((1, f"Part {number} — {title}", doc.n))
+        render(open(full).read(), doc, part=part)
+    doc.end_document()
+    if toc_out is not None:
+        toc_out.append((1, "Part 10 — Drawings and renders", doc.n + 1))
+    gallery(pdf, doc)
+    return doc.n
+
+
 if __name__ == "__main__":
-    md = open(os.path.join(ROOT, "README.md")).read()
+    import io
+    from matplotlib.backends.backend_pdf import PdfPages as _PP
+
+    # pass 1: no contents page, collect headings and the page count
+    toc = []
+    scratch = io.BytesIO()
+    with _PP(scratch) as probe:
+        build(probe, toc_in=None, toc_out=toc)
+    # the real run has the contents pages themselves in front: estimate
+    # how many, then offset every entry by that
+    toc_pages = contents_page_count(toc)
+    for i, (lvl, title, page) in enumerate(toc):
+        toc[i] = (lvl, title, page + toc_pages)
+
     with PdfPages(OUT) as pdf:
-        title_page(pdf)
-        photoreal(pdf)
-        render(md, pdf)
-        gallery(pdf)
+        total = build(pdf, toc_in=toc, toc_out=None)
+        with _PP(io.BytesIO()):
+            pass
         d = pdf.infodict()
         d["Title"] = "Boat-Home — Road-Towable Solar Trimaran"
-        d["Subject"] = "Design study"
+        d["Subject"] = "Design package for discussion with a builder"
         d["Author"] = f"{AUTHOR} <{EMAIL}>"
         d["Creator"] = AUTHOR
         d["Keywords"] = (f"{COPYRIGHT}. All rights reserved. "

@@ -9,9 +9,9 @@ Status: design study. Geometry in `freecad/params.py` (`FRAME_*`,
 
 Every heavy fitting on this boat pulls on one small patch of hull:
 each float arm carries ~1 000 kg through a single shoulder pin, the
-balconies hang off the gunwale, the tow puts the whole 2 t through the
-bow. A GRP/plywood hull skin hates point loads — it wants distributed
-pressure.
+balconies hang off the gunwale, the tow puts the whole boat through the
+bow. A foam-core sandwich skin hates point loads — it wants distributed
+pressure, which is exactly what it is good at.
 
 So the loads never touch the skin. An external steel frame carries
 them, and the hull is left to do only what a hull is good at: resist
@@ -65,6 +65,39 @@ balcony hinges (rails), tow arch (bow ring), quay fender rails
 **Bonus**: the frame is one weldment that can be built and jigged
 before the hull, and the hull can be repaired or even replaced inside
 it. It is also the natural earth/bonding path for the 48 V system.
+
+**This decision got better when the hull went composite.** The primary
+structure is now foam-core GRP ([construction.md](construction.md)), and
+sandwich panels are excellent in distributed pressure and poor under a
+concentrated bolt load. An external steel frame that takes every point
+load is the right partner for that: the panels then carry only what they
+are good at.
+
+Three rules where steel meets laminate:
+
+- **Isolate.** A glass barrier ply everywhere steel touches laminate —
+  and never bolt straight through core.
+- **Bed every fitting in a hard insert.** 18 mm plywood or high-density
+  foam routed into the panel, so the through-bolt crushes something that
+  does not crush.
+- **Galvanised steel, not stainless, against laminate.** Stainless in a
+  damp, oxygen-starved joint pits; hot-dip galvanised does not, and it
+  is what the frame is already specified in.
+
+## 1b. Where carbon is worth it
+
+Short version — the full argument is in
+[construction.md §7](construction.md):
+
+- **Not** in hull or float skins: 5–8× the cost for stiffness the core
+  thickness already provides, and worse impact tolerance.
+- **Yes**, worth pricing for the roof and glass-deck substructure: that
+  mass sits 2.4 m up, where it works directly against righting moment.
+  **Mass aloft costs about three times what mass in the bilge costs.**
+- **Isolate carbon from aluminium** with a glass barrier ply — the
+  galvanic couple eats the aluminium. Relevant at the alu roof grid.
+- Carbon fails without warning where glass cracks first. Not anywhere a
+  warning matters.
 
 ## 2. Stern arch — the boat tows stern-first
 
@@ -159,7 +192,8 @@ being pushed through the water for no reason. The bow now tapers over
 four extra stations to a **220 mm rounded stem bar**: a proper
 spoon-shaped barge entry, full above the waterline for interior volume,
 fine at the waterline for wave-making. Displacement is unchanged
-(1 970 kg at WL 260).
+(the waterline now follows the computed mass — see
+[construction.md §2](construction.md) and `params.draft_for()`).
 
 The deck plate also closes the top of the hull over its whole length
 (the sheer rises forward, so the extra height forward reads as a bow

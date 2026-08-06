@@ -5,14 +5,23 @@ First-order estimate: ITTC friction line plus a residuary factor fitted
 to barge data. Run: python3 docs/perf_model.py
 """
 import math
+import os
+import sys
 
-LWL, B, T = 6.60, 2.50, 0.30       # m, loaded
-DISP = 2600                        # kg all-up
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                "..", "freecad"))
+import params as P                                          # noqa: E402
+
+# ONE mass figure for the project: the computed budget, loaded. Wired to
+# params so the speed and range tables move when the boat gains weight.
+DISP = round(P.mass_budget()[1] + P.CREW_STORES)
+T = P.draft_for(DISP) / 1000.0     # m, the waterline that follows from it
+LWL, B = 6.60, 2.50
 S = LWL * (1.7 * T + B * 0.75) + 2 * 6.2 * (1.7 * 0.30 + 0.6 * 0.70)
 RHO, NU = 1025, 1.19e-6
 ETA = 0.45                         # waterjet propulsive efficiency
 P_INSTALLED = 6.0                  # kW
-BATT, DOD = 50, 0.9
+BATT, DOD = P.BATT_KWH, 0.9
 HOUSE = 2.5                        # kWh/day
 
 

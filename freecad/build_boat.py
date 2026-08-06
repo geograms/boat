@@ -1249,12 +1249,19 @@ def build_mode(mode):
     return doc
 
 
-P.checks()
-modes = [a for a in sys.argv if a in P.MODES] or list(P.MODES)
-for m in modes:
-    build_mode(m)
+def main():
+    P.checks()
+    modes = [a for a in sys.argv if a in P.MODES] or list(P.MODES)
+    for m in modes:
+        build_mode(m)
 
-if App.GuiUp:
-    import FreeCADGui as Gui
-    Gui.activeDocument().activeView().viewIsometric()
-    Gui.SendMsgToActiveView("ViewFit")
+    if App.GuiUp:
+        import FreeCADGui as Gui
+        Gui.activeDocument().activeView().viewIsometric()
+        Gui.SendMsgToActiveView("ViewFit")
+
+
+# importable: areas.py and beauty_shots.py pull the builders in without
+# rebuilding every mode
+if __name__ == "__main__":
+    main()

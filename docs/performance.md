@@ -12,9 +12,9 @@ assumption stated. Treat the speeds as ±10 % and the ranges as ±20 %.
 | Input | Value | Why |
 |---|---|---|
 | Waterline length | 6.60 m | 7.20 LOA less the tapered stem |
-| Beam / draft | 2.50 m / 0.30 m | loaded, not the 260 mm light draft |
-| Displacement | 2 600 kg | boat + interior + crew + stores |
-| Wetted surface | **27.3 m²** | hull 15.7 + two floats 11.5 |
+| Beam / draft | 2.50 m / **0.37 m** | the draft now FOLLOWS the mass, `params.draft_for()` |
+| Displacement | **3 582 kg** | the computed mass budget, loaded — `params.mass_budget()` |
+| Wetted surface | **28.0 m²** | hull + two floats, at the computed draft |
 | Installed power | **6 kW** | 3 × 2 kW waterjets |
 | Propulsive efficiency | **0.45** | small waterjets are poor at low speed |
 | Usable battery | 45 kWh | 50 kWh × 90 % depth of discharge |
@@ -37,20 +37,20 @@ the reason for the ±10 %.
 
 | Speed | Fn | Resistance | Shaft power | Range (45 kWh) | Endurance |
 |---|---|---|---|---|---|
-| 2.0 kn | 0.13 | 78 N | 0.18 kW | 500 NM | 250 h |
-| 3.0 kn | 0.19 | 164 N | 0.56 kW | 240 NM | 80 h |
-| 3.5 kn | 0.22 | 251 N | 1.00 kW | 157 NM | 45 h |
-| 4.0 kn | 0.26 | 457 N | 2.09 kW | 86 NM | 21 h |
-| 4.5 kn | 0.29 | 825 N | 4.24 kW | 48 NM | 11 h |
-| **4.8 kn** | 0.31 | — | **6.0 kW** | 33 NM | 7 h |
+| 2.0 kn | 0.13 | 81 N | 0.18 kW | 488 NM | 244 h |
+| 3.0 kn | 0.19 | 169 N | 0.58 kW | 233 NM | 78 h |
+| 3.5 kn | 0.22 | 258 N | 1.03 kW | 153 NM | 44 h |
+| 4.0 kn | 0.26 | 470 N | 2.15 kW | 84 NM | 21 h |
+| 4.5 kn | 0.29 | 849 N | 4.37 kW | 46 NM | 10 h |
+| **4.7 kn** | 0.30 | — | **6.0 kW** | 32 NM | 7 h |
 
-**Maximum ≈ 4.8 kn.** The boat is *power*-limited, not hull-speed
+**Maximum ≈ 4.7 kn.** The boat is *power*-limited, not hull-speed
 limited: theoretical hull speed is 6.2 kn, and reaching it would take
-about 29 kW. The curve is brutal past 4.5 kn — the last 0.3 kn costs
+about 30 kW. The curve is brutal past 4.5 kn — the last 0.3 kn costs
 as much as the first 4.0.
 
 The design conclusion: **cruise at 3–4 knots.** At 3.5 kn the boat has
-157 NM of range on the battery alone, which covers a day's canal
+153 NM of range on the battery alone, which covers a day's canal
 passage or a coastal hop with reserve.
 
 ## 3. Solar-neutral cruising
@@ -66,6 +66,13 @@ This is the number that matters for a liveaboard.
 In summer the boat can move all day at 4.2 knots and still finish with
 a fuller battery than it started. That, not the top speed, is the point
 of a 4.4 kWp array on a 2.6 t boat.
+
+**The mass rise costs almost nothing.** Going from the old 2 600 kg
+assumption to the computed **3 582 kg** takes the maximum from 4.8 to
+**4.7 kn** and the range at 3 kn from 240 to **233 NM**. At these
+Froude numbers resistance is friction-dominated, and friction follows
+*wetted surface*, which barely moved. Mass is a road and stability
+problem on this boat, not a speed problem.
 
 ## 4. What is not modelled
 

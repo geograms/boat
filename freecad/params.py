@@ -137,6 +137,10 @@ GROUND_Z = POD_ROAD[1] - WHEEL_DROP - WHEEL_DIA / 2   # -448
 # water surface (unloaded, awash) — float top is welded flush to the
 # hull bottom, so true dry clearance is ~zero by construction.
 BOAT_MASS = 2000
+DESIGN_ALL_UP = BOAT_MASS          # ONE mass figure for the whole project:
+                                   # hydrostatics, performance and the road
+                                   # numbers all read this. See checks().
+CREW_STORES = 300                  # crew + stores + fuel/water top-up, kg
 _wedge = 0.5 * (BOTTOM_SLOPE * FLOAT_H) * FLOAT_H * FLOAT_LEN
 _reserve = (FLOAT_LEN * FLOAT_W * FLOAT_H * 0.62 - _wedge) * 1e-6
 JACK_DEPTH = FLOAT_W * BOAT_MASS / (2 * _reserve)        # ~387 mm
@@ -671,6 +675,30 @@ def solar_kwp():
     return deck, balc, eff
 
 
+# ---- construction: foam-core GRP sandwich ----
+# Primary structure is PVC/PET foam core with biaxial E-glass skins in
+# epoxy, vacuum bagged. Schedule lives in laminate.py; the areas it is
+# applied to are MEASURED off the solids by areas.py, so structural mass
+# is computed, not asserted.
+CONSTRUCTION = "foam_core_grp"
+BUILD_METHOD = "flat_panel"        # see docs/construction.md and Q1
+VACUUM_METHOD = "wet_layup_bagged"  # not infusion
+POST_CURE_C = 55                   # deck panels see 60-70 C under the glass
+LAMINATE_TOL_MM = 3                # per side, as-built thickness tolerance
+FAIR_COAT_MM = 2                   # per side, bog and primer
+
+# transverse structural bulkheads (x, mm from transom)
+BULKHEAD_X = (900, 2400, 3900, 5400, 6200)
+
+# masses that are NOT laminate, kg. Sources in the docs named alongside.
+MASS_EXOSKELETON = 260     # S355 tube frame 180 + brackets + tow arch, galvanised
+MASS_WHEELS_HUBS = 270     # 6 x (tire 14 + rim 8 + hub motor 11 + stub axle 12)
+MASS_ARMS = 150            # 6 swinging arms, steel, incl. shoulder pins
+MASS_HYDRAULICS = 120      # 2 x (BLDC + pump + manifold), hoses, oil, reservoir
+MASS_JETS = 75             # 3 x 2 kW waterjet cartridges incl. ducting
+MASS_ELECTRICS = 120       # inverter/charger, MPPTs, busbars, cabling
+MASS_SOLAR = 234           # 4 x 27 kg roof modules + 6 x 21 kg bifacial balcony
+
 # ---- interior ----
 # 5300 x 2280 of floor and 1850 of height. Four zones, aft to forward:
 #   services (heads to port, galley to starboard, corridor between)
@@ -871,6 +899,88 @@ def displacement_kg(wl=WL_Z):
     return vol * 1e-6
 
 
+
+# ---- hydrostatics: the waterline FOLLOWS the mass, it is not asserted ----
+def _hw_at(x, z):
+    """Half beam of the chined hull at station x and height z."""
+    for i in range(len(STATIONS) - 1):
+        if STATIONS[i][0] <= x <= STATIONS[i + 1][0]:
+            t = (x - STATIONS[i][0]) / (STATIONS[i + 1][0] - STATIONS[i][0])
+            a, b = STATIONS[i], STATIONS[i + 1]
+            yg = a[1] + t * (b[1] - a[1])
+            yc = a[2] + t * (b[2] - a[2])
+            zk = a[3] + t * (b[3] - a[3])
+            zc = a[4] + t * (b[4] - a[4])
+            zs = a[5] + t * (b[5] - a[5])
+            break
+    else:
+        return 0.0
+    if z < zk:
+        return 0.0
+    if z <= zc:
+        return KEEL_FLAT + (yc - KEEL_FLAT) * (z - zk) / max(zc - zk, 1e-9)
+    if z <= zs:
+        return yc + (yg - yc) * (z - zc) / max(zs - zc, 1e-9)
+    return yg
+
+
+def displacement(draft, nx=160, nz=32):
+    """kg of fresh water displaced by the main hull at a given draft."""
+    vol = 0.0
+    for i in range(nx):
+        x = LOA * (i + 0.5) / nx
+        area = 0.0
+        for j in range(nz):
+            area += 2 * _hw_at(x, draft * (j + 0.5) / nz) * (draft / nz)
+        vol += area * (LOA / nx)
+    return vol / 1e9 * 1000
+
+
+def draft_for(mass, lo=50.0, hi=900.0):
+    """mm of draft at which the hull displaces `mass` kg."""
+    for _ in range(40):
+        mid = 0.5 * (lo + hi)
+        if displacement(mid) < mass:
+            lo = mid
+        else:
+            hi = mid
+    return 0.5 * (lo + hi)
+
+
+def float_buoyancy():
+    """kg, both floats fully submerged (the jack-up reserve)."""
+    return 2 * FLOAT_LEN * FLOAT_W * FLOAT_H * 0.62 / 1e9 * 1000
+
+
+# ---- structural mass, computed from measured areas x laminate schedule ----
+def laminate_areas():
+    """{zone: m2} measured off the solids by areas.py. The file is the
+    interface: no FreeCAD import needed to run checks()."""
+    import json
+    import os
+    path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "areas.json")
+    with open(path) as fh:
+        return json.load(fh)
+
+
+def mass_budget():
+    """(dict of every mass item in kg, total). Structure is computed."""
+    import laminate as L
+    areas = laminate_areas()
+    items = {"laminate structure": L.structural_mass(areas)}
+    items["exoskeleton (steel)"] = MASS_EXOSKELETON
+    items["wheels, hubs, axles"] = MASS_WHEELS_HUBS
+    items["arms + shoulder pins"] = MASS_ARMS
+    items["hydraulic drive"] = MASS_HYDRAULICS
+    items["waterjets"] = MASS_JETS
+    items["electrics"] = MASS_ELECTRICS
+    items["solar modules"] = MASS_SOLAR
+    items["interior (incl. 50 kWh, water)"] = sum(INT_MASS.values())
+    items["walk-on glass deck"] = deck_mass()
+    items["front dome glazing"] = dome_pane_stats()[1] * DOME_GLASS_KG_M2 + 34
+    return items, sum(items.values())
+
+
 def checks(verbose=True):
     # road: everything inside the hull footprint, shallow stack
     wheel_disc_y = POD_ROAD[0] + FLOAT_H / 2 + AXLE_STANDOFF   # 1170
@@ -895,6 +1005,16 @@ def checks(verbose=True):
     box_gap = BALC_HINGE_Z - BALC_T - WHEELBOX_TOP_Z           # leg length
 
     assert road_width <= 2550, f"road width {road_width}"
+    # as-BUILT beam: hand-laid laminate is not a milled dimension, and
+    # a bog-and-fair coat adds a couple of mm per side on its own.
+    as_built_beam = road_width + 2 * (LAMINATE_TOL_MM + FAIR_COAT_MM)
+    assert as_built_beam <= 2550, (
+        f"as-built road beam {as_built_beam:.0f} mm exceeds the 2550 limit "
+        f"({road_width:.0f} nominal + build tolerance) - take the nominal "
+        "beam down and spend the margin on tolerance")
+    assert POST_CURE_C >= 55, (
+        "roof panels run at 60-70 C under the glass deck; a room-temperature "
+        "cure will creep and print through")
     assert road_height <= 4000, f"road height {road_height}"
     assert -GROUND_Z >= 250, f"ground clearance {-GROUND_Z}"
     assert wheel_outer <= HULL_BEAM / 2 + 20, \
@@ -1217,4 +1337,40 @@ def checks(verbose=True):
         print(f"jack-up stance  floats {jack_frac * 100:.0f}% deep, "
               f"keel {-harbor_wl:.0f} mm above water (awash), "
               f"pontoon GM ~{gm_est:.1f} m")
+
+    # ---- mass budget and the waterline that follows from it ----
+    items, all_up = mass_budget()
+    wl = draft_for(all_up)
+    wl_loaded = draft_for(all_up + CREW_STORES)
+    freeboard = min(s_[5] for s_ in STATIONS[:6]) - wl_loaded
+    buoy = float_buoyancy()
+    if verbose:
+        print("")
+        print("MASS BUDGET     computed from measured areas x laminate schedule")
+        for k, v in sorted(items.items(), key=lambda kv: -kv[1]):
+            print(f"  {k:34s} {v:6.0f} kg")
+        print(f"  {'TOTAL, empty':34s} {all_up:6.0f} kg "
+              f"(design figure {DESIGN_ALL_UP})")
+        print(f"  {'TOTAL, crew and stores aboard':34s} "
+              f"{all_up + CREW_STORES:6.0f} kg")
+        print(f"waterline       {wl:.0f} mm empty, {wl_loaded:.0f} mm loaded; "
+              f"freeboard {freeboard:.0f} mm")
+        print(f"jack-up         float buoyancy {buoy:.0f} kg = "
+              f"{buoy / (all_up + CREW_STORES):.2f} x loaded mass "
+              f"(1.40 wanted)")
+        print(f"road            trailer category O2 needs <= 3500 kg; "
+              f"loaded {all_up + CREW_STORES:.0f} kg")
+
+    assert freeboard >= 500, f"only {freeboard:.0f} mm of freeboard when loaded"
+    assert all_up + CREW_STORES <= 3500, (
+        f"{all_up + CREW_STORES:.0f} kg exceeds the 3500 kg category O2 limit - "
+        "the whole homologation route changes, see docs/homologation.md")
+    assert buoy >= 1.4 * (all_up + CREW_STORES), (
+        f"jack-up stance: floats give {buoy:.0f} kg against "
+        f"{1.4 * (all_up + CREW_STORES):.0f} kg wanted")
+    assert all_up <= DESIGN_ALL_UP, (
+        f"mass budget does not close: {all_up:.0f} kg computed vs "
+        f"{DESIGN_ALL_UP} kg design figure - resolve it, do not raise the "
+        "design figure (see docs/construction.md section 6)")
+
     return True

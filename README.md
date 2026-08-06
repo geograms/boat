@@ -26,9 +26,10 @@ drift without the build failing.
 | Beam, afloat (floats out) | **4 716 mm** |
 | Height on the road | **3 009 mm** (limit 4 000) |
 | Air draft afloat | **2 267 mm** |
-| Draft | **260 mm** light, ~300 mm loaded |
-| Displacement | 1 970 kg at the 260 mm waterline |
-| Design all-up mass | 2 000 kg (see §7 — this is the tight one) |
+| Draft | **349 mm** empty, **369 mm** loaded (computed from the mass) |
+| Freeboard, loaded | 781 mm |
+| Mass, computed | **3 282 kg** empty · **3 582 kg** with crew and stores |
+| Design figure | 2 000 kg — **the budget does not close, see §7** |
 | Ground clearance, road | 482 mm |
 | Track / wheelbase | 2 270 / 3 400 mm |
 | Coupling height / tongue load | 445 mm / +100 kg |
@@ -55,21 +56,22 @@ drift without the build failing.
 
 **Installed power: 3 × 2 kW flush-intake waterjets = 6 kW.** Estimates
 from an ITTC friction line plus a residuary factor for a blunt barge
-hull; wetted surface 27.3 m² in trimaran trim, 2 600 kg all-up,
-waterjet propulsive efficiency 0.45. Method in
+hull; wetted surface 28.0 m² in trimaran trim, **3 582 kg all-up — the
+computed mass, wired to `params.mass_budget()`**, waterjet propulsive
+efficiency 0.45. Method in
 [docs/performance.md](docs/performance.md).
 
 | Speed | Shaft power | Range on 45 kWh usable | Endurance |
 |---|---|---|---|
-| 2.0 kn | 0.18 kW | **500 NM** | 250 h |
-| 3.0 kn | 0.56 kW | **240 NM** | 80 h |
-| 3.5 kn | 1.00 kW | **157 NM** | 45 h |
-| 4.0 kn | 2.09 kW | **86 NM** | 21 h |
-| 4.5 kn | 4.24 kW | **48 NM** | 11 h |
-| **4.8 kn max** | 6.0 kW | 33 NM | 7 h |
+| 2.0 kn | 0.18 kW | **488 NM** | 244 h |
+| 3.0 kn | 0.58 kW | **233 NM** | 78 h |
+| 3.5 kn | 1.03 kW | **153 NM** | 44 h |
+| 4.0 kn | 2.15 kW | **84 NM** | 21 h |
+| 4.5 kn | 4.37 kW | **46 NM** | 10 h |
+| **4.7 kn max** | 6.0 kW | 32 NM | 7 h |
 
-**Maximum ≈ 4.8 knots**, power-limited rather than hull-speed-limited
-(theoretical hull speed is 6.2 kn). The last 0.3 kn costs as much power
+**Maximum ≈ 4.7 knots**, power-limited rather than hull-speed-limited
+(theoretical hull speed is 6.2 kn, needing 30 kW). The last 0.2 kn costs as much power
 as the first 4 — this is a boat to cruise at 3–4 kn, not to push.
 
 **Solar-neutral cruising.** With 4.40 kWp and ≈ 24 kWh on a good summer
@@ -81,6 +83,7 @@ and finishes with a fuller battery than it started. In spring or autumn
 | | |
 |---|---|
 | Battery | 48 V LiFePO₄, **50 kWh**, 357 kg, split under both settees |
+| Structure | foam-core GRP sandwich, 103 m² of panel, **754 kg** |
 | Solar | **4.40 kWp** — 4 × 500 W under the walk-on glass, 6 × 400 W bifacial on the balconies (4.35 kWp effective) |
 | House load | ≈ 2.5 kWh/day (fridge, lights, water, AC standby) |
 | Steering | differential thrust, no rudder |
@@ -145,6 +148,13 @@ reachable by weed. → [docs/propulsion.md](docs/propulsion.md)
 point load (arms, balconies, tow, fenders); nothing structural crosses
 the living volume. → [docs/structure.md](docs/structure.md)
 
+**Construction** — primary structure is **foam-core GRP sandwich**: PVC
+and PET core, biaxial E-glass skins, epoxy, vacuum bagged, panels laid
+up flat on a table and CNC-cut from the model. **103 m² of panel,
+754 kg** — computed from measured areas × the laminate schedule, not
+estimated. The middle 3.6 m of the hull is exactly developable, so it
+needs no jig at all. → [docs/construction.md](docs/construction.md)
+
 **Roof deck** — walk-on 6+6 laminated glass over a ventilated 60 mm air
 box on an aluminium grid, solar modules underneath, no moving parts.
 Sized for full building-code deck loads: 2 kN/m² plus 2 kN on a
@@ -178,8 +188,12 @@ bias.
 
 | Item | Low | High | Source |
 |---|---|---|---|
-| Hull shell, structure, fairing | 12 000 | 18 000 | est. |
-| Floats, 2 × 6.2 m | 3 500 | 4 500 | est. |
+| Foam core, PVC + PET, by zone | 3 800 | 5 200 | [construction.md](docs/construction.md) |
+| Glass fabric, biax NCF, roll quantities | 2 200 | 3 000 | 203 kg dry |
+| Epoxy resin, hardener, fillers | 4 500 | 6 500 | 248 kg mixed |
+| Vacuum consumables | 1 200 | 2 000 | €10–20/m² per shot |
+| Fairing compound, primer | 900 | 1 500 | 400 h of it |
+| Tooling: pump, table, extraction, PPE | 1 500 | 2 500 | one-off |
 | Exoskeleton frame + tow arch | 2 600 | 3 200 | [structure.md](docs/structure.md) |
 | Wheels, hubs, in-float drive | 5 600 | 6 500 | [wheels.md](docs/wheels.md) |
 | Propulsion, 3 × 2 kW waterjets | 8 800 | 13 300 | [propulsion.md](docs/propulsion.md) |
@@ -190,13 +204,21 @@ bias.
 | Glazing: front sky dome + windows | 6 000 | 9 000 | [dome.md](docs/dome.md) |
 | Interior fit-out incl. appliances, heads, AC | 12 000 | 16 000 | est. |
 | Paint, antifoul, deck finish | 2 000 | 3 000 | est. |
-| Approvals: national individual approval + engineering evidence | 3 000 | 12 000 | [homologation.md](docs/homologation.md) |
-| **Materials total** | **74 000** | **109 000** | |
+| Approvals: national individual approval + engineering evidence | 3 000 | 12 000 | [construction.md](docs/construction.md) | foam-core GRP: panel schedule, build sequence, shop, suppliers |
+| [homologation.md](docs/homologation.md) |
+| **Materials total** | **72 900** | **107 200** | |
 
-**Built professionally**, add labour: ≈ 2 550 h at 60–80 €/h =
-**150 000–205 000**, so a yard-built boat lands near
-**230 000–300 000**. The design assumes a self-build, where that labour
-is your own time.
+Composite is **not cheaper on the materials line** — it is slightly
+dearer than steel plate. What it removes is the fabricator's invoice,
+the welding qualification and the shop equipment for a trade you would
+otherwise have to learn.
+
+**Built professionally**, add labour: ≈ 3 100 h at 60–80 €/h =
+**186 000–248 000**, so a yard-built boat lands near
+**260 000–360 000**. The design assumes a self-build, where that labour
+is your own time — or a **split build**, which is what the yard
+conversation is about: yard does hull and float panels, owner does
+fit-out.
 
 ---
 
@@ -204,44 +226,70 @@ is your own time.
 
 | Phase | Hours |
 |---|---|
-| Hull shell, bulkheads, fairing | 700 |
+| Panel layup and post-cure | 250 |
+| Hull and float assembly, taping, filleting | 350 |
+| Fairing and coating | 400 |
 | Floats, arms, wheels, hangar kinematics | 350 |
 | Propulsion install and ducting | 150 |
 | Roof deck, glass, solar, wiring | 200 |
 | Interior joinery and fit-out | 500 |
 | Electrics, plumbing, systems | 250 |
-| Paint and finishing | 250 |
 | Commissioning, trials, approvals | 150 |
-| **Total** | **≈ 2 550 h** |
+| **Total** | **≈ 3 100 h** |
 
-- **Self-build at 15 h/week** — ≈ 3.3 years
-- **Self-build at 25 h/week** — ≈ 2 years
-- **Professional yard, 2–3 people** — ≈ 6–9 months elapsed
+- **Self-build at 15 h/week** — ≈ 4 years
+- **Self-build at 25 h/week** — ≈ 2.4 years
+- **Professional yard, 2–3 people** — ≈ 8–11 months elapsed
+- **Split build** — yard laminates and assembles the shell (≈ 1 000 h),
+  owner does fit-out (≈ 2 100 h)
 
 ---
 
 ## 7. Open risks
 
-1. **Mass budget — the binding constraint.** The interior alone is
-   832 kg (the 50 kWh bank is 357 of it) and the glass deck 460 kg,
-   against a 2 000 kg design figure for towing. Hull, frame, floats,
-   wheels, arms and jets do not fit in what is left. Levers, cheapest
-   first: travel with the water tank empty (−200 kg), carry half the
-   bank as removable modules (−180 kg), or re-budget at ~2 500 kg and
-   tow with a heavier car. → [interior.md §8](docs/interior.md)
-2. **Road approval.** The folding running gear is not the problem —
-   the **brake** is: over 750 kg an overrun brake to UN R13 is
-   mandatory and approvals go to catalogue axle/brake combinations,
-   which our swinging arms do not have. Design around a hydraulic
-   overrun boat-trailer set, and cap the land drive at 6 km/h so the
-   vehicle stays a trailer rather than an amphibian.
+1. **The mass budget does not close, and `checks()` now fails on it.**
+   Computed from measured areas × the laminate schedule plus every known
+   fitting: **3 282 kg empty, 3 582 kg with crew and stores**, against a
+   2 000 kg design figure. Three consequences, in order of severity:
+   - **3 582 kg exceeds the 3 500 kg category O2 trailer limit.** Above
+     it, overrun brakes are no longer permitted, the towing licence
+     changes and the homologation route in §8 is a different route.
+     This is a hard boundary, not a soft one.
+   - **The jack-up stance no longer works as drawn**: the floats give
+     4 152 kg of buoyancy, 1.16 × the loaded mass where 1.40 is wanted.
+     The keel will not ride awash.
+   - **Speed and range barely move** — 4.7 kn instead of 4.8, 233 NM at
+     3 kn instead of 240. The hull swallows the weight: draft goes from
+     260 mm to **369 mm**, freeboard is still 781 mm.
+
+   Resolution is an owner decision, not a modelling one.
+   → [construction.md](docs/construction.md),
+   [interior.md §8](docs/interior.md)
+2. **Road beam tolerance.** 2 535 mm nominal against a 2 550 mm limit is
+   **7.5 mm per side**, and a hand-laid laminate plus a fair coat eats
+   5 mm of it. `checks()` now asserts the as-built beam. This is the
+   most likely way the boat becomes road-illegal *after* it is built,
+   and it is far cheaper to fix in `params.py` than in a mould.
+3. **Fairing labour.** 400 h is the estimate for hull plus two floats.
+   It is the item most likely to overrun and the one that stalls owner
+   builds in year two.
+4. **Workshop conditioning.** Epoxy needs 18–25 °C and stable humidity
+   through two German winters — an enclosed heated space, not a tent,
+   plus extraction and P3 protection for grinding cured glass.
+5. **Road approval.** The folding running gear is not the problem — the
+   **brake** is. Over 750 kg an overrun brake to UN R13 is mandatory and
+   approvals go to catalogue axle/brake combinations, which swinging
+   arms with hydraulic hub drive do not have. Cap the land drive at
+   6 km/h so the vehicle stays a trailer.
    → [homologation.md](docs/homologation.md)
-3. **Jet hydrodynamics** are first-order estimates — the intake grids
+6. **Jet hydrodynamics** are first-order estimates — the intake grids
    want CFD or a tank test before committing.
-4. **Arm and shoulder-pin fatigue** — each arm carries ~1 000 kg
-   through one pin, cycled every launch.
-5. **No guardrail on the sun deck** — a deliberate choice for looks;
-   that deck is 2.4 m above the water.
+7. **Arm and shoulder-pin fatigue** — each arm carries ~1 000 kg through
+   one pin, cycled every launch.
+8. **Float compartmentation is not modelled.** The floats hold the drive
+   machinery *and* the reserve buoyancy. Three watertight cells per
+   float is cheap now and impossible later.
+   → [construction.md §8](docs/construction.md)
 
 ---
 
