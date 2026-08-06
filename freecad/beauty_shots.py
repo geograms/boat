@@ -26,15 +26,19 @@ os.makedirs(OUT, exist_ok=True)
 for old in glob.glob(OUT + "/*.png"):
     os.remove(old)
 
-MODES = ["cruise", "road", "harbor", "launch", "anchor"]
-sys.argv = ["beauty"] + MODES
-exec(open("/home/brito/code/boat/freecad/build_boat.py").read())
+MODES = ["cruise", "deck", "road", "harbor", "launch", "anchor"]
+# Build one mode at a time and close it again: six documents' worth of
+# view providers open at once is what killed the GUI process.
+sys.argv = ["beauty"]
+_g = dict(globals(), __name__="build_boat")   # keeps main() from firing
+exec(open("/home/brito/code/boat/freecad/build_boat.py").read(), _g)
+globals().update({k: v for k, v in _g.items() if not k.startswith("__")})
 
 W, H = 2800, 1750
 
 # anything that lives inside the cabin must not show through the glass
 INSIDE = ("Joinery", "Cushions", "Appliances", "BatteriesTanks", "Fittings")
-GLASSY = ("Glazing", "FrontDome", "DoorGlass", "WalkOnGlass")
+GLASSY = ("Glazing", "FrontDome", "DoorGlass")
 
 CX = P.LOA / 2                      # boat centre, for aiming the camera
 
@@ -80,7 +84,7 @@ def view_points(sea):
 
 
 for mode in MODES:
-    doc = App.getDocument("boat_" + mode)
+    doc = build_mode(mode)
     App.setActiveDocument(doc.Name)
     Gui.ActiveDocument = Gui.getDocument(doc.Name)
     Gui.updateGui()
@@ -97,8 +101,6 @@ for mode in MODES:
                     # a smooth glass cap, not as a mesh
                     o.ViewObject.DisplayMode = "Shaded"
                     o.ViewObject.Transparency = 66
-                if o.Name.startswith("WalkOnGlass"):
-                    o.ViewObject.Transparency = 45
             elif o.Name in ("Water", "Ground", "Slipway"):
                 o.ViewObject.Visibility = False       # replaced, see below
         except Exception:
@@ -123,7 +125,8 @@ for mode in MODES:
         time.sleep(0.6)
         Gui.updateGui()
         view.saveImage(f"{OUT}/{mode}_{name}.png", W, H, "White")
-        print("wrote", mode, name)
+        print("wrote", mode, name, flush=True)
+    App.closeDocument(doc.Name)
 
 print("done")
 os._exit(0)

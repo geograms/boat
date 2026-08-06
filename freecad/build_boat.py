@@ -192,79 +192,70 @@ def terrace_plan():
             (P.CABIN_X0 + P.CABIN_X1) / 2)
 
 
-def build_terrace():
-    """Roof terrace: bonded laminates on the structural roof, a
-    ventilated air box, an alu grid and 8 walk-on glass panes over the
-    top. Nothing here moves — the pop-top lift is gone.
-    Returns (deck, laminates, frame, glass, None)."""
+def build_terrace(deploy_deg=None):
+    """Roof deck: a bare non-slip walking surface, and eight flexible
+    solar panels in alu frames hinged along the deck edges.
+
+    deploy_deg 0   = panels flat on the roof: full solar, no deck
+    deploy_deg 90  = panels standing: the deck is clear and they ARE the
+                     guardrail, 850 mm high
+
+    Nothing lifts and nothing is synchronised - one leaf hinge and one
+    catch per panel. Returns (deck, panels, frame, None, None)."""
+    if deploy_deg is None:
+        deploy_deg = P.RAIL_STOW_DEG
     tl, tw, cx = terrace_plan()
     z0 = P.CABIN_ROOF_Z
-    deck, lam, frame, glass = [], [], [], []
+    deck, panels, frame = [], [], []
 
-    # walking surface of the structural roof, and its toe rail
+    # walking surface of the structural roof, non-slip, and its toe rail
     deck.append(box(tl, tw, 12, (cx - tl / 2, -tw / 2, z0)))
     for sy in (-1, 1):
-        deck.append(box(tl - 200, 24, P.TERRACE_TOERAIL,
+        deck.append(box(tl - 200, 24, P.RAIL_TOE,
                         (cx - (tl - 200) / 2, sy * (tw / 2 - 30) - 12,
                          z0 + 12)))
-    # corner scuppers through the toe rail
-    for sx in (-1, 1):
+    for sx in (-1, 1):                       # corner scuppers
         for sy in (-1, 1):
             deck.append(box(P.TERRACE_SCUPPER, 40, 26,
                             (cx + sx * (tl / 2 - 320),
                              sy * (tw / 2 - 30) - 20, z0 + 12)))
 
-    fx0, fx1 = P.DECK_FIELD_X
-    fhw = P.DECK_FIELD_HW
-    px, py = P.DECK_PANE
+    pw, pl, pt = P.MODULE_FLEX      # pl = run along x, pw = rise standing
+    fw = P.RAIL_FRAME_W
+    ang = math.radians(deploy_deg)
 
-    # 1. standard 500 W framed modules inside the air box, laid ACROSS
-    #    the field; positions come from params so they cannot drift
-    mod_l, mod_w, mod_t = P.MODULE_500
-    for (lx, ly) in P.deck_panel_xy():
-        lam.append(box(mod_w, mod_l, mod_t, (lx, ly, z0 + 12)))
-        for edge in (ly, ly + mod_l - 30):          # alu frame edges
-            lam.append(box(mod_w, 30, mod_t + 4, (lx, edge, z0 + 12)))
+    for (hx, hy, hz, axis, sy) in P.rail_positions():
+        # Blank lies flat at the hinge: x 0..pl is the run along the
+        # boat, y runs INBOARD from the hinge (+y to port, -y to
+        # starboard), z is the frame depth.
+        y0 = 0.0 if sy < 0 else -pw
+        frame_bar = box(pl, pw, fw, (0, y0, 0)).cut(
+            box(pl - 2 * fw, pw - 2 * fw, fw + 2, (fw, y0 + fw, -1)))
+        lam = box(pl - 2 * fw - 4, pw - 2 * fw - 4, pt,
+                  (fw + 2, y0 + fw + 2, fw - pt))
+        # Lifting is ONE rotation about the hinge line, which is the
+        # world x axis through (hx, hy, hz): +90 takes +y to +z, so the
+        # port row turns +deploy and the starboard row -deploy.
+        place = Placement(Vector(hx, hy, hz),
+                          Rotation(Vector(1, 0, 0), -sy * deploy_deg))
+        for shp in (frame_bar, lam):
+            shp.Placement = place.multiply(shp.Placement)
+        frame.append(frame_bar)
+        panels.append(lam)
+        for f in (0.12, 0.88):                  # hinge knuckles
+            frame.append(Part.makeCylinder(
+                14, 70, Vector(hx + pl * f - 35, hy, hz), Vector(1, 0, 0)))
 
-    # 2. perimeter kerb of the air box, with vent slots fore and aft
-    kerb = box(fx1 - fx0 + 80, 2 * fhw + 80, P.AIRBOX_H,
-               (fx0 - 40, -fhw - 40, z0 + 12))
-    kerb = kerb.cut(box(fx1 - fx0, 2 * fhw, P.AIRBOX_H + 20,
-                        (fx0, -fhw, z0 + 2)))
-    for sx in (-1, 1):                        # ventilation slots
-        for j in range(3):
-            kerb = kerb.cut(box(50, 300, P.DECK_VENT_H,
-                                (cx + sx * (fx1 - fx0) / 2 - 25,
-                                 -450 + j * 300,
-                                 z0 + 12 + (P.AIRBOX_H - P.DECK_VENT_H) / 2)))
-    frame.append(kerb)
+    # removable webbing line closing the aft edge at rail height
+    if P.RAIL_AFT_LINE and deploy_deg > 45:
+        yh = P.CABIN_W / 2 - P.RAIL_INSET
+        for f in (0.45, 0.95):
+            zl = z0 + P.RAIL_TOE + pw * f
+            frame.append(rod((P.CABIN_X0 + 60, -yh, zl),
+                             (P.CABIN_X0 + 60, yh, zl), 10))
 
-    # 3. alu grid on standoffs: bars between the panes carry the glass
-    gz = z0 + 12 + P.AIRBOX_H
-    for i in range(P.DECK_PANE_NX + 1):
-        bx = fx0 + i * px
-        frame.append(box(P.DECK_FRAME_W, 2 * fhw, P.DECK_FRAME_H,
-                         (bx - P.DECK_FRAME_W / 2, -fhw, gz)))
-    for j in range(P.DECK_PANE_NY + 1):
-        by = -fhw + j * py
-        frame.append(box(fx1 - fx0, P.DECK_FRAME_W, P.DECK_FRAME_H,
-                         (fx0, by - P.DECK_FRAME_W / 2, gz)))
-
-    # 4. the walk-on panes themselves, dropped into the grid rebate
-    tz = gz + P.DECK_FRAME_H
-    for i in range(P.DECK_PANE_NX):
-        for j in range(P.DECK_PANE_NY):
-            glass.append(box(px - P.DECK_FRAME_W - 6, py - P.DECK_FRAME_W - 6,
-                             P.DECK_GLASS_T,
-                             (fx0 + i * px + P.DECK_FRAME_W / 2 + 3,
-                              -fhw + j * py + P.DECK_FRAME_W / 2 + 3,
-                              tz - P.DECK_GLASS_T)))
-
-    # 5. NO guardrail: the deck edge is clean, with only the toe
-    #    rail. Nothing stands up off this deck.
-
-    return (Part.makeCompound(deck), Part.makeCompound(lam),
-            Part.makeCompound(frame), Part.makeCompound(glass), None)
+    return (Part.makeCompound(deck), Part.makeCompound(panels),
+            Part.makeCompound(frame), None, None)
 
 
 # ---------------------------------------------------------------
@@ -1174,11 +1165,10 @@ def build_mode(mode):
     add("Fittings", iglass, (0.20, 0.22, 0.24), group=g_int)
 
     g_roof = doc.addObject("App::DocumentObjectGroup", "RoofDeck")
-    tdeck, tlam, tframe, tglass, trail = build_terrace()
+    tdeck, tlam, tframe, _g, _r = build_terrace(cfg.get("rails", 0))
     add("Terrace", tdeck, WHITE, group=g_roof)
     add("DeckLaminates", tlam, PANEL, group=g_roof)
     add("DeckFrame", tframe, (0.62, 0.64, 0.67), group=g_roof)
-    add("WalkOnGlass", tglass, (0.62, 0.78, 0.86), 72, group=g_roof)
 
     pod = P.pod_at(cfg["phi"])
     roll = 90 - cfg["phi"]          # rigid arm: roll locked to swing
@@ -1250,7 +1240,7 @@ def build_mode(mode):
 
 
 def main():
-    P.checks()
+    P.checks(strict=False)
     modes = [a for a in sys.argv if a in P.MODES] or list(P.MODES)
     for m in modes:
         build_mode(m)

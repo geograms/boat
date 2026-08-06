@@ -24,12 +24,12 @@ drift without the build failing.
 | Beam, hull | **2 500 mm** |
 | Beam, road (folded) | **2 535 mm** (StVZO limit 2 550) |
 | Beam, afloat (floats out) | **4 716 mm** |
-| Height on the road | **3 009 mm** (limit 4 000) |
-| Air draft afloat | **2 267 mm** |
-| Draft | **349 mm** empty, **369 mm** loaded (computed from the mass) |
-| Freeboard, loaded | 781 mm |
-| Mass, computed | **3 282 kg** empty · **3 582 kg** with crew and stores |
-| Design figure | 2 000 kg — **the budget does not close, see §7** |
+| Height on the road | **3 002 mm** (limit 4 000) |
+| Air draft afloat | **2 260 mm** |
+| Draft | **328 mm** empty, **348 mm** loaded (computed from the mass) |
+| Freeboard, loaded | 802 mm |
+| Mass, computed | **2 957 kg** empty · **3 257 kg** with crew and stores |
+| Road category | **O2 trailer, ≤ 3 500 kg** — 243 kg of margin loaded |
 | Ground clearance, road | 482 mm |
 | Track / wheelbase | 2 270 / 3 400 mm |
 | Coupling height / tongue load | 445 mm / +100 kg |
@@ -74,7 +74,7 @@ efficiency 0.45. Method in
 (theoretical hull speed is 6.2 kn, needing 30 kW). The last 0.2 kn costs as much power
 as the first 4 — this is a boat to cruise at 3–4 kn, not to push.
 
-**Solar-neutral cruising.** With 4.40 kWp and ≈ 24 kWh on a good summer
+**Solar-neutral cruising.** With 4.70 kWp and ≈ 24 kWh on a good summer
 day, eight hours at **4.2 knots** is solar-neutral: the boat moves all day
 and finishes with a fuller battery than it started. In spring or autumn
 (12 kWh) that falls to 3.6 kn, and on an overcast winter day (6 kWh) to
@@ -84,7 +84,7 @@ and finishes with a fuller battery than it started. In spring or autumn
 |---|---|
 | Battery | 48 V LiFePO₄, **50 kWh**, 357 kg, split under both settees |
 | Structure | foam-core GRP sandwich, 103 m² of panel, **754 kg** |
-| Solar | **4.40 kWp** — 4 × 500 W under the walk-on glass, 6 × 400 W bifacial on the balconies (4.35 kWp effective) |
+| Solar | **4.70 kWp** — 10 × 230 W flexible on the roof, 6 × 400 W bifacial on the balconies (4.94 kWp effective — nothing shades the roof cells) |
 | House load | ≈ 2.5 kWh/day (fridge, lights, water, AC standby) |
 | Steering | differential thrust, no rudder |
 | On land | ≤ 10 km/h under its own wheels; towed at road speeds |
@@ -155,14 +155,16 @@ up flat on a table and CNC-cut from the model. **103 m² of panel,
 estimated. The middle 3.6 m of the hull is exactly developable, so it
 needs no jig at all. → [docs/construction.md](docs/construction.md)
 
-**Roof deck** — walk-on 6+6 laminated glass over a ventilated 60 mm air
-box on an aluminium grid, solar modules underneath, no moving parts.
-Sized for full building-code deck loads: 2 kN/m² plus 2 kN on a
-50 × 50 mm patch. → [docs/roof.md](docs/roof.md)
+**Roof deck** — the solar panels **are** the guardrail. Two continuous
+rows of five 230 W flexible laminates in alu frames hinge on the deck
+edges: flat they cover the roof and harvest **2.30 kWp**, rotated up
+they stand as a **1 234 mm barrier** and leave the whole 12.7 m² deck
+free to walk on. No glass, one hinge and one catch per panel. It
+replaced a walk-on glass deck that weighed 460 kg with **155 kg** — and
+that deck had no guardrail at all.
+→ [docs/roof.md](docs/roof.md)
 
 ![roof deck](docs/images/roof_deck.png)
-
-![glass sizing](docs/images/roof_glass.png)
 
 **Interior** — heads, galley, dinette that sleeps two, elevating double
 bed forward, fold-down bunk to port; batteries and water low and
@@ -197,7 +199,7 @@ bias.
 | Exoskeleton frame + tow arch | 2 600 | 3 200 | [structure.md](docs/structure.md) |
 | Wheels, hubs, in-float drive | 5 600 | 6 500 | [wheels.md](docs/wheels.md) |
 | Propulsion, 3 × 2 kW waterjets | 8 800 | 13 300 | [propulsion.md](docs/propulsion.md) |
-| Walk-on glass roof deck | 5 110 | 6 000 | [roof.md](docs/roof.md) |
+| Roof deck: 10 flexible panels, alu frames, hinges | 2 900 | 3 400 | [roof.md](docs/roof.md) |
 | Solar balconies | 1 700 | 2 000 | [roof.md](docs/roof.md) |
 | Battery bank, 50 kWh LiFePO₄ | 9 000 | 11 000 | at 180–220 €/kWh |
 | Electrics: inverter/charger, MPPT, switchgear, cabling | 3 000 | 4 500 | est. |
@@ -207,7 +209,7 @@ bias.
 | Approvals: national individual approval + engineering evidence | 3 000 | 12 000 | [construction.md](docs/construction.md) | foam-core GRP: panel schedule, build sequence, shop, suppliers |
 | [weight.md](docs/weight.md) | the mass problem and the 600 kg package that fixes it |
 | [homologation.md](docs/homologation.md) |
-| **Materials total** | **72 900** | **107 200** | |
+| **Materials total** | **70 090** | **103 900** | |
 
 Composite is **not cheaper on the materials line** — it is slightly
 dearer than steel plate. What it removes is the fabricator's invoice,
@@ -248,28 +250,18 @@ fit-out.
 
 ## 7. Open risks
 
-1. **The mass budget does not close, and `checks()` now fails on it.**
-   Computed from measured areas × the laminate schedule plus every known
-   fitting: **3 282 kg empty, 3 582 kg with crew and stores**, against a
-   2 000 kg design figure. Three consequences, in order of severity:
-   - **3 582 kg exceeds the 3 500 kg category O2 trailer limit.** Above
-     it, overrun brakes are no longer permitted, the towing licence
-     changes and the homologation route in §8 is a different route.
-     This is a hard boundary, not a soft one.
-   - **The jack-up stance no longer works as drawn**: the floats give
-     4 152 kg of buoyancy, 1.16 × the loaded mass where 1.40 is wanted.
-     The keel will not ride awash.
-   - **Speed and range barely move** — 4.7 kn instead of 4.8, 233 NM at
-     3 kn instead of 240. The hull swallows the weight: draft goes from
-     260 mm to **369 mm**, freeboard is still 781 mm.
-
-   **There is a package that fixes it without deleting a feature**:
-   make the water and 20 kWh of the bank removable for the road
-   (−343 kg), then six measured structural levers (−259 kg) — roof core
-   on beams, foam-core joinery, walk-on glass only where you walk,
-   thinner dome glass, lighter float shell, lighter bottom skin. That
-   lands at **3 023 kg empty, 3 323 loaded, 2 680 on the road** — inside
-   category O2 with 820 kg to spare.
+1. **Mass: legal, but the design figure is stale.** Computed from
+   measured areas × the laminate schedule plus every known fitting:
+   **2 957 kg empty, 3 257 kg with crew and stores** — inside the
+   3 500 kg category O2 trailer limit with 243 kg of margin, after the
+   solar guardrails took 305 kg off the roof and the dome glass another
+   20. `checks()` still fails against the inherited **2 000 kg** design
+   figure, which predates the computed budget: it wants re-baselining or
+   another 900 kg, and quietly raising it is not an option.
+   The **jack-up stance** is the live one: floats give 4 152 kg, 1.27 ×
+   the loaded mass where 1.40 is wanted, so the keel will not ride
+   awash. That wants float *depth*, not weight — 150 mm deeper floats
+   give 1.51 × inside the road-height limit.
    → [weight.md](docs/weight.md)
 2. **Road beam tolerance.** 2 535 mm nominal against a 2 550 mm limit is
    **7.5 mm per side**, and a hand-laid laminate plus a fair coat eats
@@ -347,7 +339,7 @@ technical service and get the required evidence in writing.
 | [wheels.md](docs/wheels.md) | hangar kinematics, in-float drive, BOM |
 | [propulsion.md](docs/propulsion.md) | waterjets, weed strategy, BOM |
 | [structure.md](docs/structure.md) | exoskeleton frame, tow arch, stern gear |
-| [roof.md](docs/roof.md) | walk-on glass deck, glass sizing, balconies |
+| [roof.md](docs/roof.md) | solar guardrails, the deck, the balconies |
 | [homologation.md](docs/homologation.md) | road approval: trailer vs amphibian, brakes, DE/PT/NL cost and time |
 | [dome.md](docs/dome.md) | front sky dome: flat glazing, the two tubes, the open portal |
 | [interior.md](docs/interior.md) | layout, stowage, services, mass budget |

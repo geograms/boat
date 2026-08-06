@@ -1,138 +1,119 @@
-# Walkable Decks — Roof Sun Deck and Solar Balconies
+# Roof Deck — Solar Panels That Rotate Into Guardrails
 
-Status: design study. Geometry in `freecad/params.py` (the `---- roof
-terrace ----` block), shapes in `build_terrace()`, limits asserted in
-`checks()`. Spec cards: [roof_deck](images/roof_deck.png),
-[roof_glass](images/roof_glass.png), [roof_loads](images/roof_loads.png).
-Terms in [glossary.md](glossary.md).
+Status: design study. Geometry in `freecad/params.py` (`RAIL_*`,
+`rail_positions()`, `rail_footprint()`), shapes in `build_terrace()`,
+limits asserted in `checks()`. Terms in [glossary.md](glossary.md).
 
 ## 1. What it is
 
-The cabin roof at z 2 400 is a 200 mm structural sandwich. On top of it:
+The roof is a **12.7 m² deck you walk on directly** — the structural
+sandwich with a non-slip topcoat — and **ten flexible solar panels
+that rotate up into a guardrail** around it.
 
-```
-   ▓▓▓▓▓▓  6+6 laminated heat-strengthened glass, anti-slip frit
-   ──┬───  alu grid, 8 panes of 1200 × 1050, bolted to deck inserts
-     │ 60  VENTILATED AIR BOX — holds a 30 mm framed module,
-   ░░┴░░░  4 × STANDARD 500 W modules 1934 × 1134, laid across
-   ██████  200 mm roof sandwich  ← carries every load
-   ██████  cabin ceiling 2 200
-```
+| Pose | What you get |
+|---|---|
+| **Flat** (road, passage, everyday) | 2.30 kWp harvesting, panels latched down, no deck |
+| **Standing** (deck in use) | the whole 5 300 × 2 400 free to walk on, a **1 234 mm guardrail** both sides, and about a third of the output |
 
-**Nothing moves.** People walk on the glass; the panels underneath can
-never be touched, stepped on, or scuffed. The air box ventilates the
-cells, so they run cooler than laminates bonded straight to a deck.
+**Two continuous rows, five panels each, mirrored about the
+centreline.** Each row is one 5 073 mm band with 12 mm shadow gaps, and
+the two rows meet on the centreline with 12 mm to spare — the roof is
+covered edge to edge, with no leftover strip and nothing interlaced.
+Deployed, each row stands vertical on its outboard edge and latches.
+One leaf hinge and one catch per panel: 12.5 kg to lift by hand,
+nothing synchronised, nothing hydraulic.
 
-Total build-up **127 mm**, so the deck surface sits at 2 531, the air
-draft is **2 267** and the road height **3 009** against the 4 000 limit.
+## 1b. Why this replaced the walk-on glass
 
-The roof panels are **standard 500 W framed modules** (1 934 × 1 134 ×
-30, ≈24 kg) rather than bonded laminates — the right
-one: they are the cheapest watt on the market, replaceable at any solar
-shop, and the 60 mm air box swallows their 30 mm frame with room to
-spare. They cost ≈72 kg more than flexible laminates would.
+The glass deck existed for exactly one reason: to let people stand on
+the roof without touching the panels. It did that, and it cost:
 
-Four of them fit the 4 800 × 2 100 field laid **across** the boat
-(1 134 along, 1 934 athwartships). `deck_panel_xy()` in params.py
-computes those positions and `checks()` asserts every module lies
-inside the field — after an earlier version drew five laminates at
-1 700 pitch and put the last two off the bow.
-
-## 2. Why the pop-top was deleted
-
-The earlier design lifted a 12 m² canopy 1 900 mm on four scissor units.
-It was judged weak for rough sea and wind. Rechecking the mechanics
-agreed with him, and the first analysis had been wrong:
-
-- The force at a scissor foot is **F = W/tan θ** (virtual work), not
-  **W/(2·tan θ)** as first specced. The true breakout force was
-  **11.4 kN per corner, not 3.6 kN** — the actuators were half the size
-  they needed to be.
-- Because F → ∞ as θ → 0, a scissor that folds into a thin lid is
-  always brutal to start. Fixes existed (park at 7–8°, a 220 mm lid,
-  spring assist) but all of them traded thickness or fatigue parts.
-- Worse, four salt-exposed mechanisms still had to hold a **7.7 kN**
-  uplift at 50 kn, and be trusted after months of neglect.
-
-A fixed glass deck has none of those failure modes. The trade was
-**weight-neutral** (see §5), so the whole gain is robustness.
-
-## 3. Sizing the glass
-
-Two load cases, and they scale completely differently:
-
-| | law | t needed at 1 050 mm |
+| | Walk-on glass | Rotating rails |
 |---|---|---|
-| UDL 2 kN/m² | σ = 0.287·q·a²/t² → **t ∝ a** | 4.9 mm |
-| 2 kN point on 50 × 50 | σ ≈ (3P/2πt²)·[(1+ν)·ln(2a/πr₀)+0.5] → **t ∝ √ln a** | **11.2 mm** ← governs |
+| Mass | 352 kg glass + 108 kg framed modules = **460 kg** | 10 × (6.5 + 6) + surface = **155 kg** |
+| Cost | ≈ €5 110 | ≈ €2 900 |
+| Roof array | 2.00 kWp nominal, **1.83 effective** (glass ate 9 %, the grid shaded 4.4 %) | **2.30 kWp** nominal, **2.42 effective** |
+| Guardrail | **none** — an accepted fall risk, 2.4 m above the water | **1 234 mm** both sides |
+| Failure mode | a cracked pane is a crane job | a damaged panel is €100 and four bolts |
 
-That log term is the whole story: **halving the pane barely thins the
-glass.** A 1 000 mm pane needs 10.9 mm, a 400 mm pane 9.4, a 200 mm
-pane 8.0 — while the extra grid metal and the shading grow fast. Total
-deck weight is nearly flat (300–340 kg) across every pane size, with a
-shallow minimum near 400–500 mm.
+**−305 kg, −€2 200, +300 W, and the deck gets the guardrail it never
+had.** Nothing was traded away: the array is bigger *and* lighter,
+because the glass that used to protect the panels was heavier than the
+panels themselves.
 
-Chosen: **8 panes of 1 200 × 1 050 in 6+6 heat-strengthened laminated
-glass** (12 mm, SGP interlayer). Fewest seals, least shading (4.4 %),
-38 kg per pane — two people or a suction lifter to lift one out.
-Deflection under the distributed load is 0.9 mm against a span/300
-limit of 3.5 mm.
+## 2. The panel
 
-**Two plies, not the three a building floor would use**: the air box is
-only 60 mm over a solid deck, so a cracked pane cannot drop anyone. The
-residual-capacity case that drives 3-ply floor glazing does not exist
-here.
+**Zendure flexible, 230 W per panel**, sold in pairs as "460 W":
 
-Design loads are the full building-code figures — 2 kN/m² plus a 2 kN
-point load — so there are no use restrictions: stilettos, a stepladder,
-a dropped anchor are all inside the envelope.
+| | |
+|---|---|
+| Size, mass | **1 154 × 1 005 × 28 mm, ≈ 6.5 kg** |
+| Output | **230 W** each, 22.6 % — 1.16 m² |
+| Face | ETFE, MC4 connectors, no glass and no heavy frame |
+| Why this size | laid with the 1 005 side along the boat, **five fill a row** and **two rows cover the roof width exactly** |
 
-## 4. Detail
+6.5 kg is the number that makes this design work. A 500 W framed module
+is 27 kg; nobody stands ten of those up by hand twice a weekend.
 
-- **Panes** drop into a gasketed rebate in the grid with captive
-  fasteners; any pane lifts out to clean the inside face or service the
-  laminate beneath it.
-- **Air box** vented fore and aft through insect mesh. Cross-flow keeps
-  the cells cool and clears condensation; the floor of the box falls to
-  the corner scuppers.
-- **Cabling and junction boxes** live in the perimeter channel, never
-  under a walked pane.
-- **Anti-slip**: ceramic frit, R11, on the top face.
-- **No guardrail** — stanchions and lifelines spoil the line.
-  The edge carries the 80 mm toe rail and nothing else. This is a sun
-  deck to sit on rather than a working deck, and the fall risk from
-  2.4 m is accepted deliberately — worth knowing before anyone brings
-  children aboard.
-- **Stability**: four people hard to one side is 3.7 kNm of heeling
-  against ≈31 kNm of float righting — asserted in `checks()`.
+A flexible laminate **cannot** be a guardrail on its own, so each panel
+is bonded into an **aluminium box frame, 34 mm section, ≈ 6 kg**. The
+frame carries the 0.5 kN/m top line load, the hinge and the latch; the
+panel is cladding on it. That frame is the part that gets engineered.
 
-## 5. What it weighs, and what it generates
+## 3. Deploying, and the wind
 
-| removed | kg | added | kg |
+Deployed rail height is **1 234 mm** (1 154 panel + 80 toe rail) —
+above the 1 100 mm a building code wants for a balcony, which is a
+better barrier than most boats carry. Two **removable webbing lines
+close the aft edge**, where the ladder arrives and a panel would only
+be a gate in the way.
+
+Standing panels are sail area, and `checks()` prices it:
+
+| Wind | Standing area | Heeling moment | Righting |
 |---|---|---|---|
-| canopy slab + frame | 145 | glass, 10.1 m² × 30 kg/m² | 302 |
-| | | 4 × 500 W framed modules | 108 |
-| scissors (4 units) | 88 | alu grid + kerb | 35 |
-| drives + controller | 36 | seals, adhesive, fixings | 15 |
-| latches, gaskets, coaming | 12 | | |
-| solar side walls | 60 | | |
-| **total** | **341** | **total** | **460** |
+| 15 m/s (F7) | 11.6 m² | 4.8 kNm | 31.3 kNm |
+| 20 m/s (F8) | 11.6 m² | 8.6 kNm | 31.3 kNm |
+| 25 m/s (F10) | 11.6 m² | **13.4 kNm** | 31.3 kNm |
 
-**Net ≈ +107 kg**, of which 96 is the choice of standard framed modules
-over bonded laminates. Not a weight saving — mass bought as fixed
-structure and replaceable parts instead of mechanism.
+`checks()` solves for the wind that reaches 40 % of the righting moment
+and gets **24 m/s**: **the rule is stow above F8**, and stowing all ten
+is a one-minute job. The case the latches are actually sized for is uplift
+on the flat-stowed panels in a gale.
 
-Solar: **4.40 kWp nominal** — roof 4 × 500 W = 2.00, balconies
-6 × 400 W bifacial = 2.40. After glass transmission (91 %), frame shading
-(4.4 %) and the ventilation gain (+5 %), **≈ 4.35 kWp effective** (the bifacial rear gain roughly cancels the glass and frame losses).
+## 4. What it weighs and what it makes
 
-Two limits worth stating plainly:
+| | |
+|---|---|
+| 10 panels | 65 kg |
+| 10 alu frames, hinges, latches | 60 kg |
+| Non-slip surface, toe rail, scuppers, fixings | 30 kg |
+| **Roof deck total** | **155 kg** |
+| Build-up over the structural roof | **120 mm** (toe rail 80 + panel 28 + latch 12) |
+| Air draft | 2 260 mm (was 2 267) |
+| Road height | 3 002 mm (was 3 009, limit 4 000) |
 
-1. **People shade the panels.** The deck generates best when nobody is
-   on it. It is a sun deck first and a solar array second.
-2. **Dark glass gets hot** — 60–70 °C in strong sun. Light-toned cells
-   and the ventilated box help; barefoot at midday will still be
-   unpleasant.
+**Output.** 2.30 kWp nominal on the roof. Nothing shades it and nothing
+absorbs 9 % on the way in, so the effective figure is **2.42 kWp** —
+against 1.83 for the 2.00 kWp array under glass. Deployed vertical the
+panels make roughly a third of that and shade each other fore and aft:
+**you deploy to sit on the deck, not to charge.**
+
+Boat total: 2.30 roof + 2.40 balcony = **4.70 kWp** nominal,
+**4.94 kWp** effective — up from 4.40 nominal with the glass deck.
+
+## 5. Open points
+
+- The sandwich now takes foot traffic directly. The distributed 2 kN/m²
+  is easy; the 2 kN point load on a 50 × 50 patch needs the top skin to
+  spread it before the core sees it. Check it when the roof core drops
+  from 200 mm to 60 mm on beams
+  ([weight.md](weight.md)).
+- Hinge corrosion. Stainless leaf hinges into aluminium frames on a
+  salt deck: isolate, and specify a hinge that can be driven out and
+  replaced with the panel in place.
+- Cable routing through the hinge line, in a drip loop, so rotating a
+  panel does not flex a conductor.
 
 ## 6. The solar balconies — full-width standard panels
 
@@ -150,8 +131,9 @@ way it never could on the roof. Folded up over the windows in road and
 harbour trim both faces see daylight, and deployed flat over the water
 the back face picks up the surface reflection — reckon +5 %.
 
-The roof keeps the 500 W panel, because there the constraint is the
-2 100 mm field width and a 1 961 mm module lies across it happily.
+The roof no longer uses framed modules at all — see §1. The balconies
+keep them because a balcony panel is structure that folds over a window,
+not something anyone lifts by hand.
 
 A side walkway was the first requirement here, and the geometry gave
 a hard answer: a 500 W module is 1 134 mm wide, the balcony span is
@@ -185,12 +167,12 @@ modules still drop **into** the frame rather than onto it.
 
 | Item | Est. |
 |---|---|
-| 8 × walk-on laminated panes 1200 × 1050, 6+6 HS, frit | 3 200 |
-| Alu grid, kerb, standoffs, inserts | 700 |
-| Gaskets, structural adhesive, fixings | 350 |
-| 4 standard 500 W framed modules (under the glass) | 520 |
-| Stanchions, lifelines, sockets | 340 |
-| **Roof deck total** | **≈ 5 110** |
+| 10 × 230 W flexible panels (5 pairs) | 1 250 |
+| Alu frames, 34 mm box, 10 off | 800 |
+| Stainless hinges, latches, gate webbing | 380 |
+| Non-slip topcoat, toe rail, scuppers | 320 |
+| Wiring, MC4, drip loops, junction boxes | 160 |
+| **Roof deck total** | **≈ 2 900** |
 
 | Balconies (both sides) | Est. |
 |---|---|

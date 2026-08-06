@@ -54,18 +54,18 @@ owner does the part that only needs time:
 | Beam, hull | 2 500 mm |
 | Beam on the road, folded | 2 535 mm (StVZO limit 2 550) |
 | Beam afloat, floats out | 4 716 mm |
-| Air draft afloat | 2 267 mm |
-| Height on the road | 3 009 mm (limit 4 000) |
-| Draft, computed | 349 mm empty, 369 mm loaded |
-| Freeboard, loaded | 781 mm |
-| Mass, computed | 3 282 kg empty, 3 582 kg loaded |
+| Air draft afloat | 2 260 mm |
+| Height on the road | 3 002 mm (limit 4 000) |
+| Draft, computed | 328 mm empty, 348 mm loaded |
+| Freeboard, loaded | 802 mm |
+| Mass, computed | **2 957 kg empty, 3 257 kg loaded** — inside category O2 |
 | Structure | foam-core GRP sandwich, 103 m² of panel, 754 kg |
 | Propulsion | 3 × 2 kW flush-intake waterjets, differential thrust, no rudder |
-| Power | 4.40 kWp solar, 50 kWh LiFePO₄ at 48 V |
+| Power | 4.70 kWp solar, 50 kWh LiFePO₄ at 48 V |
 | Speed / range | 4.7 kn maximum; 233 NM at 3 kn; solar-neutral at 4.2 kn |
 | Accommodation | 5 berths, 1 850 mm headroom, 12.1 m² floor, wetroom, galley |
 | Running gear | 6 × 205/70 R15 on swinging arms inside the floats, ≤ 6 km/h |
-| Road status | category O2 trailer — **see the open item below** |
+| Road status | category O2 trailer, 243 kg inside the 3 500 kg limit |
 
 ## Construction, in one page
 
@@ -104,58 +104,34 @@ Two structural decisions worth flagging to a builder:
   epoxy has a Tg of 50–60 °C and will creep. It cannot be retrofitted
   after assembly.
 
-## The open item: mass
+## The mass story, and what is still open
 
-Stated first because it is the thing a builder will spot in five
-minutes, and because it is the one number in this package that does not
-yet close.
+A builder will ask what it weighs, so: **2 957 kg empty, 3 257 kg with
+crew and stores**, computed from measured areas × the laminate schedule
+plus every known fitting — not estimated. That is inside the 3 500 kg
+category O2 trailer limit with 243 kg to spare.
 
-**Computed: 3 282 kg empty, 3 582 kg with crew and stores** — against a
-2 000 kg design figure inherited from the original towing concept. The
-model now asserts this and **fails**, deliberately. Consequences:
+It was 3 582 kg and illegal three changes ago. What fixed it:
+
+| Change | kg |
+|---|---|
+| Walk-on glass deck → **solar panels that rotate up into guardrails** | **−305** |
+| Dome glass 8 → 6 mm | −20 |
+
+The first one is the pattern worth showing a builder: it did not delete
+a feature, it deleted a *part* by making another part do two jobs. The
+glass existed only to protect the panels underfoot; now the panels
+stand up out of the way instead, the deck is bare non-slip sandwich,
+the array grew from 2.00 to **2.30 kWp**, and the deck gained the
+**1 234 mm guardrail** it never had.
+
+Still open, and worth a builder's opinion:
 
 | | |
 |---|---|
-| **Road category** | 3 582 kg exceeds the **3 500 kg O2 limit** — above it, overrun brakes are no longer permitted and the towing licence changes |
-| **Jack-up stance** | floats give 4 152 kg, **1.16 ×** the loaded mass where 1.40 is wanted; the keel will not ride awash |
-| **Flotation** | fine — draft 369 mm, freeboard 781 mm |
-| **Speed and range** | almost unaffected: 4.7 kn instead of 4.8, 233 NM instead of 240 at 3 kn |
-
-**There is a package that fixes it without deleting anything** — full
-working in [Weight](weight.md). Two moves:
-
-**Make the heavy consumables removable**, so the boat is heavy afloat
-and light on the road:
-
-| Removable | kg |
-|---|---|
-| Fresh water, 200 L — fill at the ramp | −200 |
-| 20 kWh of the bank as plug-in modules, 30 kWh stays aboard | −143 |
-
-**Then six measured structural levers**, none of which loses a feature:
-
-| Lever | Saved |
-|---|---|
-| Roof core 200 → 60 mm on two longitudinal beams | −74 |
-| Joinery in foam-core GRP instead of plywood | −70 |
-| Walk-on glass 12 mm only over the 6 m² you actually walk on | −62 |
-| Dome glass 8 → 6 mm (panes are 0.43 m² and flat) | −20 |
-| Float shell 18 → 12 mm with local doublers at the landings | −18 |
-| Hull bottom outer skin 1800 → 1400 gsm, after an ISO check | −15 |
-| **Total** | **−259** |
-
-Where that lands:
-
-| | Empty | Loaded | On the road |
-|---|---|---|---|
-| Today | 3 282 | 3 582 | 3 282 |
-| With the package | **3 023** | **3 323** | **2 680** |
-
-Road mass inside category O2 with 820 kg of margin, so the overrun
-brake set stays a catalogue purchase; afloat draft ≈ 355 mm; same
-50 kWh, same sun deck, same interior. A builder's opinion on those six
-levers — especially the roof beams and the foam-core joinery — is
-exactly what this package is asking for.
+| **Jack-up stance** | floats give 4 152 kg, **1.27 ×** the loaded mass where 1.40 is wanted. That wants float *depth*, not weight: 150 mm deeper gives 1.51 × inside the road-height limit |
+| **Design figure** | `checks()` still fails against an inherited 2 000 kg target that predates the computed budget. It wants re-baselining |
+| **Another 225 kg** | roof core on beams, foam-core joinery, lighter float shell, lighter bottom skin — all costed in [Weight](weight.md) |
 
 ## What is already settled
 
