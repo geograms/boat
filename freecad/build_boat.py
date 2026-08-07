@@ -465,7 +465,7 @@ def build_curtains(deg):
             Part.makeCompound(hinges))
 
 
-def build_hangar(phi, coupled=True):
+def build_hangar(phi, coupled=True, tow="sea"):
     """The docking gear: spike rails in the hull recesses, the electric
     extenders, and the bight + drawbar joining the float tails.
     phi 0 = docked, 90 = extended to the sea stance.
@@ -487,6 +487,17 @@ def build_hangar(phi, coupled=True):
         # bayonet lock gearmotor at the rail root
         locks.append(Part.makeCylinder(
             45, 110, Vector(160, ry, P.POD_DOCKED[1]), Vector(-1, 0, 0)))
+        # mounting lugs tie the rails into the stem every 1.45 m
+        for lx in range(400, P.SPIKE_L, 1450):
+            for rz in (P.POD_DOCKED[1] + 150, P.POD_DOCKED[1] - 150):
+                parts.append(box(120, abs(ry) - P.STEM_HW + 40, 70,
+                                 (lx - 60, min(sy * P.STEM_HW, ry),
+                                  rz - 35)))
+        # and the bight ties into both rail tails
+        for rz in (P.POD_DOCKED[1] + 150, P.POD_DOCKED[1] - 150):
+            parts.append(rod((100, ry, rz),
+                             (P.HANGAR_BIGHT_X + 20, ry * 0.92,
+                              P.POD_DOCKED[1]), 55))
 
     # ---- electric extenders: campervan-style scissors, hull to float
     if phi > 5:
@@ -520,8 +531,13 @@ def build_hangar(phi, coupled=True):
         parts.append(rod((P.HANGAR_BIGHT_X - bb / 2, sy * P.POD_DOCKED[0],
                           P.POD_DOCKED[1]),
                          (60, sy * P.POD_DOCKED[0], P.POD_DOCKED[1]), 70))
-    nose_x = P.HANGAR_BIGHT_X - P.DRAWBAR_LEN
-    nose_z = P.GROUND_Z + P.COUPLING_H
+    # On the road the nose must meet the car ball 445 mm over the
+    # tarmac; afloat the whole A-frame TILTS UP about the bight so the
+    # coupler rides well clear of the water.
+    tilt = 0.0 if tow == "land" else math.radians(28)
+    nose_x = P.HANGAR_BIGHT_X - P.DRAWBAR_LEN * math.cos(tilt)
+    nose_z = (P.GROUND_Z + P.COUPLING_H if tow == "land"
+              else P.POD_DOCKED[1] + P.DRAWBAR_LEN * math.sin(tilt))
     for s_ in (-1, 1):                       # small A-frame, fixed
         parts.append(rod((P.HANGAR_BIGHT_X - bb / 2, s_ * (by - 120),
                           P.POD_DOCKED[1]),
@@ -656,14 +672,9 @@ def build_tow(pose):
                                        Vector(0, 1, 0)))     # anchor sheave
         parts.append(rod((ax, 0, az), (ax, 0, az + 260), 55))  # light post
     else:
-        cx, cz = P.arch_coupling()
-        parts.append(rod((ax, 0, az), (cx, 0, cz), P.ARCH_TUBE - 10))
-        for sgn in (-1, 1):                   # A-frame triangulation
-            parts.append(rod((ax, sgn * 170, az),
-                             ((ax + cx) / 2, 0, (az + cz) / 2),
-                             P.ARCH_TUBE - 35))
-        parts.append(Part.makeSphere(80, Vector(cx, 0, cz)))
-        parts.append(box(70, 150, 150, (cx + 150, -75, cz - 40)))
+        # land: the arch simply parks low. The CAR COUPLING lives on the
+        # hangar's drawbar now - one connector, not two.
+        parts.append(rod((ax, -170, az), (ax, 170, az), P.ARCH_TUBE - 15))
     return Part.makeCompound(parts)
 
 
@@ -1187,7 +1198,8 @@ def build_mode(mode):
     roll = 90 - cfg["phi"]          # rigid arm: roll locked to swing
     (fl, strips, forks, tires, rims, wboxes,
      hatch, hydraulics, thruster) = build_float(pod, roll)
-    hframe, hlocks = build_hangar(cfg["phi"], cfg.get("coupled", True))
+    hframe, hlocks = build_hangar(cfg["phi"], cfg.get("coupled", True),
+                                  cfg["tow"])
     add("HangarFrame", hframe, (0.55, 0.57, 0.60), group=g_gear)
     add("HangarLocks", hlocks, (0.80, 0.65, 0.20), group=g_gear)
     cframe, cpanels, chinges = build_curtains(cfg["curt"])
