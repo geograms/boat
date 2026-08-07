@@ -1010,8 +1010,8 @@ WINCH_PULL_KG = 2000          # 4500 lb class, 12/24 V
 # recovery harder. Drum athwartships on a stern-tie bracket, rode
 # leading aft and down over the anchor roller directly beneath it, so
 # the pull line is dead on the keel line.
-WINCH_POS = (-70, 0, 1310)
-ANCHOR_ROLLER = (-140, 0, 1150)
+WINCH_POS = (220, 0, 1265)   # ON the aft deck, not hung over the water
+ANCHOR_ROLLER = (20, 0, 1170)   # over the transom edge
 WINCH_BODY = (300, 420, 230)  # x, y, z: fits between the gantry legs
 
 # ---- stern pod ----

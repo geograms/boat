@@ -534,31 +534,43 @@ def build_hangar(phi, coupled=True, tow="sea"):
         parts.append(rod((P.HANGAR_BIGHT_X - bb / 2, sy * P.POD_DOCKED[0],
                           P.POD_DOCKED[1]),
                          (60, sy * P.POD_DOCKED[0], P.POD_DOCKED[1]), 70))
-    # On the road the nose must meet the car ball 445 mm over the
-    # tarmac; afloat the whole A-frame TILTS UP about the bight so the
-    # coupler rides well clear of the water.
-    tilt = 0.0 if tow == "land" else math.radians(28)
-    nose_x = P.HANGAR_BIGHT_X - P.DRAWBAR_LEN * math.cos(tilt)
-    nose_z = (P.GROUND_Z + P.COUPLING_H if tow == "land"
-              else P.POD_DOCKED[1] + P.DRAWBAR_LEN * math.sin(tilt))
-    for s_ in (-1, 1):                       # small A-frame, fixed
-        parts.append(rod((P.HANGAR_BIGHT_X - bb / 2, s_ * (by - 120),
-                          P.POD_DOCKED[1]),
-                         (nose_x + 260, 0, nose_z + 40), P.DRAWBAR_TUBE))
-    parts.append(rod((nose_x + 300, 0, nose_z + 40),
-                     (nose_x, 0, nose_z), P.DRAWBAR_TUBE))
-    parts.append(box(220, 150, 130, (nose_x - 40, -75, nose_z - 50)))
-    parts.append(Part.makeSphere(P.COUPLING_BALL / 2,
-                                 Vector(nose_x + 30, 0, nose_z - 55)))
-    for s_ in (-1, 1):
-        parts.append(Part.makeTorus(28, 7, Vector(nose_x + 120, s_ * 90,
-                                                  nose_z - 20),
-                                    Vector(0, 1, 0)))
-    parts.append(rod((nose_x + 420, 150, nose_z + 60),
-                     (nose_x + 420, 150, nose_z - 300), 60))
-    parts.append(Part.makeCylinder(
-        P.JOCKEY_D / 2, 70, Vector(nose_x + 420, 115, nose_z - 300),
-        Vector(0, 1, 0)))
+    # THE A-FRAME IS DEMOUNTABLE. On the road it pins into two sockets
+    # on the bight and meets the car ball 445 mm over the tarmac; at sea
+    # it comes off and stows flat on a float deck - nothing stands in
+    # the water or rears over the transom.
+    if tow == "land":
+        nose_x = P.HANGAR_BIGHT_X - P.DRAWBAR_LEN
+        nose_z = P.GROUND_Z + P.COUPLING_H
+        for s_ in (-1, 1):                       # small A-frame, fixed
+            parts.append(rod((P.HANGAR_BIGHT_X - bb / 2, s_ * (by - 120),
+                              P.POD_DOCKED[1]),
+                             (nose_x + 260, 0, nose_z + 40), P.DRAWBAR_TUBE))
+        parts.append(rod((nose_x + 300, 0, nose_z + 40),
+                         (nose_x, 0, nose_z), P.DRAWBAR_TUBE))
+        parts.append(box(220, 150, 130, (nose_x - 40, -75, nose_z - 50)))
+        parts.append(Part.makeSphere(P.COUPLING_BALL / 2,
+                                     Vector(nose_x + 30, 0, nose_z - 55)))
+        for s_ in (-1, 1):
+            parts.append(Part.makeTorus(28, 7, Vector(nose_x + 120, s_ * 90,
+                                                      nose_z - 20),
+                                        Vector(0, 1, 0)))
+        parts.append(rod((nose_x + 420, 150, nose_z + 60),
+                         (nose_x + 420, 150, nose_z - 300), 60))
+        parts.append(Part.makeCylinder(
+            P.JOCKEY_D / 2, 70, Vector(nose_x + 420, 115, nose_z - 300),
+            Vector(0, 1, 0)))
+    else:
+        # the two capped sockets the A-frame pins into
+        for s_ in (-1, 1):
+            parts.append(Part.makeCylinder(
+                P.DRAWBAR_TUBE / 2 + 12, 150,
+                Vector(P.HANGAR_BIGHT_X - bb / 2, s_ * (by - 120),
+                       P.POD_DOCKED[1]), Vector(-1, 0, 0)))
+        # and the A-frame itself, stowed flat on the starboard float deck
+        sx = P.FLOAT_X - 900
+        parts.append(rod((sx, pod[0] - 60, P.FLOAT_H + 40),
+                         (sx + P.DRAWBAR_LEN, pod[0] - 60, P.FLOAT_H + 40),
+                         P.DRAWBAR_TUBE - 30))
 
     if not coupled:
         off = Placement(Vector(P.HANGAR_STANDOFF, 0,
@@ -800,21 +812,20 @@ def build_stern_gear():
     parts.append(Part.makeCylinder(85, bw - 120,
                                    Vector(wx, wy - (bw - 120) / 2, wz),
                                    Vector(0, 1, 0)))               # drum
-    # bracket down to the stern tie, and the chain stripper aft
-    for sy in (-1, 1):
-        parts.append(box(40, 30, 300,
-                         (wx - 20, sy * (bw / 2 - 30), wz - bh / 2 - 290)))
+    # low plinth onto the deck - nothing hangs over the water
+    parts.append(box(bl + 60, bw - 80, 90,
+                     (wx - (bl + 60) / 2, wy - (bw - 80) / 2,
+                      wz - bh / 2 - 90)))
     parts.append(box(50, 240, 150, (wx - bl / 2 - 50, wy - 120,
                                     wz - bh / 2)))                 # stripper
     ax_, ay, az_ = P.ANCHOR_ROLLER
     parts.append(Part.makeCylinder(60, 200, Vector(ax_, ay - 100, az_),
                                    Vector(0, 1, 0)))               # bow roller
-    parts.append(rod((ax_, ay, az_), (ax_ - 220, ay, az_ - 620), 55))  # shank
-    for sgn in (-1, 1):                                            # flukes
-        parts.append(rod((ax_ - 220, ay, az_ - 620),
-                         (ax_ - 120, sgn * 240, az_ - 780), 45))
-        parts.append(rod((ax_ - 220, ay, az_ - 620),
-                         (ax_ - 350, sgn * 150, az_ - 700), 40))
+    # anchor stowed short and tight against the transom, well above WL
+    parts.append(rod((ax_, ay, az_), (ax_ - 90, ay, az_ - 380), 50))
+    for sgn in (-1, 1):
+        parts.append(rod((ax_ - 90, ay, az_ - 380),
+                         (ax_ - 30, sgn * 170, az_ - 500), 40))
     return Part.makeCompound(parts)
 
 
