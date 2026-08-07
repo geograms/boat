@@ -86,220 +86,158 @@ PANEL_L = 1700
 PANEL_W = 1130
 PANEL_T = 4
 
-# ---- movable stabilizers = the hangar, fully under the hull on road ----
-# ONE FULLY RIGID welded arm per station (no rotating parts in the
-# middle or at the float — straight segments cut at angles, welded with
-# gussets; the float attachment is static). The ONLY pivot is the
-# shoulder pin at the top, on the upper hull side. Because the float is
-# rigid on the arm, float roll is locked 1:1 to arm swing — so the
-# swing is EXACTLY 90 degrees:
-#   road (phi 0):    float on its SIDE flush under the hull, wheels
-#                    vertical and rolling (also the launch/harbor pose)
-#   water (phi 90):  float swung out and flat on the water, wheels
-#                    flat on the deck, dry
-# Launching happens IN the road configuration: drive in until the boat
-# floats off the wheels, then swing the arms out in deeper water.
-ARM_X = (1400, 5400)
-SH_Y, SH_Z = 1210, 760             # shoulder pin, upper hull side
-# arm polyline in ROAD pose, shoulder first, wrist (= float center) last
-ARM_POLY_ROAD = [(1210, 760), (1170, 420), (1150, 150), (700, -88)]
-ARM_T = 100                        # segment tube section
+# ---- NESTING floats + flip wheels + electric extenders ----
+# Fourth iteration of the running gear, and the simplest:
+#   - the floats NEST into shaped recesses in the hull's bilge corners,
+#     sliding in from astern like a fork onto two tapered SPIKE rails
+#     per side; the bow keeps 1.2 m of full-width hull ahead of them,
+#     so a docked float is faired, protected, hydrodynamic
+#   - ELECTRIC EXTENDERS (campervan-lift scissors, 24 V leadscrew,
+#     self-locking) push the docked float out and slightly up to the
+#     trimaran stance - no arms, no elbow, no carriage
+#   - the WHEELS stay on the floats, each on a curved arm that flips
+#     180 deg about a tube spanning an open WHEEL BAY cut through the
+#     float: up through the bay at sea, down through the bay for the
+#     road, where the wheel nests INSIDE the float envelope and only
+#     protrudes enough to roll. A spring pin at each end of the swing.
+#     MANUAL - a pin and a tube, no electrics.
+# THE T-HULL. Aft of x 6000 the hull's underwater body narrows to a
+# central STEM (the stroke of the T); the deck and cabin keep the full
+# 2 500 beam (the bar of the T), and so does the BOW - the head of the
+# ship is full width to the waterline for stability forward. The two
+# notches beside the stem are where the floats live: SAME LEVEL as the
+# hull, bottoms flush, so the docked boat is one clean barge body.
+STEM_HW = 900                      # half-beam of the stem below the step
+T_STEP_Z = 600                     # underside of the T's wings
+FLOAT_LEN = 6000                   # nose at x 6000; solid bow ahead
+FLOAT_W = 350                      # SLIM: the stem keeps enough beam to
+                                   # float stably with the floats away
+FLOAT_H = 600                      # bottom flush with the keel plane
+FLOAT_X = 3000                     # floats span x 0 .. 6000
 
-POD_ROAD = ARM_POLY_ROAD[-1]       # (700, -88): beveled float face sits FLUSH
-BOTTOM_SLOPE = 230 / 1096          # hull deadrise: z = (y-40)*slope
-_V0 = (POD_ROAD[0] - SH_Y, POD_ROAD[1] - SH_Z)
-ARM_R = math.hypot(*_V0)           # rigid chord shoulder->wrist ~1572
+POD_DOCKED = (STEM_HW + FLOAT_W / 2, FLOAT_H / 2)   # (1075, 300): in the
+                                                    # notch, outer face
+                                                    # flush at 1250
+POD_SEA = (POD_DOCKED[0] + 1800, FLOAT_H / 2)       # extended 1.8 m -
+                                                    # the slim float needs
+                                                    # the extra lever
+EXT_VEC = (POD_SEA[0] - POD_DOCKED[0], 0.0)
+EXT_STROKE = EXT_VEC[0]
+EXT_STATIONS = (900, 4500)         # two scissor units per side
 
+RECESS_DEPTH = FLOAT_W             # the notch swallows the whole float
+SPIKE_L = 5800                     # the two guide rails per side
+SPIKE_D = 60
+SPIKE_TAPER = 300                  # cone at the forward end: the fork
+                                   # closes the fit over the last 300 mm
 
-# TELESCOPIC arm. A single rigid arm cannot give both a tucked road pose
-# and a wide sea stance: rotating 90 deg from the road position puts the
-# float 508 mm off the hull, and 508 mm of lever is not what keeps a
-# 7.2 m boat upright in a seaway. So the arm extends after it swings.
-# CARRIAGE + FIXED ARM. A rigid one-pivot arm cannot give both the wide
-# sea stance and the under-hull stow (the pivot would have to be
-# equidistant from both float positions, and inside the road envelope
-# that caps the standoff at ~580 mm). So the ORIGINAL fixed arm is kept
-# exactly - radius 990, one 90 deg rotation to flush under the hull -
-# and its SHOULDER rides on a transverse RAIL in the U-frame:
-#
-#   sea    carriage locked at the outboard end: float 2000 mm off the
-#          hull, full righting arm
-#   stow   1) a 24 V leadscrew pulls the carriage inboard - the float
-#             skims the surface to the hull side (the ALONGSIDE pose,
-#             lockable anywhere: worm, self-locking)
-#          2) the original rotation drive swings the fixed arm 90 deg
-#             and the float goes flush under
-#   road   rail fully inside the frame, nothing protrudes; the fold is
-#          the original design, wheels down
-#
-# Two powered motions, both self-locking, no articulation in the arm.
-CARRIAGE_TRAVEL = 1492             # rail stroke, sized so the float
-                                   # sits exactly 2000 mm off the hull
-CARRIAGE_RAIL = (120, 140)         # rail box section b x h
-CARRIAGE_LEN = 260                 # carriage block along the rail
-CARRIAGE_SCREW_D = 32              # leadscrew, 24 V worm drive
-CARRIAGE_KG = 14                   # carriage + screw + motor, per station
-ARM_GAP_SEA = 2000                 # clear water, hull side to float face
-ARM_STAGGER = 350                  # port stations aft of starboard, so
-                                   # the retracted beam tails pass
+BOTTOM_SLOPE = 230 / 1096          # hull deadrise, kept for the bevel
+SH_Y, SH_Z = 1210, 760             # legacy exoskeleton rail line: the
+                                   # frame and its brackets still run here
 
 
-def pod_at(phi_deg, travel=0.0):
-    """Float centre: the ORIGINAL rigid-arm swing about the shoulder,
-    with the shoulder displaced outboard by the carriage `travel`."""
-    c, s = math.cos(math.radians(phi_deg)), math.sin(math.radians(phi_deg))
-    vy, vz = _V0
-    return (SH_Y + travel + vy * c - vz * s, SH_Z + vy * s + vz * c)
+def pod_at(phi_deg, _unused=0.0):
+    """Float centre. Kept phi-shaped for the mode table: 0 = docked in
+    the recess, anything else = extended to the sea stance. The motion
+    is a straight inclined slide on the extenders."""
+    t = 0.0 if phi_deg <= 0 else min(1.0, phi_deg / 90.0)
+    return (POD_DOCKED[0] + t * EXT_VEC[0], POD_DOCKED[1] + t * EXT_VEC[1])
 
 
-def arm_joints(phi, travel=0.0):
-    """(shoulder yz, float yz) - kept for the builders."""
-    return ((SH_Y + travel, SH_Z), pod_at(phi, travel))
+PHI_WATER = 90.0                   # mode-table value for "extended"
+PHI_SPLAY = PHI_WATER              # detached floats sit at the sea stance
+POD_WATER = pod_at(PHI_WATER)
+POD_ROAD = POD_DOCKED
+
+# ---- wheels: manual 180-deg flip arms in open bays ----
+# 205/70 R15 ALL-TERRAIN as before; three per float. Each wheel hangs
+# on a curved arm from a tube that spans an open bay cut through the
+# float. Flip up = wheel stands through the bay above the deck (sea);
+# flip down = wheel nests inside the bay and protrudes just enough to
+# roll (road). The bays cost buoyancy and it is accounted for.
+WHEEL_DIA = 668
+WHEEL_W = 205
+HUB_DIA = 390
+WHEEL_XS = (-1200, 550, 2300)      # along the float, from FLOAT_X:
+                                   # world 1800/3550/5300; centroid
+                                   # 3550 -> ~90 kg on the coupling
+WELL_L = 700                       # bay opening along the float
+WELL_W = 240                       # bay opening across: tire 205 + play
+FLIP_TUBE_D = 70                   # the tube the arm swings on
+FLIP_ARM_D = 60
+FLIP_ARM_LEN = 516                 # tube centre to axle
+AXLE_DOWN_Z = FLOAT_H - FLIP_ARM_LEN               # 84, in the bay
+GROUND_Z = AXLE_DOWN_Z - WHEEL_DIA / 2             # -250: the keel rides
+                                                   # 250 mm over the road
+WHEEL_DROP = 60                    # legacy name, still read by ga_drawing
 
 
-PHI_WATER = 90.0                   # exact, by rigid-arm construction
-POD_WATER = pod_at(PHI_WATER, CARRIAGE_TRAVEL)  # (3550, 250): 2 m clear
-POD_ALONGSIDE = pod_at(PHI_WATER)               # carriage in, float at the hull
 
-FLOAT_LEN = 6200
-FLOAT_W = 600                      # vertical extent when on its side
-FLOAT_H = 900                      # deep ama; sized so the bevel keeps 80% reserve
-FLOAT_X = sum(ARM_X) / 2
+def flip_points(pod):
+    """(tube yz, axle-up yz, axle-down yz) for a float at `pod`.
+    The tube runs along the float's TOP CENTRELINE, spanning each open
+    bay; the arm flips 180 deg in the vertical plane: wheel straight up
+    at sea, straight down through the bay for the road."""
+    ty, tz = pod[0], pod[1] + FLOAT_H / 2
+    return ((ty, tz), (ty, tz + FLIP_ARM_LEN), (ty, tz - FLIP_ARM_LEN))
 
-# ---- detachable hangar: a U-frame that is its own trailer ----
-# The running gear is no longer welded to the hull. Two spine beams run
-# along the hull sides at the old shoulder height and carry the four arm
-# shoulders; aft of the transom a cross beam - the bight of the U -
-# joins them and carries the drawbar. Detached and afloat, spines +
-# bight + floats are a 4.7 m catamaran with a motor in each float.
-#
-# Why it matters: the hangar is then a COMPLETE trailer and the boat is
-# cargo. A boat trailer carrying a boat is the most ordinary vehicle in
-# Europe - no amphibian question, no 6 km/h rule, no swinging-arm brake
-# problem. See docs/hangar.md and docs/homologation.md.
-HANGAR_SPINE_X = (ARM_X[0] - 500, ARM_X[1] + 500)   # 900 .. 5900
-HANGAR_SPINE = (55, 200)           # section b x h, alu box: NARROW in y,
-                                   # because every mm of it is road width
-HANGAR_BIGHT_X = -320              # cross beam, aft of the transom
+
+# ---- the float pair as a vehicle, and as a dinghy ----
+LOCK_MOTOR_KG = 2.6                # bayonet lock gearmotor, per spike
+HANGAR_BIGHT_X = -320              # cross beam joining the float tails
 HANGAR_BIGHT = (140, 180)
-HANGAR_CLEAR = 8                   # spine face to hull side when locked;
-                                   # the cone taper takes the approach slop
-
-# the four locks sit exactly on the old shoulder stations
-LOCK_X = ARM_X
-LOCK_Y, LOCK_Z = SH_Y, SH_Z
-LOCK_CONE_D0 = 60                  # tip diameter
-LOCK_CONE_D1 = 120                 # root diameter: 30 mm of taper a side
-LOCK_CONE_L = 180                  # length: takes +/-40 mm and 3 deg of
-                                   # approach error so the lock never has to
-LOCK_TWIST_D = 46                  # bayonet T-head shaft
-LOCK_MOTOR = (90, 110)             # 24 V worm gearmotor, d x l
-LOCK_MOTOR_KG = 2.6
-LOCK_TORQUE_NM = 25                # to turn the T-head under preload
-ARM_DRIVE_D = 180                  # worm slew drive at each shoulder
-ARM_DRIVE_KG = 9.0
-
-# the coupler that hooks the car: an A-frame off the bight, dropping to
-# the standard ball height, with a jockey wheel and safety chains
-DRAWBAR_LEN = 1900                 # bight to ball
+DRAWBAR_LEN = 1900
 DRAWBAR_TUBE = 100
-COUPLING_BALL = 50                 # mm ball, class B50-X
-COUPLING_H = 445                   # above ground, as the old tow arch
+COUPLING_BALL = 50
+COUPLING_H = 445
 JOCKEY_D = 200
-HANGAR_STANDOFF = -7400            # how far astern the hangar lies
-                                   # while the boat is driven in
+HANGAR_STANDOFF = -7400            # detached: floats astern of the boat
 
-
-def hangar_standoff_z():
-    """How far to lift the hangar so it floats at ITS own waterline
-    when detached, instead of at the boat's."""
-    _beam, _mass, free = dinghy_stats()
-    want = WL_Z - (FLOAT_W - free) + FLOAT_W / 2
-    return want - pod_at(PHI_SPLAY)[1]
-PHI_SPLAY = 90.0                   # dinghy / approach: arms wide open
-PHI_ALONGSIDE = 55.0               # floats hugging the hull in harbour
-
-# dinghy: what goes inside the float when it runs on its own
-DINGHY_BATT_WH = 2 * 1200          # 2 x 12 V 100 Ah motorcycle-class packs
+DINGHY_BATT_WH = 2 * 1200          # motorcycle-class packs, one per float
 DINGHY_BATT_KG = 2 * 13
-DINGHY_PANEL = (1160, 540, 3)      # small flexible panel on each float deck
+DINGHY_PANEL = (1160, 540, 3)
 DINGHY_PANEL_W = 100
 DINGHY_CREW_KG = 2 * 85
 
 
-def hangar_spine_y():
-    """Half-spacing of the spine beams.
-
-    The spines ride at the LOCK height, not at the sheer: the hull is
-    1 202 mm half-beam down there against 1 250 at the gunwale, and
-    those 48 mm are the only reason the U fits inside the road limit."""
-    hull_half = max(_hw_at(x, LOCK_Z)
-                    for x in range(HANGAR_SPINE_X[0], HANGAR_SPINE_X[1], 50))
-    return hull_half + HANGAR_CLEAR + HANGAR_SPINE[0] / 2
-
-
-def lock_points():
-    """(x, y, z) of the four cone-and-bayonet locks, both sides."""
-    return [(x, sy * LOCK_Y, LOCK_Z) for x in LOCK_X for sy in (-1, 1)]
-
-
 def hangar_mass():
-    """kg of the hangar as a vehicle: floats, arms, wheels, drive,
-    spines, bight and the coupling hardware."""
+    """kg of the float pair as a trailer: shells, wheels, flip gear,
+    extender halves, bight, drawbar, locks, dinghy kit."""
     import laminate as L
     areas = laminate_areas()
     floats = (L.zone_mass("float_shell", areas.get("float_shell", 0.0)) +
               L.zone_mass("float_deck", areas.get("float_deck", 0.0)))
-    spine_m = 2 * (HANGAR_SPINE_X[1] - HANGAR_SPINE_X[0]) / 1000
-    bight_m = 2 * hangar_spine_y() / 1000
-    alu = (spine_m * HANGAR_SPINE[0] * HANGAR_SPINE[1] * 0.15 +
-           bight_m * HANGAR_BIGHT[0] * HANGAR_BIGHT[1] * 0.15) * 2.7e-3
-    locks = 4 * (LOCK_MOTOR_KG + 3.5)
-    drives = 4 * ARM_DRIVE_KG
-    return (floats + MASS_WHEELS_HUBS + MASS_ARMS + MASS_CARRIAGES +
-            MASS_HYDRAULICS + alu + locks + drives + DINGHY_BATT_KG + 25)
+    bight_m = 2 * (POD_DOCKED[0] + FLOAT_W / 2) / 1000
+    alu = bight_m * HANGAR_BIGHT[0] * HANGAR_BIGHT[1] * 0.15 * 2.7e-3
+    return (floats + MASS_WHEELS_HUBS + MASS_EXTENDERS + MASS_FLIPGEAR +
+            MASS_HYDRAULICS + alu + 4 * LOCK_MOTOR_KG + 20 +
+            DINGHY_BATT_KG + 25)
+
+
+def float_buoyancy():
+    """kg, both floats fully submerged (before the wheel bays)."""
+    return 2 * FLOAT_LEN * FLOAT_W * FLOAT_H * 0.62 / 1e9 * 1000
 
 
 def dinghy_stats():
-    """(beam m, displacement kg, freeboard mm) of the detached hangar
-    carrying two people."""
-    beam = (2 * pod_at(PHI_SPLAY)[0] + FLOAT_W) / 1000
+    """(beam m, displacement kg, freeboard mm): the two floats and the
+    bight running as a catamaran with two people aboard."""
+    beam = (2 * POD_SEA[0] + FLOAT_W) / 1000
     mass = hangar_mass() + DINGHY_CREW_KG
-    # two prismatic floats, immersion by displaced volume
-    area = 2 * FLOAT_LEN * FLOAT_H / 1e6            # m2 of waterplane
-    sink = mass / 1000 / area * 1000                # mm
+    area = 2 * FLOAT_LEN * FLOAT_H / 1e6
+    sink = mass / 1000 / area * 1000
     return beam, mass, FLOAT_W - sink
 
 
-# ---- caster wheels (electric hub motors, sealed) ----
-# 205/70 R15 ALL-TERRAIN (General Grabber AT3 class): sand/mud traction
-# plus normal road use; still a standard 15-inch size, any tire shop
-WHEEL_DIA = 668
-WHEEL_W = 205
-HUB_DIA = 390
-WHEEL_XS = (-1527, 173, 1873)      # world x 1873/3573/5273, 6 wheels
-                                   # (centroid forward of the CG so the
-                                   #  STERN coupling gets +100 kg down)
-AXLE_STANDOFF = -15                # disc recessed; rim stays inside 2550
-WHEEL_DROP = 60                    # axle dropped so wheels, not floats, touch ground
+def hangar_standoff_z():
+    """Lift so the detached floats sit at their own waterline."""
+    _b, _m, free = dinghy_stats()
+    want = WL_Z - (FLOAT_W - free) + FLOAT_W / 2
+    return want - POD_SEA[1]
 
-GROUND_Z = POD_ROAD[1] - WHEEL_DROP - WHEEL_DIA / 2   # -448
 
-# ---- jack-up stance (folded arms afloat) ----
-# Floats hold ~3.1 t of max buoyancy vs a 2.0 t boat: folding the arms
-# in deep water lifts the HULL until the floats alone carry the boat.
-# Equilibrium: floats ~65% submerged; the hull keel ends up AT the
-# water surface (unloaded, awash) — float top is welded flush to the
-# hull bottom, so true dry clearance is ~zero by construction.
-BOAT_MASS = 2000
-DESIGN_ALL_UP = BOAT_MASS          # ONE mass figure for the whole project:
-                                   # hydrostatics, performance and the road
-                                   # numbers all read this. See checks().
-CREW_STORES = 300                  # crew + stores + fuel/water top-up, kg
-_wedge = 0.5 * (BOTTOM_SLOPE * FLOAT_H) * FLOAT_H * FLOAT_LEN
-_reserve = (FLOAT_LEN * FLOAT_W * FLOAT_H * 0.62 - _wedge) * 1e-6
-JACK_DEPTH = FLOAT_W * BOAT_MASS / (2 * _reserve)        # ~387 mm
-HARBOR_WL_Z = (POD_ROAD[1] - FLOAT_W / 2) + JACK_DEPTH   # ~-1: keel awash
+# The jack-up stance is GONE: the floats nest, they do not lift the ship.
+HARBOR_WL_Z = WL_Z
 
 # in-float electric-hydraulic drive bay (see docs/wheels.md):
 # 48V motor + pump + valve manifold in a watertight compartment;
@@ -360,25 +298,6 @@ def curtain_mass():
 
 
 # ---- caster wheels (electric hub motors, sealed) ----
-# 205/70 R15 ALL-TERRAIN (General Grabber AT3 class): sand/mud traction
-# plus normal road use; still a standard 15-inch size, any tire shop
-WHEEL_DIA = 668
-WHEEL_W = 205
-HUB_DIA = 390
-WHEEL_XS = (-1527, 173, 1873)      # world x 1873/3573/5273, 6 wheels
-                                   # (centroid forward of the CG so the
-                                   #  STERN coupling gets +100 kg down)
-AXLE_STANDOFF = -15                # disc recessed; rim stays inside 2550
-WHEEL_DROP = 60                    # axle dropped so wheels, not floats, touch ground
-
-GROUND_Z = POD_ROAD[1] - WHEEL_DROP - WHEEL_DIA / 2   # -448
-
-# ---- jack-up stance (folded arms afloat) ----
-# Floats hold ~3.1 t of max buoyancy vs a 2.0 t boat: folding the arms
-# in deep water lifts the HULL until the floats alone carry the boat.
-# Equilibrium: floats ~65% submerged; the hull keel ends up AT the
-# water surface (unloaded, awash) — float top is welded flush to the
-# hull bottom, so true dry clearance is ~zero by construction.
 BOAT_MASS = 2000
 DESIGN_ALL_UP = BOAT_MASS          # ONE mass figure for the whole project:
                                    # hydrostatics, performance and the road
@@ -448,9 +367,10 @@ WHEELBOX_TOP_Z = POD_WATER[1] + FLOAT_H / 2 + WHEELBOX_H
 # cartridge in the main hull with grids on the aft hull sides and the
 # nozzle through the transom. Nothing rotating is reachable by weed.
 JET_GRID_L = 1300        # grid panel, along float axis (midbody)
-JET_GRID_H = 240   # fits the SIDE face between chine and WL
+JET_GRID_H = 160   # fits the slim float's side face below the WL
 JET_GRID_X_LOCAL = -300  # panel center: parallel midbody, flat side
-JET_Z_LOCAL = -170       # grid centerline: fully below WL, above the chine
+JET_Z_LOCAL = -190       # grid centre, float-local: top z 190, bottom
+                         # z 30 - inside the slim float's side face
 JET_DUCT_D = 200
 JET_NOZZLE_D = 140
 JET_HOLE_D = 14
@@ -769,7 +689,7 @@ ARCH_PIVOT_Y = 950
 ARCH_PIVOT_Z = 760
 ARCH_LEG = 1200
 ARCH_SEA_DEG = 65
-ARCH_LAND_DEG = -23.5
+ARCH_LAND_DEG = -17.0   # re-trimmed for the low T-hull road stance
 ARCH_EXT = 800                # telescoping tongue stroke
 ARCH_TUBE = 130               # heavier section: reads as structure, not wire
 COUPLING_H = 430              # target coupling height above ground
@@ -965,8 +885,8 @@ BULKHEAD_X = (900, 2400, 3900, 5400, 6200)
 # masses that are NOT laminate, kg. Sources in the docs named alongside.
 MASS_EXOSKELETON = 260     # S355 tube frame 180 + brackets + tow arch, galvanised
 MASS_WHEELS_HUBS = 270     # 6 x (tire 14 + rim 8 + hub motor 11 + stub axle 12)
-MASS_ARMS = 150            # the ORIGINAL rigid welded arms
-MASS_CARRIAGES = 4 * CARRIAGE_KG   # rails, carriages, leadscrews
+MASS_EXTENDERS = 4 * 16    # scissor units, 24 V leadscrews
+MASS_FLIPGEAR = 6 * 9      # tubes, curved arms, pins
 MASS_HYDRAULICS = 120      # 2 x (BLDC + pump + manifold), hoses, oil, reservoir
 MASS_JETS = 75             # 3 x 2 kW waterjet cartridges incl. ducting
 MASS_ELECTRICS = 120       # inverter/charger, MPPTs, busbars, cabling
@@ -1103,19 +1023,16 @@ STERNPOD_LEN = 700
 # rails: 0 = panels flat (harvesting, road-latched), 90 = standing as
 # the guardrail with the deck in use
 MODES = {
-    "road":    dict(phi=0,         curt=0, tow="land", lift=0, rails=0),
-    "launch":  dict(phi=0, curt=0, tow="land", lift=0, rails=0),
-    "harbor":  dict(phi=0, curt=0, tow="sea",  lift=0, rails=0),
-    "cruise":  dict(phi=PHI_WATER, trav=CARRIAGE_TRAVEL, curt=78, tow="sea", lift=0, rails=0),
-    "anchor":  dict(phi=PHI_WATER, trav=CARRIAGE_TRAVEL, curt=78, tow="sea", lift=0, rails=0),
-    "deck":    dict(phi=PHI_WATER, trav=CARRIAGE_TRAVEL, curt=78, tow="sea", lift=0, rails=90),
+    "road":    dict(phi=0,  flip=180, curt=0, tow="land", lift=0, rails=0),
+    "launch":  dict(phi=0, flip=180, curt=0, tow="land", lift=0, rails=0),
+    "harbor":  dict(phi=0, flip=0, curt=0, tow="sea",  lift=0, rails=0),
+    "cruise":  dict(phi=PHI_WATER, curt=78, tow="sea", lift=0, rails=0),
+    "anchor":  dict(phi=PHI_WATER, curt=78, tow="sea", lift=0, rails=0),
+    "deck":    dict(phi=PHI_WATER, curt=78, tow="sea", lift=0, rails=90),
     # hangar stood off astern, arms splayed: the coupling pose, and the
     # dinghy pose - the boat floats free on its own hull
-    "detached": dict(phi=PHI_SPLAY, trav=CARRIAGE_TRAVEL, curt=78,
-                     tow="sea", lift=0, rails=0, coupled=False),
-    # carriage pulled in, arm not yet rotated: float at the hull side
-    "alongside": dict(phi=PHI_WATER, trav=0, curt=78, tow="sea",
-                      lift=0, rails=0),
+    "detached": dict(phi=PHI_SPLAY, curt=78, tow="sea", lift=0,
+                     rails=0, coupled=False),
 }
 
 
@@ -1204,8 +1121,13 @@ def _hw_at(x, z):
     if z <= zc:
         return KEEL_FLAT + (yc - KEEL_FLAT) * (z - zk) / max(zc - zk, 1e-9)
     if z <= zs:
-        return yc + (yg - yc) * (z - zc) / max(zs - zc, 1e-9)
-    return yg
+        hw = yc + (yg - yc) * (z - zc) / max(zs - zc, 1e-9)
+    else:
+        hw = yg
+    # the T: aft of the bow the underwater body narrows to the stem
+    if x <= FLOAT_LEN and z < T_STEP_Z:
+        hw = min(hw, STEM_HW)
+    return hw
 
 
 def displacement(draft, nx=160, nz=32):
@@ -1231,12 +1153,6 @@ def draft_for(mass, lo=50.0, hi=900.0):
     return 0.5 * (lo + hi)
 
 
-def float_buoyancy():
-    """kg, both floats fully submerged (the jack-up reserve)."""
-    return 2 * FLOAT_LEN * FLOAT_W * FLOAT_H * 0.62 / 1e9 * 1000
-
-
-# ---- structural mass, computed from measured areas x laminate schedule ----
 def laminate_areas():
     """{zone: m2} measured off the solids by areas.py. The file is the
     interface: no FreeCAD import needed to run checks()."""
@@ -1271,24 +1187,25 @@ def mass_budget():
 
 def checks(verbose=True, strict=True):
     # road: everything inside the hull footprint, shallow stack
-    wheel_disc_y = POD_ROAD[0] + FLOAT_H / 2 + AXLE_STANDOFF   # 1170
-    wheel_outer = wheel_disc_y + (WHEEL_W + 60) / 2
-    float_outer_road = POD_ROAD[0] + FLOAT_H / 2               # sideways
+    _t, _u, wdown = flip_points(POD_DOCKED)
+    wheel_outer = abs(wdown[0]) + (WHEEL_W + 60) / 2
+    float_outer_road = POD_DOCKED[0] + FLOAT_W / 2             # flush face
     road_width = 2 * max(HULL_BEAM / 2, wheel_outer, float_outer_road,
                          CURT_HINGE_Y + MODULE_FLEX[2] + CURT_FRAME_W,
-                         hangar_spine_y() + HANGAR_SPINE[0] / 2,
                          GATE_PLATE_Y)            # gate threshold plate
     road_height = CABIN_ROOF_Z + DECK_BUILDUP - GROUND_Z
-    track = 2 * wheel_disc_y
-    # water: floats flat, wheels flat on deck
+    track = 2 * abs(wdown[0])
+    # water: floats extended on the inclined slide, wheels flipped up
     water_beam = 2 * (POD_WATER[0] + FLOAT_W / 2)
     float_bot = POD_WATER[1] - FLOAT_H / 2
     immersion = (WL_Z - float_bot) / FLOAT_H
-    wheel_low_water = POD_WATER[1] + FLOAT_H / 2 + 30          # flat discs
+    _t2, wup, _d2 = flip_points(POD_WATER)
+    wheel_low_water = wup[1] - WHEEL_DIA / 2
     disp = displacement_kg()
-    # reserve minus the bevel wedge shaved to sit flush on the hull bottom
-    wedge = 0.5 * (BOTTOM_SLOPE * FLOAT_H) * FLOAT_H * FLOAT_LEN
-    reserve_kg = (FLOAT_LEN * FLOAT_W * FLOAT_H * 0.62 - wedge) * 1e-6
+    # reserve: the slim prismatic float minus the three open wheel bays
+    wells_mm3 = 3 * WELL_L * WELL_W * FLOAT_W
+    reserve_kg = (FLOAT_LEN * FLOAT_W * FLOAT_H * 0.80
+                  - wells_mm3) * 1e-6
     m_right = reserve_kg * 9.81 * POD_WATER[0] / 1e6
     m_heel = 0.5 * 1.2 * 1.1 * 11.5 * 25.7**2 * 1.5 / 1000
 
@@ -1306,18 +1223,18 @@ def checks(verbose=True, strict=True):
     assert road_height <= 4000, f"road height {road_height}"
     assert -GROUND_Z >= 250, f"ground clearance {-GROUND_Z}"
     assert wheel_outer <= HULL_BEAM / 2 + 20, \
-        f"wheels outside the hull footprint: {wheel_outer}"
+        f"wheels outside the hull footprint: {wheel_outer:.0f}"
     assert wheel_low_water >= WL_Z + 25, f"wheels wet: {wheel_low_water}"
     assert 0.30 < immersion < 0.70, f"float immersion {immersion}"
-    # the wide stance is the POINT of the sliding outrigger; the limit
-    # that matters is what a canal lock will take, not a tidy number
+    # the wide stance is the POINT of the extenders; the limit that
+    # matters is what a canal lock will take, not a tidy number
     assert 4500 <= water_beam <= 8000, f"water beam {water_beam}"
-    assert POD_WATER[0] - FLOAT_W / 2 - HULL_BEAM / 2 >= ARM_GAP_SEA - 5, \
-        f"only {POD_WATER[0] - FLOAT_W / 2 - HULL_BEAM / 2:.0f} mm of clear water"
-    assert abs(POD_WATER[1] - pod_at(PHI_WATER)[1]) < 1, \
-        "the carriage must run HORIZONTALLY: same float draft at any travel"
     assert 1700 < disp < 2400, f"displacement {disp}"
-    assert reserve_kg >= 0.80 * 1900, f"ama reserve {reserve_kg:.0f}"
+    assert reserve_kg >= 500, f"ama reserve {reserve_kg:.0f}"
+    # slim floats: the STEM must float the boat on its own when the
+    # floats are away as the dinghy
+    stem_disp_ok = displacement(700) > 3400
+    assert stem_disp_ok, "T-stem cannot float the boat without the floats"
     assert m_right / m_heel >= 3, f"righting SF {m_right / m_heel:.1f}"
     # solar curtains: five panels a side on the roof corner
     rise, run_l, mt = MODULE_FLEX
@@ -1372,14 +1289,7 @@ def checks(verbose=True, strict=True):
     assert stair_ang <= 70, f"ladder {stair_ang:.0f} deg too steep"
     assert PORCH_X1 < CABIN_X0, "porch must clear the cabin wall for flashing"
     # jack-up stance equilibrium
-    jack_d = FLOAT_W * BOAT_MASS / (2 * reserve_kg)      # submerged depth
-    harbor_wl = (POD_ROAD[1] - FLOAT_W / 2) + jack_d     # ~0 = keel awash
-    jack_frac = jack_d / FLOAT_W
-    L_m, w_m, d_m = FLOAT_LEN / 1000, FLOAT_H / 1000, 0.700
-    gm_est = 2 * (L_m * w_m**3 / 12 + L_m * w_m * d_m**2) / (BOAT_MASS / 1000)
-    assert jack_frac <= 0.85, f"floats too small to jack up: {jack_frac:.2f}"
-    assert -60 <= harbor_wl <= 40, \
-        f"jack-up equilibrium off keel-awash regime: {harbor_wl:.0f}"
+    # no jack-up any more: the floats nest, the hull always floats itself
     # interior: circulation, berths, stowage, and what it costs in draft
     corridor_w = CORRIDOR_Y[1] - CORRIDOR_Y[0]
     berth_l = BERTH_X[1] - BERTH_X[0]
@@ -1550,14 +1460,16 @@ def checks(verbose=True, strict=True):
         f"intake grids not submerged enough: top {grid_top}"
     face_v = 0.13 / (2 * JET_GRID_L * JET_GRID_H * 0.40 * 1e-6)
     grid_bot_local = JET_Z_LOCAL - JET_GRID_H / 2
-    assert grid_bot_local >= -292, \
-        f"float grid crosses the chine onto the bottom: {grid_bot_local}"
+    assert grid_bot_local >= -FLOAT_H / 2 + 20, \
+        f"float grid runs off the float bottom: {grid_bot_local}"
     if verbose:
         print(f"road width      {road_width:.0f} mm (limit 2550)")
         print(f"road height     {road_height:.0f} mm (limit 4000)")
         print(f"ground clear    {-GROUND_Z:.0f} mm  (stack under keel)")
         print(f"track           {track:.0f} mm")
-        print(f"arm swing       {PHI_WATER:.1f} deg, chord {ARM_R:.0f} mm")
+        print(f"extenders       stroke {EXT_STROKE:.0f} mm, "
+              f"docked ({POD_DOCKED[0]},{POD_DOCKED[1]}) -> "
+              f"sea ({POD_SEA[0]},{POD_SEA[1]})")
         print(f"water beam      {water_beam:.0f} mm")
         print(f"wheel dry marg  {wheel_low_water - WL_Z:.0f} mm above WL")
         print(f"float immersion {immersion * 100:.0f} %")
@@ -1630,9 +1542,6 @@ def checks(verbose=True, strict=True):
         print(f"solar           deck {kwp_deck:.2f} + curtains {kwp_balc:.2f} "
               f"= {kwp_deck + kwp_balc:.2f} kWp nominal, {kwp_eff:.2f} "
               f"effective;  air draft {air_draft:.0f} mm")
-        print(f"jack-up stance  floats {jack_frac * 100:.0f}% deep, "
-              f"keel {-harbor_wl:.0f} mm above water (awash), "
-              f"pontoon GM ~{gm_est:.1f} m")
 
     # ---- mass budget and the waterline that follows from it ----
     items, all_up = mass_budget()
@@ -1654,9 +1563,6 @@ def checks(verbose=True, strict=True):
               f"(design figure {DESIGN_ALL_UP})")
         print(f"waterline       {wl:.0f} mm empty, {wl_loaded:.0f} mm loaded; "
               f"freeboard {freeboard:.0f} mm")
-        print(f"jack-up         float buoyancy {buoy:.0f} kg = "
-              f"{buoy / (all_up + CREW_STORES):.2f} x loaded mass "
-              f"(1.40 wanted)")
         print(f"road            trailer category O2 needs <= 3500 kg; "
               f"loaded {all_up + CREW_STORES:.0f} kg")
         print(f"deck edge       toe rail {TERRACE_TOERAIL} mm; the panels "
@@ -1668,9 +1574,6 @@ def checks(verbose=True, strict=True):
         print(f"solar           deck {kwp_deck:.2f} + curtains {kwp_balc:.2f} "
               f"= {kwp_deck + kwp_balc:.2f} kWp nominal, {kwp_eff:.2f} "
               f"effective;  air draft {air_draft:.0f} mm")
-        print(f"jack-up stance  floats {jack_frac * 100:.0f}% deep, "
-              f"keel {-harbor_wl:.0f} mm above water (awash), "
-              f"pontoon GM ~{gm_est:.1f} m")
 
     # ---- mass budget and the waterline that follows from it ----
     items, all_up = mass_budget()
@@ -1687,48 +1590,57 @@ def checks(verbose=True, strict=True):
             print(f"  {k:34s} {v:6.0f} kg")
         print(f"waterline       {wl:.0f} mm empty, {wl_loaded:.0f} mm loaded; "
               f"freeboard {freeboard:.0f} mm")
-        print(f"jack-up         float buoyancy {buoy:.0f} kg = "
-              f"{buoy / (all_up + CREW_STORES):.2f} x loaded mass "
-              f"(1.40 wanted)")
         print(f"road            trailer category O2 needs <= 3500 kg; "
               f"loaded {all_up + CREW_STORES:.0f} kg")
-    # ---- detachable hangar ----
-    sy_ = hangar_spine_y()
-    u_gap = 2 * (sy_ - HANGAR_SPINE[0] / 2)
-    hull_at_lock = max(_hw_at(x, LOCK_Z)
-                       for x in range(HANGAR_SPINE_X[0], HANGAR_SPINE_X[1], 50))
-    cone_reach = sy_ - HANGAR_SPINE[0] / 2 - LOCK_Y
+    # ---- nesting floats, spikes, extenders, flip wheels ----
+    tube, up, down = flip_points(POD_DOCKED)
     dg_beam, dg_mass, dg_free = dinghy_stats()
     hangar_kg2 = hangar_mass()
-    assert u_gap >= 2 * hull_at_lock, \
-        f"U opening {u_gap:.0f} mm will not pass the hull ({2 * hull_at_lock:.0f})"
-    assert 2 * (sy_ + HANGAR_SPINE[0] / 2) <= 2550, \
-        f"spines put the road width at {2 * (sy_ + HANGAR_SPINE[0] / 2):.0f} mm"
-    assert LOCK_CONE_L > cone_reach + 60, \
-        f"cone {LOCK_CONE_L} mm too short to bridge {cone_reach:.0f} mm and " \
-        "still seat in the socket"
-    assert LOCK_CONE_D1 > LOCK_CONE_D0 + 40, "cone taper too shallow to guide"
-    assert len(lock_points()) == 4, "four locks, one per shoulder station"
-    assert all(abs(abs(y) - SH_Y) < 1 and abs(z - SH_Z) < 1
-               for _x, y, z in lock_points()), \
-        "locks must land on the existing shoulder load path"
-    assert HANGAR_BIGHT_X < -HANGAR_BIGHT[1], \
-        "the bight must sit clear aft of the transom, not across it"
-    assert dg_free >= 250, \
-        f"dinghy freeboard only {dg_free:.0f} mm with two aboard"
-    assert dg_beam >= 3.5, f"dinghy beam {dg_beam:.1f} m - not stable enough"
-    assert PHI_SPLAY >= PHI_ALONGSIDE, "splayed must be wider than alongside"
+    well_kg = 2 * 3 * WELL_L * WELL_W * FLOAT_W / 1e9 * 1000
+    float_buoy_net = float_buoyancy() - well_kg
+    # docked float nests: outer face inside the hull line
+    assert POD_DOCKED[0] + FLOAT_W / 2 <= HULL_BEAM / 2 + 5, \
+        f"docked float face at y {POD_DOCKED[0] + FLOAT_W / 2:.0f}, outside the hull"
+    # the bow protects the float noses
+    assert FLOAT_LEN + 200 <= LOA - 1000, \
+        "float nose too close to the stem - no solid bow left"
+    # sea stance: real clear water and a surface-piercing float
+    sea_gap = POD_SEA[0] - FLOAT_W / 2 - STEM_HW
+    assert sea_gap >= 1300, f"only {sea_gap:.0f} mm of clear water extended"
+    assert POD_SEA[1] + FLOAT_H / 2 > WL_Z + 100, \
+        "extended float fully submerged - no righting reserve"
+    assert POD_SEA[1] - FLOAT_H / 2 < WL_Z, "extended float flies above the water"
+    # wheels: down inside the bay, protruding enough to roll
+    assert down[1] - WHEEL_DIA / 2 == GROUND_Z
+    assert GROUND_Z > -448, "flip wheels should sit LOWER than the old gear"
+    assert abs(down[0]) <= HULL_BEAM / 2 - WHEEL_W / 2 - 60, \
+        "road wheel outside the hull footprint"
+    # the up wheel rises THROUGH the open bay - it may share it
+    # wells: inside the float, clear of the extender stations
+    for wx in WHEEL_XS:
+        for ex in EXT_STATIONS:
+            assert abs((FLOAT_X + wx) - ex) > WELL_L / 2 + 150, \
+                f"wheel bay at x {FLOAT_X + wx} hits the extender at {ex}"
+    # slim floats are STABILISERS now, not lifters: what they must do is
+    # carry the dinghy and give the extended stance its lever
+    assert float_buoy_net / 2 >= 500, \
+        f"wells leave only {float_buoy_net / 2:.0f} kg of buoyancy per float"
     if verbose:
-        print(f"hangar          U-frame trailer: spines at y +/-{sy_:.0f} "
-              f"(U opening {u_gap:.0f} vs hull {2 * hull_at_lock:.0f}), bight "
-              f"{-HANGAR_BIGHT_X:.0f} mm aft of the transom, "
-              f"{hangar_kg2:.0f} kg")
-        print(f"coupling        4 x cone {LOCK_CONE_D0}->{LOCK_CONE_D1} over "
-              f"{LOCK_CONE_L} mm, then a 24 V worm bayonet; self-locking, "
-              f"limit-switched, manual override")
-        print(f"dinghy          {dg_beam:.2f} m beam, {dg_mass:.0f} kg with two "
-              f"aboard, {dg_free:.0f} mm freeboard, {DINGHY_BATT_WH} Wh + "
-              f"2 x {DINGHY_PANEL_W} W")
+        print(f"nesting         floats 0..{FLOAT_LEN} in a {RECESS_DEPTH} mm "
+              f"bilge recess; bow solid {LOA - FLOAT_LEN - 200} mm ahead; "
+              f"2 spike rails/side, taper {SPIKE_TAPER}")
+        print(f"extenders       {len(EXT_STATIONS)}/side, 24 V leadscrew, "
+              f"stroke {EXT_STROKE:.0f} mm inclined "
+              f"{math.degrees(math.atan2(EXT_VEC[1], EXT_VEC[0])):.0f} deg; "
+              f"sea gap {sea_gap:.0f} mm, water beam "
+              f"{2 * (POD_SEA[0] + 450):.0f}")
+        print(f"flip wheels     tube ({tube[0]:.0f},{tube[1]:.0f}), manual "
+              f"180 deg: up axle ({up[0]:.0f},{up[1]:.0f}), down "
+              f"({down[0]:.0f},{down[1]:.0f}); ground {GROUND_Z:.0f} "
+              f"(68 mm lower), bays cost {well_kg:.0f} kg of buoyancy")
+        print(f"dinghy          {dg_beam:.2f} m beam, {dg_mass:.0f} kg with "
+              f"two aboard, {dg_free:.0f} mm freeboard, {DINGHY_BATT_WH} Wh "
+              f"+ 2 x {DINGHY_PANEL_W} W")
 
     # Two items are open by decision, not by oversight. strict=True (the
     # contract run) fails on them; strict=False lets the model build so
@@ -1739,12 +1651,6 @@ def checks(verbose=True, strict=True):
             f"category O2: {all_up + CREW_STORES:.0f} kg loaded, "
             f"{all_up + CREW_STORES - 3500:.0f} kg over the 3500 limit - the "
             "wide sea stance cost 90 kg of arm; find it back or go O3")
-    if buoy < 1.4 * (all_up + CREW_STORES):
-        open_items.append(
-            f"jack-up: floats give {buoy:.0f} kg, "
-            f"{1.4 * (all_up + CREW_STORES):.0f} wanted "
-            f"({buoy / (all_up + CREW_STORES):.2f}x) - wants float DEPTH, "
-            "not weight; see docs/weight.md")
     if all_up > DESIGN_ALL_UP:
         open_items.append(
             f"mass budget: {all_up:.0f} kg computed vs {DESIGN_ALL_UP} kg "

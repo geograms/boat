@@ -80,14 +80,28 @@ def loft_sections(secs):
 # Hull — hollow barge shell with deck, cabin-size opening
 # ---------------------------------------------------------------
 def hull_sections(inner=False):
+    """Hull stations. Aft of the bow the section is a T: the underwater
+    body narrows to the stem, the deck keeps the full beam, and the two
+    notches under the wings are where the floats nest."""
     out = []
     for st in P.STATIONS:
         x, yg, yc, zk, zc, zs = st
         if inner:
             yg, yc = max(yg - WALL, 15), max(yc - WALL, 10)
             zk, zc, zs = zk + 60, zc + 40, DECK_Z - 30
-        out.append((x, [(P.KEEL_FLAT, zk), (yc, zc), (yg, zs),
-                        (-yg, zs), (-yc, zc), (-P.KEEL_FLAT, zk)]))
+        # every station keeps the SAME 10-point topology so the loft
+        # is well-conditioned; the bow simply degenerates the T step
+        if x <= P.FLOAT_LEN:
+            stem = min(P.STEM_HW - (WALL if inner else 0), yc)
+            tz = P.T_STEP_Z + (30 if inner else 0)
+        else:
+            stem = yc - 2
+            tz = zc + 0.55 * (zs - zc)
+        pts = [(P.KEEL_FLAT, zk), (stem, zc), (stem, tz),
+               (yg, tz), (yg, zs),
+               (-yg, zs), (-yg, tz), (-stem, tz),
+               (-stem, zc), (-P.KEEL_FLAT, zk)]
+        out.append((x, pts))
     return out
 
 
@@ -118,6 +132,7 @@ def build_hull():
          (P.CABIN_X1 - 50, P.CABIN_W / 2 - 70),
          (P.CABIN_X0 + 50, P.CABIN_W / 2 - 70)],
         DECK_Z - 60, DECK_Z + 60))
+    # the float notches are built into the T sections themselves
     # the dome is a ROOM, not a bubble on the deck: open the foredeck
     # under it so the saloon sole runs on through, leaving a 130 mm
     # gunwale ledge for the glass to land on
@@ -279,7 +294,7 @@ FLOAT_STATIONS = [
 ]
 
 
-def build_float(pod, roll):
+def build_float(pod, roll, flip=0.0):
     """Stabilizer float with CASTER wheels (stub axles perpendicular to
     the deck): roll 90 = float on its side, wheels vertical (road);
     roll 0 = float flat, wheels flat on the deck (water).
@@ -289,88 +304,81 @@ def build_float(pod, roll):
     place = Placement(Vector(0, ty, tz), Rotation(Vector(1, 0, 0), -roll))
 
     secs = []
+    ky = P.FLOAT_W / 400.0            # slim: loft table was 400 wide
+    kz = P.FLOAT_H / 900.0            # and 900 tall
     for u, yg, yc, zk, zc in FLOAT_STATIONS:
         x = P.FLOAT_X + u * P.FLOAT_LEN
         h2 = P.FLOAT_H / 2
-        pts = [(10, zk - h2), (yc, zc - h2), (yg, h2),
-               (-yg, h2), (-yc, zc - h2), (-10, zk - h2)]
+        pts = [(10, (zk - 450) * kz + 0), (yc * ky, (zc - 450) * kz),
+               (yg * ky, h2), (-yg * ky, h2),
+               (-yc * ky, (zc - 450) * kz), (-10, (zk - 450) * kz)]
+        pts = [(py, max(pz, -h2)) for (py, pz) in pts]
         secs.append((x, pts))
     hull_f = loft_sections(secs)
 
-    # bevel the mating face so it sits FLUSH on the hull bottom in road
-    # pose: cut with the hull-bottom plane transformed to float-local
-    slope = P.BOTTOM_SLOPE
-    off = (P.POD_ROAD[1] + 40 * slope - slope * P.POD_ROAD[0])
-    theta = math.degrees(math.atan(slope))
-    bev = box(P.FLOAT_LEN + 800, 1600, 3200,
-              (P.FLOAT_X - P.FLOAT_LEN / 2 - 400, -1600, -1600))
-    bev.rotate(Vector(P.FLOAT_X, 0, 0), Vector(1, 0, 0), theta)
-    bev.translate(Vector(0, off, 0))
-    hull_f = hull_f.cut(bev)
-
-    # wheel wells: the discs sit half-recessed in the deck
+    # OPEN WHEEL BAYS: at each station the float body is cut through -
+    # only the flip tube spans the bay, so the wheel nests inside the
+    # envelope in either pose (local frame: x along, y across, z up)
     for dx in P.WHEEL_XS:
-        hull_f = hull_f.cut(Part.makeCylinder(
-            350, P.FLOAT_H / 2, Vector(P.FLOAT_X + dx, P.WHEEL_DROP,
-                                       P.FLOAT_H / 2 - 130),
-            Vector(0, 0, 1)))
+        hull_f = hull_f.cut(box(
+            P.WELL_L, P.WELL_W, P.FLOAT_H + 200,
+            (P.FLOAT_X + dx - P.WELL_L / 2, -P.WELL_W / 2,
+             -P.FLOAT_H / 2 - 100)))
     hull_f.Placement = place.multiply(hull_f.Placement)
 
     # solar strips on the deck, in the gaps between the wheels
     strips = []
-    for x0 in (P.FLOAT_X - 1480, P.FLOAT_X + 200):
-        s = box(580, 260, 14, (x0, -130, P.FLOAT_H / 2))
+    for x0 in (P.FLOAT_X - 2600, P.FLOAT_X + 1600):
+        s = box(P.DINGHY_PANEL[0], P.FLOAT_W - 90, 12,
+                (x0, -(P.FLOAT_W - 90) / 2, P.FLOAT_H / 2))
         s.Placement = place.multiply(s.Placement)
         strips.append(s)
 
-    # caster wheels: stub axle along the deck normal, disc half-recessed
-    # in the deck well, axle dropped so wheels (not float) touch ground
+    # MANUAL FLIP WHEELS: a curved arm swings 180 deg about a tube that
+    # spans the open bay. flip 0 = wheel up through the bay (sea),
+    # flip 180 = wheel down in the bay, protruding just enough to roll.
+    # A spring pin at each end of the swing - no electrics.
+    tube_yz, up_yz, down_yz = P.flip_points((ty, tz))
+    axle = up_yz if flip < 90 else down_yz
     forks, tires, rims = [], [], []
-    h2 = P.FLOAT_H / 2
     for dx in P.WHEEL_XS:
         wx = P.FLOAT_X + dx
-        wz = h2 + P.AXLE_STANDOFF
-        ax = Part.makeCylinder(60, 170, Vector(wx, P.WHEEL_DROP, wz - 150),
-                               Vector(0, 0, 1))
-        ax.Placement = place.multiply(ax.Placement)
-        forks.append(ax)
-        t = Part.makeTorus((P.WHEEL_DIA - P.WHEEL_W) / 2, P.WHEEL_W / 2,
-                           Vector(wx, P.WHEEL_DROP, wz), Vector(0, 0, 1))
-        t.Placement = place.multiply(t.Placement)
-        tires.append(t)
-        r = Part.makeCylinder(P.HUB_DIA / 2, P.WHEEL_W + 40,
-                              Vector(wx, P.WHEEL_DROP,
-                                     wz - (P.WHEEL_W + 40) / 2),
-                              Vector(0, 0, 1))
-        r.Placement = place.multiply(r.Placement)
-        rims.append(r)
-
+        # the tube across the bay
+        forks.append(rod((wx - P.WELL_L / 2 - 40, tube_yz[0], tube_yz[1]),
+                         (wx + P.WELL_L / 2 + 40, tube_yz[0], tube_yz[1]),
+                         P.FLIP_TUBE_D))
+        # the curved arm: two segments via a knee, tube -> axle
+        ky = (tube_yz[0] + axle[0]) / 2
+        kz = (tube_yz[1] + axle[1]) / 2 + (90 if flip < 90 else -90)
+        forks.append(rod((wx, tube_yz[0], tube_yz[1]), (wx, ky, kz),
+                         P.FLIP_ARM_D))
+        forks.append(rod((wx, ky, kz), (wx, axle[0], axle[1]),
+                         P.FLIP_ARM_D))
+        # spring pin boss
+        forks.append(Part.makeCylinder(
+            26, 90, Vector(wx - 45, tube_yz[0], tube_yz[1] + 60),
+            Vector(1, 0, 0)))
+        # wheel: plane vertical, axle along y? no - axle along the arm
+        # normal; the wheel rolls along x, so its axis is y
+        tires.append(Part.makeTorus(
+            (P.WHEEL_DIA - P.WHEEL_W) / 2, P.WHEEL_W / 2,
+            Vector(wx, axle[0], axle[1]), Vector(0, 1, 0)))
+        rims.append(Part.makeCylinder(
+            P.HUB_DIA / 2, P.WHEEL_W + 40,
+            Vector(wx, axle[0] - (P.WHEEL_W + 40) / 2, axle[1]),
+            Vector(0, 1, 0)))
     # in-float hydraulic drive (docs/wheels.md): gasketed deck hatch
     # over the machinery bay, pump unit inside, hoses to each hub,
     # goldenrod hub-motor caps
     bx = P.FLOAT_X + P.MOTOR_BAY_DX
-    hatch = box(P.MOTOR_BAY_L + 20, P.MOTOR_BAY_W + 20, 25,
-                (bx - (P.MOTOR_BAY_L + 20) / 2,
-                 -(P.MOTOR_BAY_W + 20) / 2, h2))
-    for sx in (-1, 1):
-        for sy in (-1, 1):
-            hatch = hatch.fuse(box(60, 30, 35,
-                (bx + sx * (P.MOTOR_BAY_L / 2 - 40) - 30,
-                 sy * (P.MOTOR_BAY_W / 2 + 5) - 15, h2)))
+    hatch = box(P.MOTOR_BAY_L + 20, P.FLOAT_W - 110, 22,
+                (bx - (P.MOTOR_BAY_L + 20) / 2, -(P.FLOAT_W - 110) / 2,
+                 P.FLOAT_H / 2 + 12))
     hatch.Placement = place.multiply(hatch.Placement)
 
-    hyd = []
-    unit = Part.makeCylinder(85, 320, Vector(bx - 260, 0, h2 - 320),
-                             Vector(1, 0, 0))          # 48V motor
-    hyd.append(unit.fuse(box(240, 220, 200,
-                             (bx + 80, -110, h2 - 300))))  # pump+manifold
-    for dx in P.WHEEL_XS:                              # hoses to the hubs
-        wx = P.FLOAT_X + dx
-        hyd.append(rod((bx, 0, h2 + 12), (wx, P.WHEEL_DROP, h2 + 12), 25))
-        hyd.append(Part.makeCylinder(                  # hub motor cap
-            62, 45, Vector(wx, P.WHEEL_DROP,
-                           h2 + P.AXLE_STANDOFF + (P.WHEEL_W + 40) / 2),
-            Vector(0, 0, 1)))
+    hyd = [Part.makeCylinder(85, 320, Vector(bx - 260, -60, 0),
+                             Vector(1, 0, 0))]         # 48V motor inside
+    hyd.append(box(240, 200, 220, (bx + 80, -160, -110)))
     hydraulics = Part.makeCompound(hyd)
     hydraulics.Placement = place.multiply(hydraulics.Placement)
 
@@ -380,7 +388,7 @@ def build_float(pod, roll):
     gz = P.JET_Z_LOCAL
     thr = []
     for sgn in (-1, 1):
-        gy = sgn * 170                       # flat midbody side face
+        gy = sgn * (P.FLOAT_W / 2 * 0.85)    # slim float side face
         # recessed dark panel + frame, flush with the side
         thr.append(box(P.JET_GRID_L + 60, 16, P.JET_GRID_H + 60,
                        (gx - P.JET_GRID_L / 2 - 30, gy - 8 * sgn - 8,
@@ -406,74 +414,11 @@ def build_float(pod, roll):
     thruster.Placement = place.multiply(thruster.Placement)
 
     # low-profile boxes over the flat wheels: water pose only
-    boxes = []
-    if abs(roll) < 45:
-        for dx in P.WHEEL_XS:
-            wx = P.FLOAT_X + dx
-            bw = P.WHEELBOX_Y1 - P.WHEELBOX_Y0
-            outer = box(P.WHEELBOX_L, bw, P.WHEELBOX_H,
-                        (wx - P.WHEELBOX_L / 2, P.WHEELBOX_Y0, h2))
-            inner = box(P.WHEELBOX_L - 50, bw + 100, P.WHEELBOX_H - 25,
-                        (wx - (P.WHEELBOX_L - 50) / 2, P.WHEELBOX_Y0 + 25,
-                         h2 - 20))
-            b = outer.cut(inner)
-            b.Placement = place.multiply(b.Placement)
-            boxes.append(b)
+    boxes = []                        # gone: the open bays replaced the
+                                      # wheel covers
     return hull_f, Part.makeCompound(strips), Part.makeCompound(forks), \
         tires, rims, (Part.makeCompound(boxes) if boxes else None), \
         hatch, hydraulics, thruster
-
-
-def build_arms(phi, trav=0.0, dx=0.0):
-    """The ORIGINAL rigid welded arm - straight segments cut at angles,
-    one 90 deg swing about the shoulder - with the shoulder riding on a
-    transverse RAIL. `trav` is the carriage position: 0 = inboard
-    (alongside/stow), CARRIAGE_TRAVEL = sea stance. Starboard, posed."""
-    c = math.cos(math.radians(phi))
-    s = math.sin(math.radians(phi))
-
-    def rot(p):
-        vy, vz = p[0] - P.SH_Y, p[1] - P.SH_Z
-        return (P.SH_Y + trav + vy * c - vz * s, P.SH_Z + vy * s + vz * c)
-
-    pts = [rot(p) for p in P.ARM_POLY_ROAD]
-    parts, drives = [], []
-    rb, rh = P.CARRIAGE_RAIL
-    for ax0 in P.ARM_X:
-        ax = ax0 + dx
-        # crane-style outrigger: the BEAM slides through a sleeve on
-        # the spine. At sea it cantilevers 2 m out; stowed it runs back
-        # across the centreline under the hull (stations staggered, so
-        # port and starboard beams pass each other).
-        rb, rh = P.CARRIAGE_RAIL
-        beam_len = P.CARRIAGE_TRAVEL + 420
-        outer = P.SH_Y + trav + 140
-        parts.append(box(rb, beam_len, rh,
-                         (ax - rb / 2, outer - beam_len, P.SH_Z - rh / 2)))
-        # the sleeve, fixed on the spine
-        parts.append(box(rb + 50, 320, rh + 50,
-                         (ax - (rb + 50) / 2, P.SH_Y - 160,
-                          P.SH_Z - (rh + 50) / 2)))
-        # 24 V leadscrew drive on the sleeve
-        drives.append(Part.makeCylinder(
-            55, 120, Vector(ax, P.SH_Y - 220, P.SH_Z + rh / 2 + 40),
-            Vector(0, 1, 0)))
-        # shoulder rotation drive at the beam's outer end - the ONLY
-        # pivot of the original fixed arm
-        drives.append(Part.makeCylinder(
-            P.ARM_DRIVE_D / 2, P.ARM_T + 120,
-            Vector(ax - (P.ARM_T + 120) / 2, P.SH_Y + trav, P.SH_Z),
-            Vector(1, 0, 0)))
-        # the original welded segments, gussets, and float foot
-        for a_, b_ in zip(pts, pts[1:]):
-            parts.append(rod((ax, a_[0], a_[1]), (ax, b_[0], b_[1]), P.ARM_T))
-        for j in pts[1:-1]:
-            parts.append(box(P.ARM_T + 40, 130, 130,
-                             (ax - (P.ARM_T + 40) / 2, j[0] - 65, j[1] - 65)))
-        parts.append(box(P.ARM_T + 80, 170, 60,
-                         (ax - (P.ARM_T + 80) / 2, pts[-1][0] - 85,
-                          pts[-1][1] - 30)))
-    return parts, drives
 
 
 def build_curtains(deg):
@@ -520,94 +465,77 @@ def build_curtains(deg):
 
 
 def build_hangar(phi, coupled=True):
-    """The U-frame hangar as its own vehicle: two spine beams along the
-    hull sides carrying the four arm shoulders, joined aft of the
-    transom by the bight, which carries the drawbar.
-
-    phi     arm swing, 0 = floats under the hull (road),
-            90 = splayed (dinghy / approach pose)
-    coupled False shifts the whole frame aft and out, the way it sits
-            while the boat is being driven in
-
-    Returns (frame, locks) — the arms, floats and wheels stay with
-    build_float()/build_arms(), which the hangar carries."""
-    sy = P.hangar_spine_y()
-    sb, sh = P.HANGAR_SPINE
-    x0, x1 = P.HANGAR_SPINE_X
+    """The docking gear: spike rails in the hull recesses, the electric
+    extenders, and the bight + drawbar joining the float tails.
+    phi 0 = docked, 90 = extended to the sea stance.
+    Returns (frame, locks)."""
     parts, locks = [], []
+    pod = P.pod_at(phi)
 
-    for s_ in (-1, 1):
-        # spine beam, hollow alu box
-        beam = box(x1 - x0, sb, sh, (x0, s_ * sy - sb / 2, P.LOCK_Z - sh / 2))
-        beam = beam.cut(box(x1 - x0 - 2 * 8, sb - 16, sh - 16,
-                            (x0 + 8, s_ * sy - sb / 2 + 8,
-                             P.LOCK_Z - sh / 2 + 8)))
-        parts.append(beam)
-        # the spine runs aft to the bight
-        parts.append(box(x0 - P.HANGAR_BIGHT_X, sb, sh,
-                         (P.HANGAR_BIGHT_X, s_ * sy - sb / 2,
-                          P.LOCK_Z - sh / 2)))
-        # the shoulder drives live on build_arms(); the spine only
-        # carries their mounting bosses
-        for ax in P.ARM_X:
-            parts.append(Part.makeCylinder(
-                60, sb + 40, Vector(ax - (sb + 40) / 2, s_ * sy, P.SH_Z),
-                Vector(1, 0, 0)))
+    # ---- spike rails: two per side in the recess, tapered forward.
+    # The float slides on from astern; the taper closes the fit over
+    # the last SPIKE_TAPER mm, then the bayonet lock pins it.
+    for sy in (-1, 1):
+        ry = sy * (P.STEM_HW + 35)
+        for rz in (P.POD_DOCKED[1] + 150, P.POD_DOCKED[1] - 150):
+            parts.append(rod((100, ry, rz), (100 + P.SPIKE_L, ry, rz),
+                             P.SPIKE_D))
+            locks.append(Part.makeCone(
+                P.SPIKE_D / 2, 8, P.SPIKE_TAPER,
+                Vector(100 + P.SPIKE_L, ry, rz), Vector(1, 0, 0)))
+        # bayonet lock gearmotor at the rail root
+        locks.append(Part.makeCylinder(
+            45, 110, Vector(160, ry, P.POD_DOCKED[1]), Vector(-1, 0, 0)))
 
-    # the bight: cross beam aft of the transom, carrying the drawbar
+    # ---- electric extenders: campervan-style scissors, hull to float
+    if phi > 5:
+        for sy in (-1, 1):
+            hull_face = sy * P.STEM_HW
+            float_face = sy * (pod[0] - P.FLOAT_W / 2)
+            for ex in P.EXT_STATIONS:
+                for (x0, x1) in ((ex - 260, ex + 260), (ex + 260, ex - 260)):
+                    parts.append(rod((x0, hull_face, P.POD_DOCKED[1]),
+                                     (x1, float_face, pod[1]), 45))
+                # the leadscrew along the scissor
+                parts.append(rod((ex, hull_face, P.POD_DOCKED[1] + 90),
+                                 (ex, float_face, pod[1] + 90), 26))
+
+    # ---- bight + drawbar off the float tails (the trailer's coupler)
     bb, bh = P.HANGAR_BIGHT
-    parts.append(box(bb, 2 * sy + sb, bh,
-                     (P.HANGAR_BIGHT_X - bb, -sy - sb / 2, P.LOCK_Z - bh / 2)))
-    # ---- the coupler to the car: an A-frame off the bight ----
+    by = pod[0] + 450
+    parts.append(box(bb, 2 * by, bh,
+                     (P.HANGAR_BIGHT_X - bb, -by, P.POD_DOCKED[1] - bh / 2)))
+    for sy in (-1, 1):                       # ties into each float tail
+        parts.append(rod((P.HANGAR_BIGHT_X - bb / 2, sy * pod[0],
+                          P.POD_DOCKED[1]),
+                         (60, sy * pod[0], pod[1]), 70))
     nose_x = P.HANGAR_BIGHT_X - P.DRAWBAR_LEN
     nose_z = P.GROUND_Z + P.COUPLING_H
-    for s_ in (-1, 1):                       # the two legs of the A
-        parts.append(rod((P.HANGAR_BIGHT_X - bb / 2, s_ * (sy - 200),
-                          P.LOCK_Z),
+    for s_ in (-1, 1):
+        parts.append(rod((P.HANGAR_BIGHT_X - bb / 2, s_ * (by - 200),
+                          P.POD_DOCKED[1]),
                          (nose_x + 260, 0, nose_z + 40), P.DRAWBAR_TUBE))
     parts.append(rod((nose_x + 300, 0, nose_z + 40),
                      (nose_x, 0, nose_z), P.DRAWBAR_TUBE))
-    # coupling head and the ball socket
     parts.append(box(220, 150, 130, (nose_x - 40, -75, nose_z - 50)))
     parts.append(Part.makeSphere(P.COUPLING_BALL / 2,
                                  Vector(nose_x + 30, 0, nose_z - 55)))
-    # safety chain eyes
     for s_ in (-1, 1):
         parts.append(Part.makeTorus(28, 7, Vector(nose_x + 120, s_ * 90,
                                                   nose_z - 20),
                                     Vector(0, 1, 0)))
-    # jockey wheel, stowed up
     parts.append(rod((nose_x + 420, 150, nose_z + 60),
                      (nose_x + 420, 150, nose_z - 300), 60))
     parts.append(Part.makeCylinder(
         P.JOCKEY_D / 2, 70, Vector(nose_x + 420, 115, nose_z - 300),
         Vector(0, 1, 0)))
 
-    # four cone-and-bayonet locks, pointing INBOARD off the spines
-    for (lx, ly, lz) in P.lock_points():
-        s_ = 1 if ly > 0 else -1
-        root = s_ * (sy - sb / 2)
-        cone = Part.makeCone(P.LOCK_CONE_D1 / 2, P.LOCK_CONE_D0 / 2,
-                             P.LOCK_CONE_L, Vector(lx, root, lz),
-                             Vector(0, -s_, 0))
-        locks.append(cone)
-        # the T-head that turns 90 deg behind the keeper in the hull
-        tip = root - s_ * P.LOCK_CONE_L
-        locks.append(Part.makeCylinder(P.LOCK_TWIST_D / 2, 90,
-                                       Vector(lx, tip, lz), Vector(0, -s_, 0)))
-        locks.append(box(30, 120, 26, (lx - 15, tip - s_ * 90 - 60, lz - 13)))
-        # 24 V worm gearmotor on the outboard face
-        md, ml = P.LOCK_MOTOR
-        locks.append(Part.makeCylinder(
-            md / 2, ml, Vector(lx, s_ * (sy + sb / 2), lz), Vector(0, s_, 0)))
-
-    if not coupled:                      # stood off, ready to take the boat
-        off = Placement(Vector(P.HANGAR_STANDOFF, 0, P.hangar_standoff_z()),
-                           Rotation())
+    if not coupled:
+        off = Placement(Vector(P.HANGAR_STANDOFF, 0,
+                               P.hangar_standoff_z()), Rotation())
         for grp in (parts, locks):
             for shp in grp:
                 shp.Placement = off.multiply(shp.Placement)
-
     return Part.makeCompound(parts), Part.makeCompound(locks)
 
 
@@ -1248,9 +1176,6 @@ def build_mode(mode):
     roll = 90 - cfg["phi"]          # rigid arm: roll locked to swing
     (fl, strips, forks, tires, rims, wboxes,
      hatch, hydraulics, thruster) = build_float(pod, roll)
-    arms_s, drv_s = build_arms(cfg["phi"], cfg.get("trav", 0.0))
-    arms_p, drv_p = build_arms(cfg["phi"], cfg.get("trav", 0.0),
-                               P.ARM_STAGGER)
     hframe, hlocks = build_hangar(cfg["phi"], cfg.get("coupled", True))
     add("HangarFrame", hframe, (0.55, 0.57, 0.60), group=g_gear)
     add("HangarLocks", hlocks, (0.80, 0.65, 0.20), group=g_gear)
@@ -1279,12 +1204,6 @@ def build_mode(mode):
             group=g_gear)
         if wboxes:
             add(f"WheelBoxes{side}", m(wboxes), WHITE, group=g_gear)
-        arms_side = arms_p if mir else arms_s
-        drv_side = drv_p if mir else drv_s
-        for i, a in enumerate(arms_side):
-            add(f"Arm{side}{i}", m(a), GRAY, group=g_gear)
-        for i, a in enumerate(drv_side):
-            add(f"ArmDrive{side}{i}", m(a), STEEL, group=g_gear)
         for i, t in enumerate(tires):
             add(f"Tire{side}{i}", m(t), DARK, group=g_gear)
         for i, r in enumerate(rims):
