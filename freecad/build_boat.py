@@ -481,9 +481,12 @@ def build_hangar(phi, coupled=True, tow="sea"):
         for rz in (P.POD_DOCKED[1] + 150, P.POD_DOCKED[1] - 150):
             parts.append(rod((100, ry, rz), (100 + P.SPIKE_L, ry, rz),
                              P.SPIKE_D))
+            # taper points AFT: it meets the float fork sliding in from
+            # astern, and it must never enter the solid bow at x 6000
             locks.append(Part.makeCone(
                 P.SPIKE_D / 2, 8, P.SPIKE_TAPER,
-                Vector(100 + P.SPIKE_L, ry, rz), Vector(1, 0, 0)))
+                Vector(100 + P.SPIKE_L - P.SPIKE_TAPER, ry, rz),
+                Vector(1, 0, 0)))
         # bayonet lock gearmotor at the rail root
         locks.append(Part.makeCylinder(
             45, 110, Vector(160, ry, P.POD_DOCKED[1]), Vector(-1, 0, 0)))
@@ -633,48 +636,6 @@ def build_frame():
                          (7150, sgn * 330, 800), P.FRAME_TUBE))
         parts.append(rod((7150, sgn * 330, 800), (7215, 0, 840),
                          P.FRAME_TUBE))
-    return Part.makeCompound(parts)
-
-
-def build_tow(pose):
-    """STERN arch: sea gantry (anchor roller, winch fairlead, lights) /
-    extensible drawbar for stern-first towing. Pin-locked both ways."""
-    deg = P.ARCH_SEA_DEG if pose == "sea" else P.ARCH_LAND_DEG
-    ax, az = P.arch_apex(deg)
-    parts = []
-    for sgn in (-1, 1):                       # legs, pivot -> apex yoke
-        parts.append(rod((P.ARCH_PIVOT_X, sgn * P.ARCH_PIVOT_Y,
-                          P.ARCH_PIVOT_Z), (ax, sgn * 170, az), P.ARCH_TUBE))
-        parts.append(Part.makeCylinder(       # pivot boss + lock-pin ear
-            P.ARCH_TUBE / 2 + 26, 160,
-            Vector(P.ARCH_PIVOT_X, sgn * P.ARCH_PIVOT_Y - 80,
-                   P.ARCH_PIVOT_Z), Vector(0, 1, 0)))
-        parts.append(box(130, 40, 230,
-                         (P.ARCH_PIVOT_X - 65, sgn * P.ARCH_PIVOT_Y - 140,
-                          P.ARCH_PIVOT_Z - 115)))
-    parts.append(rod((ax, -170, az), (ax, 170, az), P.ARCH_TUBE))
-    for sgn in (-1, 1):                       # root gussets
-        parts.append(Part.Face(wire([
-            (P.ARCH_PIVOT_X, sgn * P.ARCH_PIVOT_Y, P.ARCH_PIVOT_Z - 150),
-            (P.ARCH_PIVOT_X, sgn * P.ARCH_PIVOT_Y, P.ARCH_PIVOT_Z + 150),
-            (P.ARCH_PIVOT_X + (ax - P.ARCH_PIVOT_X) * 0.32,
-             sgn * (P.ARCH_PIVOT_Y + (170 - P.ARCH_PIVOT_Y) * 0.32),
-             P.ARCH_PIVOT_Z + (az - P.ARCH_PIVOT_Z) * 0.32)])).extrude(
-                 Vector(0, sgn * 22, 0)))
-    if pose == "sea":
-        # gantry fit-out: hanging beam, anchor sheave, nav-light post
-        parts.append(rod((ax - 40, -520, az - 90), (ax - 40, 520, az - 90),
-                         P.ARCH_TUBE - 15))
-        for sgn in (-1, 1):
-            parts.append(rod((ax, sgn * 170, az), (ax - 40, sgn * 520,
-                                                   az - 90), 60))
-        parts.append(Part.makeCylinder(70, 90, Vector(ax - 40, -45, az - 90),
-                                       Vector(0, 1, 0)))     # anchor sheave
-        parts.append(rod((ax, 0, az), (ax, 0, az + 260), 55))  # light post
-    else:
-        # land: the arch simply parks low. The CAR COUPLING lives on the
-        # hangar's drawbar now - one connector, not two.
-        parts.append(rod((ax, -170, az), (ax, 170, az), P.ARCH_TUBE - 15))
     return Part.makeCompound(parts)
 
 
@@ -1233,7 +1194,6 @@ def build_mode(mode):
             add(f"Rim{side}{i}", m(r), STEEL, group=g_gear)
 
     add("Frame", build_frame(), (0.42, 0.44, 0.47))
-    add("SternArch", build_tow(cfg["tow"]), (0.42, 0.44, 0.47))
     add("SternGear", build_stern_gear(), (0.55, 0.57, 0.6))
     aft_s, aft_d, aft_g = build_aft_entry(cfg["tow"] == "sea",
                                           cfg["curt"] > 5)

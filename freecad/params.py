@@ -1027,7 +1027,7 @@ STERNPOD_LEN = 700
 MODES = {
     "road":    dict(phi=0,  flip=180, curt=0, tow="land", lift=0, rails=0),
     "launch":  dict(phi=0, flip=180, curt=0, tow="land", lift=0, rails=0),
-    "harbor":  dict(phi=0, flip=0, curt=0, tow="sea",  lift=0, rails=0),
+    "harbor":  dict(phi=0, flip=180, curt=0, tow="sea", lift=0, rails=0),
     "cruise":  dict(phi=PHI_WATER, curt=78, tow="sea", lift=0, rails=0),
     "anchor":  dict(phi=PHI_WATER, curt=78, tow="sea", lift=0, rails=0),
     "deck":    dict(phi=PHI_WATER, curt=78, tow="sea", lift=0, rails=90),
