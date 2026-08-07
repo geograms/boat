@@ -322,7 +322,7 @@ def build_float(pod, roll, flip=0.0):
     for dx in P.WHEEL_XS:
         hull_f = hull_f.cut(box(
             P.WELL_L, P.WELL_W, P.FLOAT_H + 200,
-            (P.FLOAT_X + dx - P.WELL_L / 2, -P.WELL_W / 2,
+            (P.FLOAT_X + dx - P.WELL_L / 2, -P.WELL_W / 2 + 25,
              -P.FLOAT_H / 2 - 100)))
     hull_f.Placement = place.multiply(hull_f.Placement)
 
@@ -347,9 +347,10 @@ def build_float(pod, roll, flip=0.0):
         forks.append(rod((wx - P.WELL_L / 2 - 40, tube_yz[0], tube_yz[1]),
                          (wx + P.WELL_L / 2 + 40, tube_yz[0], tube_yz[1]),
                          P.FLIP_TUBE_D))
-        # the curved arm: two segments via a knee, tube -> axle
-        ky = (tube_yz[0] + axle[0]) / 2
-        kz = (tube_yz[1] + axle[1]) / 2 + (90 if flip < 90 else -90)
+        # the curved arm bulges OUTBOARD: the 180-deg swing passes the
+        # float's outboard side, which is the only clear volume
+        ky = tube_yz[0] + 140
+        kz = (tube_yz[1] + axle[1]) / 2
         forks.append(rod((wx, tube_yz[0], tube_yz[1]), (wx, ky, kz),
                          P.FLIP_ARM_D))
         forks.append(rod((wx, ky, kz), (wx, axle[0], axle[1]),
@@ -492,27 +493,37 @@ def build_hangar(phi, coupled=True):
         for sy in (-1, 1):
             hull_face = sy * P.STEM_HW
             float_face = sy * (pod[0] - P.FLOAT_W / 2)
+            mid_y = (hull_face + float_face) / 2
             for ex in P.EXT_STATIONS:
-                for (x0, x1) in ((ex - 260, ex + 260), (ex + 260, ex - 260)):
-                    parts.append(rod((x0, hull_face, P.POD_DOCKED[1]),
-                                     (x1, float_face, pod[1]), 45))
-                # the leadscrew along the scissor
-                parts.append(rod((ex, hull_face, P.POD_DOCKED[1] + 90),
-                                 (ex, float_face, pod[1] + 90), 26))
+                # a proper X: two crossed 70 mm links and a centre pin
+                for (x0, x1) in ((ex - 330, ex + 330), (ex + 330, ex - 330)):
+                    parts.append(rod((x0, hull_face, pod[1]),
+                                     (x1, float_face, pod[1]), 70))
+                parts.append(Part.makeCylinder(
+                    60, 190, Vector(ex - 95, mid_y, pod[1]),
+                    Vector(1, 0, 0)))
+                # 24 V leadscrew driving the X
+                parts.append(rod((ex, hull_face, pod[1] + 120),
+                                 (ex, float_face, pod[1] + 120), 30))
+                parts.append(Part.makeCylinder(
+                    50, 110, Vector(ex, hull_face, pod[1] + 120),
+                    Vector(0, sy, 0)))
 
-    # ---- bight + drawbar off the float tails (the trailer's coupler)
+    # ---- bight + drawbar: a FIXED, small triangle at docked width.
+    # It belongs to the ROAD function; the extended floats leave it
+    # alone (the ties couple only when docked).
     bb, bh = P.HANGAR_BIGHT
-    by = pod[0] + 450
+    by = P.POD_DOCKED[0] + P.FLOAT_W / 2
     parts.append(box(bb, 2 * by, bh,
                      (P.HANGAR_BIGHT_X - bb, -by, P.POD_DOCKED[1] - bh / 2)))
-    for sy in (-1, 1):                       # ties into each float tail
-        parts.append(rod((P.HANGAR_BIGHT_X - bb / 2, sy * pod[0],
+    for sy in (-1, 1):                       # ties to the DOCKED tails
+        parts.append(rod((P.HANGAR_BIGHT_X - bb / 2, sy * P.POD_DOCKED[0],
                           P.POD_DOCKED[1]),
-                         (60, sy * pod[0], pod[1]), 70))
+                         (60, sy * P.POD_DOCKED[0], P.POD_DOCKED[1]), 70))
     nose_x = P.HANGAR_BIGHT_X - P.DRAWBAR_LEN
     nose_z = P.GROUND_Z + P.COUPLING_H
-    for s_ in (-1, 1):
-        parts.append(rod((P.HANGAR_BIGHT_X - bb / 2, s_ * (by - 200),
+    for s_ in (-1, 1):                       # small A-frame, fixed
+        parts.append(rod((P.HANGAR_BIGHT_X - bb / 2, s_ * (by - 120),
                           P.POD_DOCKED[1]),
                          (nose_x + 260, 0, nose_z + 40), P.DRAWBAR_TUBE))
     parts.append(rod((nose_x + 300, 0, nose_z + 40),

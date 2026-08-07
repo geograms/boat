@@ -107,23 +107,23 @@ PANEL_T = 4
 # ship is full width to the waterline for stability forward. The two
 # notches beside the stem are where the floats live: SAME LEVEL as the
 # hull, bottoms flush, so the docked boat is one clean barge body.
-STEM_HW = 900                      # half-beam of the stem below the step
+STEM_HW = 850                      # half-beam of the stem below the step
 T_STEP_Z = 600                     # underside of the T's wings
 FLOAT_LEN = 6000                   # nose at x 6000; solid bow ahead
-FLOAT_W = 350                      # SLIM: the stem keeps enough beam to
-                                   # float stably with the floats away
+FLOAT_W = 400                      # slim - but the honest wheel-bay
+                                   # volume needed 50 mm back for the
+                                   # righting reserve
 FLOAT_H = 600                      # bottom flush with the keel plane
 FLOAT_X = 3000                     # floats span x 0 .. 6000
 
-POD_DOCKED = (STEM_HW + FLOAT_W / 2, FLOAT_H / 2)   # (1075, 300): in the
-                                                    # notch, outer face
-                                                    # flush at 1250
-POD_SEA = (POD_DOCKED[0] + 1800, FLOAT_H / 2)       # extended 1.8 m -
-                                                    # the slim float needs
-                                                    # the extra lever
+DOCK_CLEAR = 10                    # float top to the wing underside
+POD_DOCKED = (STEM_HW + FLOAT_W / 2, FLOAT_H / 2 - DOCK_CLEAR)
+POD_SEA = (POD_DOCKED[0] + 2000, POD_DOCKED[1])     # extended 2.0 m out
 EXT_VEC = (POD_SEA[0] - POD_DOCKED[0], 0.0)
 EXT_STROKE = EXT_VEC[0]
-EXT_STATIONS = (900, 4500)         # two scissor units per side
+EXT_STATIONS = (2675, 4425)        # midway BETWEEN the wheel
+                                   # stations - the strong bays of
+                                   # the float, clear of the wells
 
 RECESS_DEPTH = FLOAT_W             # the notch swallows the whole float
 SPIKE_L = 5800                     # the two guide rails per side
@@ -162,13 +162,15 @@ WHEEL_XS = (-1200, 550, 2300)      # along the float, from FLOAT_X:
                                    # world 1800/3550/5300; centroid
                                    # 3550 -> ~90 kg on the coupling
 WELL_L = 700                       # bay opening along the float
-WELL_W = 240                       # bay opening across: tire 205 + play
+WELL_W = 300                       # bay opening across: the wheel
+                                   # swings IN through the outboard
+                                   # side, so it needs lead-in play
 FLIP_TUBE_D = 70                   # the tube the arm swings on
 FLIP_ARM_D = 60
 FLIP_ARM_LEN = 516                 # tube centre to axle
-AXLE_DOWN_Z = FLOAT_H - FLIP_ARM_LEN               # 84, in the bay
-GROUND_Z = AXLE_DOWN_Z - WHEEL_DIA / 2             # -250: the keel rides
-                                                   # 250 mm over the road
+AXLE_DOWN_Z = POD_DOCKED[1] + FLOAT_H / 2 - FLIP_ARM_LEN   # 74, in the bay
+GROUND_Z = AXLE_DOWN_Z - WHEEL_DIA / 2             # -260: the keel rides
+                                                   # 260 mm over the road
 WHEEL_DROP = 60                    # legacy name, still read by ga_drawing
 
 
@@ -1203,7 +1205,7 @@ def checks(verbose=True, strict=True):
     wheel_low_water = wup[1] - WHEEL_DIA / 2
     disp = displacement_kg()
     # reserve: the slim prismatic float minus the three open wheel bays
-    wells_mm3 = 3 * WELL_L * WELL_W * FLOAT_W
+    wells_mm3 = 3 * WELL_L * WELL_W * FLOAT_H
     reserve_kg = (FLOAT_LEN * FLOAT_W * FLOAT_H * 0.80
                   - wells_mm3) * 1e-6
     m_right = reserve_kg * 9.81 * POD_WATER[0] / 1e6
@@ -1596,7 +1598,7 @@ def checks(verbose=True, strict=True):
     tube, up, down = flip_points(POD_DOCKED)
     dg_beam, dg_mass, dg_free = dinghy_stats()
     hangar_kg2 = hangar_mass()
-    well_kg = 2 * 3 * WELL_L * WELL_W * FLOAT_W / 1e9 * 1000
+    well_kg = 2 * 3 * WELL_L * WELL_W * FLOAT_H / 1e9 * 1000
     float_buoy_net = float_buoyancy() - well_kg
     # docked float nests: outer face inside the hull line
     assert POD_DOCKED[0] + FLOAT_W / 2 <= HULL_BEAM / 2 + 5, \
@@ -1615,7 +1617,13 @@ def checks(verbose=True, strict=True):
     assert GROUND_Z > -448, "flip wheels should sit LOWER than the old gear"
     assert abs(down[0]) <= HULL_BEAM / 2 - WHEEL_W / 2 - 60, \
         "road wheel outside the hull footprint"
-    # the up wheel rises THROUGH the open bay - it may share it
+    # THE FLIP SEQUENCE IS FORCED BY THE HULL: docked, the T wing sits
+    # directly over the float, so a wheel cannot stand up there. Wheels
+    # flip only while the float is EXTENDED (clear water above), then
+    # the scissors retract with the wheels already down.
+    _t3, up_dock, _d3 = flip_points(POD_DOCKED)
+    assert up_dock[1] + WHEEL_DIA / 2 > T_STEP_Z, \
+        "if this fails the wing grew - revisit the flip sequence note"
     # wells: inside the float, clear of the extender stations
     for wx in WHEEL_XS:
         for ex in EXT_STATIONS:
