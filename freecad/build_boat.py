@@ -1340,7 +1340,8 @@ def main():
         Gui.SendMsgToActiveView("ViewFit")
 
 
-# importable: areas.py and beauty_shots.py pull the builders in without
-# rebuilding every mode
-if __name__ == "__main__":
+# Importable: areas.py and beauty_shots.py pull the builders in without
+# rebuilding every mode. FreeCAD does NOT set __name__ to "__main__" for
+# CLI scripts (it uses the filename), so detect direct launch from argv.
+if any(a.endswith("build_boat.py") for a in sys.argv):
     main()
