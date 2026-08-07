@@ -5,3 +5,4 @@ export/
 __pycache__/
 *.pyc
 freecad/*.FCBak
+STL/
