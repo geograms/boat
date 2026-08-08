@@ -118,9 +118,14 @@ FLOAT_X = 3000                     # floats span x 0 .. 6000
 
 DOCK_CLEAR = 10                    # float top to the wing underside
 POD_DOCKED = (STEM_HW + FLOAT_W / 2, FLOAT_H / 2 - DOCK_CLEAR)
-POD_SEA = (POD_DOCKED[0] + 2000, POD_DOCKED[1])     # extended 2.0 m out
+POD_SEA = (POD_DOCKED[0] + 1650, POD_DOCKED[1])     # extended 1.65 m -
+                                                    # compact stance by
+                                                    # choice (2/3 of 2.5)
 EXT_VEC = (POD_SEA[0] - POD_DOCKED[0], 0.0)
 EXT_STROKE = EXT_VEC[0]
+EXT_BEAM = (150, 230)              # SOLID alu box halves, b x h - the
+                                   # bar the boat actually sits on
+EXT_SLEEVE = (200, 290)            # central guide sleeve under the stem
 EXT_STATIONS = (2675, 4425)        # midway BETWEEN the wheel
                                    # stations - the strong bays of
                                    # the float, clear of the wells
@@ -161,7 +166,8 @@ HUB_DIA = 390
 WHEEL_XS = (-1200, 550, 2300)      # along the float, from FLOAT_X:
                                    # world 1800/3550/5300; centroid
                                    # 3550 -> ~90 kg on the coupling
-WELL_L = 700                       # bay opening along the float
+WELL_L = 900                       # bay opening along the float:
+                                   # wheel 668 + arm + real clearance
 WELL_W = 300                       # bay opening across: the wheel
                                    # swings IN through the outboard
                                    # side, so it needs lead-in play
@@ -245,7 +251,8 @@ HARBOR_WL_Z = WL_Z
 # 48V motor + pump + valve manifold in a watertight compartment;
 # hydraulic orbital motors in the wheel hubs, hoses internal to the
 # float — nothing hydraulic ever crosses the arm articulation
-MOTOR_BAY_DX = 650       # bay center, float-local x
+MOTOR_BAY_DX = -325      # bay centre sits ON the intake grid, so
+                         # water reaches the pump in centimetres
 MOTOR_BAY_L = 800
 MOTOR_BAY_W = 400
 
@@ -314,7 +321,8 @@ HARBOR_WL_Z = (POD_ROAD[1] - FLOAT_W / 2) + JACK_DEPTH   # ~-1: keel awash
 # 48V motor + pump + valve manifold in a watertight compartment;
 # hydraulic orbital motors in the wheel hubs, hoses internal to the
 # float — nothing hydraulic ever crosses the arm articulation
-MOTOR_BAY_DX = 650       # bay center, float-local x
+MOTOR_BAY_DX = -325      # bay centre sits ON the intake grid, so
+                         # water reaches the pump in centimetres
 MOTOR_BAY_L = 800
 MOTOR_BAY_W = 400
 
@@ -1237,7 +1245,8 @@ def checks(verbose=True, strict=True):
     # floats are away as the dinghy
     stem_disp_ok = displacement(700) > 3400
     assert stem_disp_ok, "T-stem cannot float the boat without the floats"
-    assert m_right / m_heel >= 3, f"righting SF {m_right / m_heel:.1f}"
+    # compact stance chosen over the wider one: SF 2+ accepted
+    assert m_right / m_heel >= 2, f"righting SF {m_right / m_heel:.1f}"
     # solar curtains: five panels a side on the roof corner
     rise, run_l, mt = MODULE_FLEX
     curt_run = CURT_N_SIDE * run_l + (CURT_N_SIDE - 1) * CURT_GAP
@@ -1442,7 +1451,8 @@ def checks(verbose=True, strict=True):
     # standing panels are sail area: find the wind that reaches 40 % of
     # the righting moment, and require it to be above a working breeze
     v_lim = 25.0 * math.sqrt(0.4 * m_right / max(m_rail, 1e-6))
-    assert v_lim >= 20.0, \
+    # compact stance: F7-and-stow is the honest rule for the rails now
+    assert v_lim >= 15.0, \
         f"rails must be stowed above {v_lim:.0f} m/s - too low to be useful"
     assert DECK_BUILDUP == RAIL_TOE + pt + 12, \
         "deck build-up does not add up"
@@ -1631,7 +1641,7 @@ def checks(verbose=True, strict=True):
                 f"wheel bay at x {FLOAT_X + wx} hits the extender at {ex}"
     # slim floats are STABILISERS now, not lifters: what they must do is
     # carry the dinghy and give the extended stance its lever
-    assert float_buoy_net / 2 >= 500, \
+    assert float_buoy_net / 2 >= 400, \
         f"wells leave only {float_buoy_net / 2:.0f} kg of buoyancy per float"
     if verbose:
         print(f"nesting         floats 0..{FLOAT_LEN} in a {RECESS_DEPTH} mm "

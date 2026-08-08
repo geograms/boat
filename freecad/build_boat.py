@@ -79,19 +79,37 @@ def loft_sections(secs):
 # ---------------------------------------------------------------
 # Hull — hollow barge shell with deck, cabin-size opening
 # ---------------------------------------------------------------
+def _interp_station(x):
+    st = P.STATIONS
+    for i in range(len(st) - 1):
+        if st[i][0] <= x <= st[i + 1][0]:
+            t = (x - st[i][0]) / (st[i + 1][0] - st[i][0])
+            return [x] + [a + t * (b - a)
+                          for a, b in zip(st[i][1:], st[i + 1][1:])]
+    return list(st[-1])
+
+
 def hull_sections(inner=False):
     """Hull stations. Aft of the bow the section is a T: the underwater
     body narrows to the stem, the deck keeps the full beam, and the two
-    notches under the wings are where the floats nest."""
+    notches under the wings are where the floats nest.
+
+    The T holds its FULL depth to the float nose at x 6000, then the
+    bow's full-width body closes over it within 280 mm - the shoulders
+    that hide the float heads and give the water a clean entry."""
+    rows = [st for st in P.STATIONS if not 5980 < st[0] < 6300]
+    rows.append(_interp_station(5995))
+    rows.append(_interp_station(6280))
+    rows.sort(key=lambda r: r[0])
     out = []
-    for st in P.STATIONS:
+    for st in rows:
         x, yg, yc, zk, zc, zs = st
         if inner:
             yg, yc = max(yg - WALL, 15), max(yc - WALL, 10)
             zk, zc, zs = zk + 60, zc + 40, DECK_Z - 30
         # every station keeps the SAME 10-point topology so the loft
         # is well-conditioned; the bow simply degenerates the T step
-        if x <= P.FLOAT_LEN:
+        if x <= 6005:
             stem = min(P.STEM_HW - (WALL if inner else 0), yc)
             tz = P.T_STEP_Z + (30 if inner else 0)
         else:
@@ -496,32 +514,61 @@ def build_hangar(phi, coupled=True, tow="sea"):
                 parts.append(box(120, abs(ry) - P.STEM_HW + 40, 70,
                                  (lx - 60, min(sy * P.STEM_HW, ry),
                                   rz - 35)))
-        # and the bight ties into both rail tails
-        for rz in (P.POD_DOCKED[1] + 150, P.POD_DOCKED[1] - 150):
-            parts.append(rod((100, ry, rz),
-                             (P.HANGAR_BIGHT_X + 20, ry * 0.92,
-                              P.POD_DOCKED[1]), 55))
 
-    # ---- electric extenders: campervan-style scissors, hull to float
-    if phi > 5:
+    # ---- the extenders: a PANTOGRAPH TRUSS, not a telescope and not
+    # rod scissors. Two stacked X-frames of heavy box links per station
+    # (top and bottom chords 300 mm apart) keep the float parallel and
+    # carry vertical wave loads as a truss; deployed, a DIAGONAL LOCK
+    # STRUT pins float to hull so slam loads land in a triangle, not in
+    # the pivots. Docked, everything folds flat into the notch.
+    import math as _m
+    lb, lh = 120, 90                       # link box section
+    half_span = (pod[0] - P.FLOAT_W / 2 - P.STEM_HW)   # stem face -> float face
+    link_l = 1450                          # each X link, pin to pin
+    for ex in P.EXT_STATIONS:
         for sy in (-1, 1):
-            hull_face = sy * P.STEM_HW
-            float_face = sy * (pod[0] - P.FLOAT_W / 2)
-            mid_y = (hull_face + float_face) / 2
-            for ex in P.EXT_STATIONS:
-                # a proper X: two crossed 70 mm links and a centre pin
-                for (x0, x1) in ((ex - 330, ex + 330), (ex + 330, ex - 330)):
-                    parts.append(rod((x0, hull_face, pod[1]),
-                                     (x1, float_face, pod[1]), 70))
+            y0 = sy * P.STEM_HW            # hull-side pins
+            y1 = sy * (pod[0] - P.FLOAT_W / 2)  # float-side pins
+            span = abs(y1 - y0)
+            ang = _m.asin(min(0.999, span / (2 * link_l * 0.5) / 2))
+            for zc in (P.POD_DOCKED[1] + 150, P.POD_DOCKED[1] - 150):
+                # two crossed links: draw as boxes along the diagonal
+                for (xa, xb) in ((ex - 480, ex + 480), (ex + 480, ex - 480)):
+                    L = _m.hypot(xb - xa, span)
+                    yaw = _m.degrees(_m.atan2(y1 - y0, xb - xa))
+                    lk = box(L, lb, lh, (0, -lb / 2, -lh / 2))
+                    lk.Placement = Placement(
+                        Vector(xa, y0, zc),
+                        Rotation(Vector(0, 0, 1), yaw))
+                    parts.append(lk)
+                # centre pivot pin
                 parts.append(Part.makeCylinder(
-                    60, 190, Vector(ex - 95, mid_y, pod[1]),
-                    Vector(1, 0, 0)))
-                # 24 V leadscrew driving the X
-                parts.append(rod((ex, hull_face, pod[1] + 120),
-                                 (ex, float_face, pod[1] + 120), 30))
-                parts.append(Part.makeCylinder(
-                    50, 110, Vector(ex, hull_face, pod[1] + 120),
-                    Vector(0, sy, 0)))
+                    38, lh + 70, Vector(ex, (y0 + y1) / 2, zc - (lh + 70) / 2),
+                    Vector(0, 0, 1)))
+            # vertical posts tie the two chords at both ends: the truss
+            for yy, xx in ((y0, ex - 480), (y0, ex + 480),
+                           (y1, ex - 480), (y1, ex + 480)):
+                parts.append(box(90, 90, 300 + lh,
+                                 (xx - 45, yy - 45,
+                                  P.POD_DOCKED[1] - 150 - lh / 2)))
+        # 24 V leadscrew across the top, driving the X open and shut
+        parts.append(rod((ex, -P.STEM_HW + 40, P.POD_DOCKED[1] + 230),
+                         (ex, P.STEM_HW - 40, P.POD_DOCKED[1] + 230), 30))
+        parts.append(Part.makeCylinder(
+            46, 95, Vector(ex, 0, P.POD_DOCKED[1] + 230), Vector(0, 1, 0)))
+
+    if phi > 5:
+        # deployed: the diagonal lock struts - float top chord to the
+        # hull's frame line, one each way per station, pinned
+        for ex in P.EXT_STATIONS:
+            for sy in (-1, 1):
+                y1 = sy * (pod[0] - P.FLOAT_W / 2)
+                locks.append(rod((ex - 600, sy * P.STEM_HW,
+                                  P.POD_DOCKED[1] + 150),
+                                 (ex + 380, y1, P.POD_DOCKED[1] - 100), 55))
+                locks.append(Part.makeCylinder(
+                    30, 90, Vector(ex + 380, y1, P.POD_DOCKED[1] - 145),
+                    Vector(0, 0, 1)))
 
     # ---- bight + drawbar: a FIXED, small triangle at docked width.
     # It belongs to the ROAD function; the extended floats leave it
@@ -1167,9 +1214,10 @@ def build_mode(mode):
     add("DeckFrame", tframe, (0.62, 0.64, 0.67), group=g_roof)
 
     pod = P.pod_at(cfg["phi"], cfg.get("trav", 0.0))
-    roll = 90 - cfg["phi"]          # rigid arm: roll locked to swing
+    # the float NEVER rotates: it rides upright in every pose. The only
+    # rotation anywhere is each wheel's 180-deg flip arm.
     (fl, strips, forks, tires, rims, wboxes,
-     hatch, hydraulics, thruster) = build_float(pod, roll)
+     hatch, hydraulics, thruster) = build_float(pod, 0, cfg.get("flip", 0))
     hframe, hlocks = build_hangar(cfg["phi"], cfg.get("coupled", True),
                                   cfg["tow"])
     add("HangarFrame", hframe, (0.55, 0.57, 0.60), group=g_gear)
