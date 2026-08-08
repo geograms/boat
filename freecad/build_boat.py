@@ -175,6 +175,13 @@ def build_hull():
                         Vector(ch_x1, -P.TIE_CHANNEL_W / 2, 0))
     ramp.rotate(Vector(ch_x1, 0, P.TIE_CHANNEL_D), Vector(0, 1, 0), 15)
     shell = shell.cut(ramp)
+    # LINE the channel: cutting it opened the hull shell, so the roof
+    # and both walls are added back and the boat stays watertight
+    cw, cd = P.TIE_CHANNEL_W, P.TIE_CHANNEL_D
+    shell = shell.fuse(box(ch_x1 + 420, cw, 26, (-40, -cw / 2, cd)))
+    for sy in (-1, 1):
+        shell = shell.fuse(box(ch_x1 + 420, 26, cd + 26,
+                               (-40, sy * cw / 2 - (26 if sy > 0 else 0), 0)))
     # guide strips INSIDE the channel, and the stop the tie seats on
     for sy in (-1, 1):
         shell = shell.fuse(box(ch_x1 - 200, 70, 34,
@@ -635,13 +642,11 @@ def build_hangar(phi, coupled=True, tow="sea"):
     tie_z = 12                               # sits IN the keel channel
     parts.append(box(P.TIE_W, 2 * tie_y + gb, P.TIE_H,
                      (tie_x - P.TIE_W / 2, -tie_y - gb / 2, tie_z)))
-    # the wings that reach out to the girders stay inside the notch
+    # a knee each side, up from the bar to the girder web
     for sy in (-1, 1):
-        parts.append(box(P.TIE_W - 260, gb + 30, 150,
-                         (tie_x - (P.TIE_W - 260) / 2,
-                          sy * tie_y - (gb + 30) / 2, tie_z + P.TIE_H - 30)))
-        parts.append(rod((tie_x, sy * tie_y, tie_z + 120),
-                         (tie_x - 900, sy * tie_y, P.POD_DOCKED[1]), 80))
+        parts.append(box(P.TIE_W, gb + 20, P.POD_DOCKED[1] - tie_z,
+                         (tie_x - P.TIE_W / 2, sy * tie_y - (gb + 20) / 2,
+                          tie_z)))
 
     # ---- bight + drawbar: a FIXED, small triangle at docked width.
     # It belongs to the ROAD function; the extended floats leave it

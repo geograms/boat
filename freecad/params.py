@@ -167,9 +167,12 @@ EXT_VEC = (POD_SEA[0] - POD_DOCKED[0], 0.0)
 EXT_STROKE = EXT_VEC[0]
 # the cross tie is WIDE AND FLAT so it can hide in a shallow keel
 # channel: a deep bar hanging in the flow is pure drag
-TIE_W, TIE_H = 900, 90             # section of the tie
-TIE_CHANNEL_D = 110                # channel cut into the hull bottom
-TIE_CHANNEL_W = 980
+TIE_W, TIE_H = 260, 150            # section of the BAR: thin along the
+                                   # boat, deep enough to work. 900 mm
+                                   # along x made it a plaque
+TIE_CHANNEL_D = 175                # channel cut into the hull bottom
+TIE_CHANNEL_W = 1790               # wide enough that the WHOLE bar
+                                   # rides inside it, girder to girder
 EXT_STATIONS = (92, 1792)        # midway BETWEEN the wheel
                                    # stations - the strong bays of
                                    # the float, clear of the wells
@@ -303,8 +306,9 @@ HARBOR_WL_Z = WL_Z
 # 48V motor + pump + valve manifold in a watertight compartment;
 # hydraulic orbital motors in the wheel hubs, hoses internal to the
 # float — nothing hydraulic ever crosses the arm articulation
-MOTOR_BAY_DX = -325      # bay centre sits ON the intake grid, so
-                         # water reaches the pump in centimetres
+MOTOR_BAY_DX = -1150     # bay centre AFT, beside the tail nozzle -
+                         # the intake rides with it, so the grid is
+                         # next to the motor, not amidships
 MOTOR_BAY_L = 800
 MOTOR_BAY_W = 400
 
@@ -373,8 +377,9 @@ HARBOR_WL_Z = (POD_ROAD[1] - FLOAT_W / 2) + JACK_DEPTH   # ~-1: keel awash
 # 48V motor + pump + valve manifold in a watertight compartment;
 # hydraulic orbital motors in the wheel hubs, hoses internal to the
 # float — nothing hydraulic ever crosses the arm articulation
-MOTOR_BAY_DX = -325      # bay centre sits ON the intake grid, so
-                         # water reaches the pump in centimetres
+MOTOR_BAY_DX = -1150     # bay centre AFT, beside the tail nozzle -
+                         # the intake rides with it, so the grid is
+                         # next to the motor, not amidships
 MOTOR_BAY_L = 800
 MOTOR_BAY_W = 400
 
