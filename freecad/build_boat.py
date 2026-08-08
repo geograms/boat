@@ -430,42 +430,39 @@ def build_float(pod, roll, flip=0.0, fx=None):
     hydraulics = Part.makeCompound(hyd)
     hydraulics.Placement = place.multiply(hydraulics.Placement)
 
-    # U-INTAKE waterjet (docs/floater.md): three perforated faces wrap
-    # the BOTTOM of the machinery bay - port, floor, starboard - so
-    # water reaches the enclosed pump from all directions; the jet
-    # leaves through the tail nozzle. Nothing rotating touches water.
+    # U-INTAKE waterjet (docs/floater.md). The grid is on the BOTTOM of
+    # the float, directly under the pump: a perforated floor plate with
+    # a narrow return up each side, so water is drawn from all
+    # directions and travels centimetres to the impeller. Nothing sits
+    # on the topsides - an intake up there would suck air.
     gx = P.FLOAT_X + P.MOTOR_BAY_DX
-    gl = 560
+    gl, gw = 620, P.FLOAT_W - 90
     bot = -P.FLOAT_H / 2
     thr = []
-    # floor plate of the U
-    thr.append(box(gl + 40, P.FLOAT_W - 110, 14,
-                   (gx - gl / 2 - 20, -(P.FLOAT_W - 110) / 2, bot - 4)))
-    for ix in range(11):
-        for iy in range(6):
+    thr.append(box(gl + 60, gw + 40, 16,
+                   (gx - gl / 2 - 30, -(gw + 40) / 2, bot - 6)))
+    for ix in range(12):
+        for iy in range(7):
             thr.append(Part.makeCylinder(
-                P.JET_HOLE_D / 2 + 2, 8,
-                Vector(gx - gl / 2 + 30 + ix * 50,
-                       -(P.FLOAT_W - 160) / 2 + iy * 50, bot - 8),
-                Vector(0, 0, 1)))
-    # the two side cheeks of the U, low on each face
-    for sgn in (-1, 1):
+                P.JET_HOLE_D / 2 + 2, 10,
+                Vector(gx - gl / 2 + 26 + ix * 52, -gw / 2 + 30 + iy * 52,
+                       bot - 10), Vector(0, 0, 1)))
+    for sgn in (-1, 1):                     # the U's short returns
         gy = sgn * (P.FLOAT_W / 2)
-        thr.append(box(gl, 12, 130,
-                       (gx - gl / 2, gy - (12 if sgn > 0 else 0), bot + 6)))
-        for ix in range(10):
-            for iz in range(2):
-                thr.append(Part.makeCylinder(
-                    P.JET_HOLE_D / 2 + 2, 8,
-                    Vector(gx - gl / 2 + 45 + ix * 50, gy + sgn * 6,
-                           bot + 40 + iz * 55), Vector(0, sgn, 0)))
-    # jet nozzle out the tail cone
+        thr.append(box(gl, 14, 90,
+                       (gx - gl / 2, gy - (14 if sgn > 0 else 0), bot + 4)))
+        for ix in range(11):
+            thr.append(Part.makeCylinder(
+                P.JET_HOLE_D / 2 + 2, 9,
+                Vector(gx - gl / 2 + 30 + ix * 52, gy + sgn * 7, bot + 48),
+                Vector(0, sgn, 0)))
+    # jet nozzle: low on the transom, in line with the pump
     tail = P.FLOAT_X - P.FLOAT_LEN / 2
-    noz = Part.makeCone(90, P.JET_NOZZLE_D / 2, 200,
-                        Vector(tail + 40, 0, bot + 110), Vector(-1, 0, 0))
-    thr.append(noz)
+    thr.append(Part.makeCone(85, P.JET_NOZZLE_D / 2, 190,
+                             Vector(tail + 40, 0, bot + 150),
+                             Vector(-1, 0, 0)))
     thr.append(Part.makeCylinder(P.JET_NOZZLE_D / 2 - 12, 30,
-                                 Vector(tail - 165, 0, bot + 110),
+                                 Vector(tail - 155, 0, bot + 150),
                                  Vector(-1, 0, 0)))
     # rub strake along the outer face at the waterline
     thr.append(rod((P.FLOAT_X - P.FLOAT_LEN / 2 + 260, P.FLOAT_W / 2 + 8, 40),
@@ -533,29 +530,33 @@ def build_hangar(phi, coupled=True, tow="sea"):
     parts, locks = [], []
     pod = P.pod_at(phi)
 
-    # ---- spike rails: two per side in the recess, tapered forward.
-    # The float slides on from astern; the taper closes the fit over
-    # the last SPIKE_TAPER mm, then the bayonet lock pins it.
+    # ---- THE U: a SOLID box girder each side, tied by the bight.
+    # This is what the boat's 3 t sits on, so it is a real beam, not
+    # tubes. The girders run the length of the notch inside the stem
+    # face; the float's fork grooves ride their outer web, and the
+    # tapered nose closes the fit as the float slides in from astern.
+    gb, gh = 190, 300
     for sy in (-1, 1):
-        ry = sy * (P.STEM_HW + 35)
-        for rz in (P.POD_DOCKED[1] + 150, P.POD_DOCKED[1] - 150):
-            parts.append(rod((100, ry, rz), (100 + P.SPIKE_L, ry, rz),
-                             P.SPIKE_D))
-            # taper points AFT: it meets the float fork sliding in from
-            # astern, and it must never enter the solid bow at x 6000
-            locks.append(Part.makeCone(
-                P.SPIKE_D / 2, 8, P.SPIKE_TAPER,
-                Vector(100 + P.SPIKE_L - P.SPIKE_TAPER, ry, rz),
-                Vector(1, 0, 0)))
-        # bayonet lock gearmotor at the rail root
+        ry = sy * (P.STEM_HW + gb / 2 - 20)
+        gir = box(P.SPIKE_L, gb, gh,
+                  (100, ry - gb / 2, P.POD_DOCKED[1] - gh / 2))
+        gir = gir.cut(box(P.SPIKE_L - 240, gb - 44, gh - 44,
+                          (220, ry - (gb - 44) / 2,
+                           P.POD_DOCKED[1] - (gh - 44) / 2)))
+        parts.append(gir)
+        # the docking nose: a tapered lead-in at the aft end
+        locks.append(Part.makeCone(
+            gh / 2 - 20, 30, P.SPIKE_TAPER,
+            Vector(100, ry, P.POD_DOCKED[1]), Vector(-1, 0, 0)))
+        # bayonet lock gearmotor on the girder web
         locks.append(Part.makeCylinder(
-            45, 110, Vector(160, ry, P.POD_DOCKED[1]), Vector(-1, 0, 0)))
-        # mounting lugs tie the rails into the stem every 1.45 m
-        for lx in range(400, P.SPIKE_L, 1450):
-            for rz in (P.POD_DOCKED[1] + 150, P.POD_DOCKED[1] - 150):
-                parts.append(box(120, abs(ry) - P.STEM_HW + 40, 70,
-                                 (lx - 60, min(sy * P.STEM_HW, ry),
-                                  rz - 35)))
+            45, 110, Vector(700, ry + sy * (gb / 2), P.POD_DOCKED[1]),
+            Vector(0, sy, 0)))
+        # web stiffeners every 1.2 m - the girder is the load path
+        for lx in range(500, P.SPIKE_L, 1200):
+            parts.append(box(90, gb + 70, gh + 60,
+                             (lx, ry - (gb + 70) / 2,
+                              P.POD_DOCKED[1] - (gh + 60) / 2)))
 
     # ---- SWING WING (the Dragonfly pattern): two arms per side on
     # VERTICAL pins at the stem face, ends pinned to the float. The two
@@ -640,17 +641,13 @@ def build_hangar(phi, coupled=True, tow="sea"):
             P.JOCKEY_D / 2, 70, Vector(nose_x + 420, 115, nose_z - 300),
             Vector(0, 1, 0)))
     else:
-        # the two capped sockets the A-frame pins into
+        # the two sockets the A-frame pins into: LUGS on the bight's
+        # face, not cylinders hanging in space
         for s_ in (-1, 1):
-            parts.append(Part.makeCylinder(
-                P.DRAWBAR_TUBE / 2 + 12, 150,
-                Vector(P.HANGAR_BIGHT_X - bb / 2, s_ * (by - 120),
-                       P.POD_DOCKED[1]), Vector(-1, 0, 0)))
-        # and the A-frame itself, stowed flat on the starboard float deck
-        sx = P.FLOAT_X - 900
-        parts.append(rod((sx, pod[0] - 60, P.FLOAT_H + 40),
-                         (sx + P.DRAWBAR_LEN, pod[0] - 60, P.FLOAT_H + 40),
-                         P.DRAWBAR_TUBE - 30))
+            parts.append(box(90, 150, 150,
+                             (P.HANGAR_BIGHT_X - bb - 90,
+                              s_ * (by - 120) - 75,
+                              P.POD_DOCKED[1] - 75)))
 
     if not coupled:
         off = Placement(Vector(P.HANGAR_STANDOFF, 0,
