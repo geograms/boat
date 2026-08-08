@@ -325,14 +325,15 @@ FLOAT_STATIONS = [
 ]
 
 
-def build_float(pod, roll, flip=0.0):
+def build_float(pod, roll, flip=0.0, fx=None):
     """Stabilizer float with CASTER wheels (stub axles perpendicular to
     the deck): roll 90 = float on its side, wheels vertical (road);
     roll 0 = float flat, wheels flat on the deck (water).
     Starboard, posed."""
     ty, tz = pod
+    dx = 0.0 if fx is None else fx - P.FLOAT_X
     # -roll about x maps the local deck normal (+z) outboard (+y)
-    place = Placement(Vector(0, ty, tz), Rotation(Vector(1, 0, 0), -roll))
+    place = Placement(Vector(dx, ty, tz), Rotation(Vector(1, 0, 0), -roll))
 
     secs = []
     ky = P.FLOAT_W / 400.0            # loft table is 400 wide, 900 tall
@@ -554,60 +555,54 @@ def build_hangar(phi, coupled=True, tow="sea"):
                                  (lx - 60, min(sy * P.STEM_HW, ry),
                                   rz - 35)))
 
-    # ---- the extenders: a PANTOGRAPH TRUSS, not a telescope and not
-    # rod scissors. Two stacked X-frames of heavy box links per station
-    # (top and bottom chords 300 mm apart) keep the float parallel and
-    # carry vertical wave loads as a truss; deployed, a DIAGONAL LOCK
-    # STRUT pins float to hull so slam loads land in a triangle, not in
-    # the pivots. Docked, everything folds flat into the notch.
+    # ---- SWING WING (the Dragonfly pattern): two arms per side on
+    # VERTICAL pins at the stem face, ends pinned to the float. The two
+    # arms and the two hulls form a parallelogram, so the float stays
+    # parallel to the hull through the whole swing. Four pins per
+    # float, no scissors, no telescope, no sliding fit.
     import math as _m
-    lb, lh = 120, 90                       # link box section
-    half_span = (pod[0] - P.FLOAT_W / 2 - P.STEM_HW)   # stem face -> float face
-    link_l = 1450                          # each X link, pin to pin
-    for ex in P.EXT_STATIONS:
-        for sy in (-1, 1):
-            y0 = sy * P.STEM_HW            # hull-side pins
-            y1 = sy * (pod[0] - P.FLOAT_W / 2)  # float-side pins
-            span = abs(y1 - y0)
-            ang = _m.asin(min(0.999, span / (2 * link_l * 0.5) / 2))
-            for zc in (P.POD_DOCKED[1] + 150, P.POD_DOCKED[1] - 150):
-                # two crossed links: draw as boxes along the diagonal
-                for (xa, xb) in ((ex - 480, ex + 480), (ex + 480, ex - 480)):
-                    L = _m.hypot(xb - xa, span)
-                    yaw = _m.degrees(_m.atan2(y1 - y0, xb - xa))
-                    lk = box(L, lb, lh, (0, -lb / 2, -lh / 2))
-                    lk.Placement = Placement(
-                        Vector(xa, y0, zc),
-                        Rotation(Vector(0, 0, 1), yaw))
-                    parts.append(lk)
-                # centre pivot pin
+    ang = _m.radians(P.swing_angle(phi))
+    fx = P.float_x(phi)
+    arm_b, arm_h = 170, 120
+    for sy in (-1, 1):
+        for k, px in enumerate((P.SWING_PIVOT_X - P.SWING_ARM_GAP,
+                                P.SWING_PIVOT_X)):
+            py = sy * P.SWING_PIVOT_Y
+            # arm tip follows the same angle from each pivot
+            tx = px + P.SWING_ARM_R * _m.cos(ang)
+            ty = py + sy * P.SWING_ARM_R * _m.sin(ang)
+            L = _m.hypot(tx - px, ty - py)
+            yaw = _m.degrees(_m.atan2(ty - py, tx - px))
+            arm = box(L, arm_b, arm_h, (0, -arm_b / 2, -arm_h / 2))
+            arm.Placement = Placement(Vector(px, py, P.POD_DOCKED[1]),
+                                      Rotation(Vector(0, 0, 1), yaw))
+            parts.append(arm)
+            # vertical pivot pin at the hull, and the pin at the float
+            for (cx, cy) in ((px, py), (tx, ty)):
                 parts.append(Part.makeCylinder(
-                    38, lh + 70, Vector(ex, (y0 + y1) / 2, zc - (lh + 70) / 2),
+                    52, arm_h + 130,
+                    Vector(cx, cy, P.POD_DOCKED[1] - (arm_h + 130) / 2),
                     Vector(0, 0, 1)))
-            # vertical posts tie the two chords at both ends: the truss
-            for yy, xx in ((y0, ex - 480), (y0, ex + 480),
-                           (y1, ex - 480), (y1, ex + 480)):
-                parts.append(box(90, 90, 300 + lh,
-                                 (xx - 45, yy - 45,
-                                  P.POD_DOCKED[1] - 150 - lh / 2)))
-        # 24 V leadscrew across the top, driving the X open and shut
-        parts.append(rod((ex, -P.STEM_HW + 40, P.POD_DOCKED[1] + 230),
-                         (ex, P.STEM_HW - 40, P.POD_DOCKED[1] + 230), 30))
+            # tapered lug pads into the stem and the float face
+            parts.append(box(210, 90, arm_h + 90,
+                             (px - 105, py - (90 if sy > 0 else 0),
+                              P.POD_DOCKED[1] - (arm_h + 90) / 2)))
+        # 24 V slew drive on the aft pivot swings the pair
         parts.append(Part.makeCylinder(
-            46, 95, Vector(ex, 0, P.POD_DOCKED[1] + 230), Vector(0, 1, 0)))
+            95, 130, Vector(P.SWING_PIVOT_X - P.SWING_ARM_GAP,
+                            sy * P.SWING_PIVOT_Y,
+                            P.POD_DOCKED[1] + arm_h / 2 + 10),
+            Vector(0, 0, 1)))
 
     if phi > 5:
-        # deployed: the diagonal lock struts - float top chord to the
-        # hull's frame line, one each way per station, pinned
-        for ex in P.EXT_STATIONS:
-            for sy in (-1, 1):
-                y1 = sy * (pod[0] - P.FLOAT_W / 2)
-                locks.append(rod((ex - 600, sy * P.STEM_HW,
-                                  P.POD_DOCKED[1] + 150),
-                                 (ex + 380, y1, P.POD_DOCKED[1] - 100), 55))
-                locks.append(Part.makeCylinder(
-                    30, 90, Vector(ex + 380, y1, P.POD_DOCKED[1] - 145),
-                    Vector(0, 0, 1)))
+        # deployed: a folding strut from the forward arm down to the
+        # float takes slam in a triangle, not through the pins
+        for sy in (-1, 1):
+            tx = P.SWING_PIVOT_X + P.SWING_ARM_R * _m.cos(ang)
+            ty = sy * (P.SWING_PIVOT_Y + P.SWING_ARM_R * _m.sin(ang))
+            locks.append(rod((P.SWING_PIVOT_X - 700, sy * P.SWING_PIVOT_Y,
+                              P.POD_DOCKED[1] + 130),
+                             (tx, ty, P.POD_DOCKED[1] - 120), 60))
 
     # ---- bight + drawbar: a FIXED, small triangle at docked width.
     # It belongs to the ROAD function; the extended floats leave it
@@ -1252,11 +1247,13 @@ def build_mode(mode):
     add("DeckLaminates", tlam, PANEL, group=g_roof)
     add("DeckFrame", tframe, (0.62, 0.64, 0.67), group=g_roof)
 
-    pod = P.pod_at(cfg["phi"], cfg.get("trav", 0.0))
+    pod = P.pod_at(cfg["phi"])
+    fx_now = P.float_x(cfg["phi"])
     # the float NEVER rotates: it rides upright in every pose. The only
     # rotation anywhere is each wheel's 180-deg flip arm.
     (fl, strips, forks, tires, rims, wboxes,
-     hatch, hydraulics, thruster) = build_float(pod, 0, cfg.get("flip", 0))
+     hatch, hydraulics, thruster) = build_float(pod, 0, cfg.get("flip", 0),
+                                                fx_now)
     hframe, hlocks = build_hangar(cfg["phi"], cfg.get("coupled", True),
                                   cfg["tow"])
     add("HangarFrame", hframe, (0.55, 0.57, 0.60), group=g_gear)

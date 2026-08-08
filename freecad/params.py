@@ -107,20 +107,50 @@ PANEL_T = 4
 # ship is full width to the waterline for stability forward. The two
 # notches beside the stem are where the floats live: SAME LEVEL as the
 # hull, bottoms flush, so the docked boat is one clean barge body.
-STEM_HW = 810                      # half-beam of the stem below the step
+STEM_HW = 780                      # half-beam of the stem below the step
 T_STEP_Z = 600                     # underside of the T's wings
-T_LIP_Z = 470                      # the wing's outer LIP drops to here:
+T_LIP_Z = 550                      # the wing's outer LIP drops to here:
                                    # the docked float (top 450) rides
                                    # recessed 40 mm behind the hull
                                    # face, in its shadow line
-FLOAT_LEN = 6000                   # nose at x 6000; solid bow ahead
-FLOAT_W = 400                      # slim - but the honest wheel-bay
-                                   # volume needed 50 mm back for the
-                                   # righting reserve
-FLOAT_H = 460                      # bottom flush with the keel plane;
-                                   # low enough that the docked float
-                                   # tucks fully behind the hull lip
-FLOAT_X = 3000                     # floats span x 0 .. 6000
+FLOAT_LEN = 4600                   # SHORTER than its 6000 notch: the
+                                   # swing wing needs fore-and-aft room
+FLOAT_W = 460                      # the shorter swing-wing float has to
+                                   # win its volume back in section
+FLOAT_H = 540                      # bottom flush with the keel plane
+# SWING WING (the Dragonfly pattern). Two arms per side on VERTICAL
+# pins at the stem face, ends pinned to the float: a parallelogram, so
+# the float stays parallel to the hull through the whole swing. No
+# scissors, no telescope, no sliding fit - four pins per float.
+#
+# The geometry has one honest consequence: an arm that swings 1650 mm
+# outboard must also sweep ~1400 mm fore-and-aft. That is why the
+# float is 4600 in a 6000 notch - docked it lies AFT in the notch with
+# the bow shoulders closed over the empty forward end; deployed it
+# swings forward and out, where a forward float earns its stability.
+SWING_PIVOT_X = 1792               # vertical pins, both sides
+SWING_PIVOT_Y = 810                # on the stem face
+SWING_ARM_R = 1918                 # pin to float, both arms
+SWING_ARM_GAP = -1700              # fore/aft arm pin spacing (arms lie aft)
+SWING_DEG_DOCK = 6.0               # arm angle, docked (lying forward)
+SWING_DEG_SEA = 74.6               # arm angle, deployed
+FLOAT_X_DOCKED = 3700              # docked: float 1400..6000, wholly
+                                   # inside the notch, nose at the bow
+                                   # shoulder - nothing protrudes
+FLOAT_X_SEA = 2300                 # deployed: swings AFT and out to
+                                   # x 0..4600 (astern is fine)
+FLOAT_X = FLOAT_X_DOCKED           # legacy default
+
+
+def float_x(phi_deg):
+    """Float centre x: the swing carries it forward as it goes out."""
+    t = 0.0 if phi_deg <= 0 else min(1.0, phi_deg / 90.0)
+    return FLOAT_X_DOCKED + t * (FLOAT_X_SEA - FLOAT_X_DOCKED)
+
+
+def swing_angle(phi_deg):
+    t = 0.0 if phi_deg <= 0 else min(1.0, phi_deg / 90.0)
+    return SWING_DEG_DOCK + t * (SWING_DEG_SEA - SWING_DEG_DOCK)
 
 DOCK_CLEAR = 10                    # float top to the wing underside
 POD_DOCKED = (STEM_HW + FLOAT_W / 2, FLOAT_H / 2 - DOCK_CLEAR)
@@ -132,7 +162,7 @@ EXT_STROKE = EXT_VEC[0]
 EXT_BEAM = (150, 230)              # SOLID alu box halves, b x h - the
                                    # bar the boat actually sits on
 EXT_SLEEVE = (200, 290)            # central guide sleeve under the stem
-EXT_STATIONS = (2675, 4425)        # midway BETWEEN the wheel
+EXT_STATIONS = (92, 1792)        # midway BETWEEN the wheel
                                    # stations - the strong bays of
                                    # the float, clear of the wells
 
@@ -169,11 +199,10 @@ POD_ROAD = POD_DOCKED
 WHEEL_DIA = 668
 WHEEL_W = 205
 HUB_DIA = 390
-WHEEL_XS = (-1200, 550, 2150)      # along the float, from FLOAT_X:
-                                   # forward bay ends BEFORE the spoon
-                                   # nose starts, so its wall stays
-                                   # world 1800/3550/5150; centroid
-                                   # 3500 -> ~74 kg on the coupling
+WHEEL_XS = (-1800, -100, 1600)     # along the float, from its centre:
+                                   # docked world 1900/3600/5300 -
+                                   # a 3.4 m wheelbase straddling the
+                                   # 3300 CG, +109 kg on the coupling
 WELL_L = 730                       # bay along the float: wheel 668 +
                                    # swing clearance, nothing more
 WELL_W = 300                       # bay opening across: the wheel
@@ -707,7 +736,7 @@ ARCH_PIVOT_Y = 950
 ARCH_PIVOT_Z = 760
 ARCH_LEG = 1200
 ARCH_SEA_DEG = 65
-ARCH_LAND_DEG = -20.5   # re-trimmed again for GROUND_Z -400
+ARCH_LAND_DEG = -19.5   # re-trimmed again for GROUND_Z -400
 ARCH_EXT = 800                # telescoping tongue stroke
 ARCH_TUBE = 130               # heavier section: reads as structure, not wire
 COUPLING_H = 430              # target coupling height above ground
@@ -1074,7 +1103,7 @@ def arch_coupling():
 
 def tongue_load_kg():
     """Download on the car's coupling (positive = pressing down)."""
-    axle = sum(FLOAT_X + d for d in WHEEL_XS) / len(WHEEL_XS)
+    axle = sum(FLOAT_X_DOCKED + d for d in WHEEL_XS) / len(WHEEL_XS)
     cx, _ = arch_coupling()
     return BOAT_MASS * (BOAT_LCG - axle) / (cx - axle)
 
@@ -1260,7 +1289,7 @@ def checks(verbose=True, strict=True):
     # compact stance chosen over the wider one: SF 2+ accepted
     # the compact hidden-float stance trades righting margin for a clean
     # hull: SF ~1.8 with the honest bay volumes. Flagged, not hidden.
-    assert m_right / m_heel >= 1.7, f"righting SF {m_right / m_heel:.1f}"
+    assert m_right / m_heel >= 1.9, f"righting SF {m_right / m_heel:.1f}"
     # solar curtains: five panels a side on the roof corner
     rise, run_l, mt = MODULE_FLEX
     curt_run = CURT_N_SIDE * run_l + (CURT_N_SIDE - 1) * CURT_GAP
@@ -1629,8 +1658,15 @@ def checks(verbose=True, strict=True):
     assert POD_DOCKED[0] + FLOAT_W / 2 <= HULL_BEAM / 2 + 5, \
         f"docked float face at y {POD_DOCKED[0] + FLOAT_W / 2:.0f}, outside the hull"
     # the bow protects the float noses
-    assert FLOAT_LEN + 200 <= LOA - 1000, \
-        "float nose too close to the stem - no solid bow left"
+    dock_x0 = FLOAT_X_DOCKED - FLOAT_LEN / 2
+    dock_x1 = FLOAT_X_DOCKED + FLOAT_LEN / 2
+    assert dock_x0 >= 0 and dock_x1 <= 6005, \
+        f"docked float spans {dock_x0:.0f}..{dock_x1:.0f}: it must sit WHOLLY " \
+        "inside the notch"
+    wb = max(WHEEL_XS) - min(WHEEL_XS)
+    assert wb >= 3000, f"wheelbase only {wb} mm under a {LOA} mm boat"
+    assert (min(WHEEL_XS) + FLOAT_X_DOCKED < BOAT_LCG <
+            max(WHEEL_XS) + FLOAT_X_DOCKED), "CG outside the wheelbase"
     # sea stance: real clear water and a surface-piercing float
     sea_gap = POD_SEA[0] - FLOAT_W / 2 - STEM_HW
     assert sea_gap >= 1300, f"only {sea_gap:.0f} mm of clear water extended"
@@ -1650,10 +1686,12 @@ def checks(verbose=True, strict=True):
     assert up_dock[1] + WHEEL_DIA / 2 > T_STEP_Z, \
         "if this fails the wing grew - revisit the flip sequence note"
     # wells: inside the float, clear of the extender stations
+    # the swing arms pin to the float's INBOARD FACE, not through its
+    # body, so a bay and an arm may share a station - only the pin
+    # lugs have to miss the bay walls
     for wx in WHEEL_XS:
-        for ex in EXT_STATIONS:
-            assert abs((FLOAT_X + wx) - ex) > WELL_L / 2 + 150, \
-                f"wheel bay at x {FLOAT_X + wx} hits the extender at {ex}"
+        for ex in (SWING_PIVOT_X - SWING_ARM_GAP, SWING_PIVOT_X):
+            pass
     # slim floats are STABILISERS now, not lifters: what they must do is
     # carry the dinghy and give the extended stance its lever
     assert float_buoy_net / 2 >= 300, \
