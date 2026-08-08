@@ -173,7 +173,10 @@ EXT_STATIONS = (92, 1792)        # midway BETWEEN the wheel
                                    # the float, clear of the wells
 
 RECESS_DEPTH = FLOAT_W             # the notch swallows the whole float
-SPIKE_L = 5800                     # the two guide rails per side
+SPIKE_L = 3200                     # the girders only have to span the
+                                   # two swing-pin stations (641 and
+                                   # 2941) - forward of that they were
+                                   # carrying nothing but their own mass
 SPIKE_D = 60
 SPIKE_TAPER = 300                  # cone at the forward end: the fork
                                    # closes the fit over the last 300 mm
@@ -942,8 +945,8 @@ BULKHEAD_X = (900, 2400, 3900, 5400, 6200)
 
 # masses that are NOT laminate, kg. Sources in the docs named alongside.
 MASS_EXOSKELETON = 260     # S355 tube frame + brackets, galvanised
-MASS_UGIRDER = 162         # the two 140x200x8 alu box girders that
-                           # carry the boat on the road
+MASS_UGIRDER = 110         # two 140x200x8 alu box girders (89 kg) plus
+                           # the forward cross tie that closes the U
 MASS_WHEELS_HUBS = 270     # 6 x (tire 14 + rim 8 + hub motor 11 + stub axle 12)
 MASS_EXTENDERS = 4 * 30    # swing arms, 165x230x10 alu box + pins
                            # (structure_calc.py)

@@ -163,6 +163,25 @@ def build_hull():
          (P.CABIN_X0 + 50, P.CABIN_W / 2 - 70)],
         DECK_Z - 60, DECK_Z + 60))
     # the float notches are built into the T sections themselves
+    # ---- KEEL GUIDE for the hangar's cross tie. The tie travels the
+    # whole way forward under the hull as the assembly docks, so it
+    # gets a pair of runners to ride on, flared at the aft end to
+    # catch it, and a stop with two lock lugs where it seats.
+    guide_x0, guide_x1 = 120, 3220
+    for sy in (-1, 1):
+        shell = shell.fuse(box(guide_x1 - guide_x0, 90, 70,
+                               (guide_x0, sy * 300 - 45, -70)))
+        # flared lead-in at the aft end
+        shell = shell.fuse(Part.makeBox(
+            300, 90, 70, Vector(guide_x0 - 300, sy * 420 - 45, -70)))
+        shell = shell.fuse(box(320, 90, 70,
+                               (guide_x0 - 300, sy * 300 - 45, -70)))
+    # the stop and its lock lugs, where the tie seats
+    shell = shell.fuse(box(120, 900, 150, (guide_x1, -450, -150)))
+    for sy in (-1, 1):
+        shell = shell.fuse(box(180, 120, 210,
+                               (guide_x1 - 60, sy * 330 - 60, -210)))
+
     # the dome is a ROOM, not a bubble on the deck: open the foredeck
     # under it so the saloon sole runs on through, leaving a 130 mm
     # gunwale ledge for the glass to land on
@@ -538,16 +557,21 @@ def build_hangar(phi, coupled=True, tow="sea"):
     gb, gh = 140, 200            # sized in structure_calc.py: SF 15
     for sy in (-1, 1):
         ry = sy * (P.STEM_HW + gb / 2 - 20)
-        gir = box(P.SPIKE_L, gb, gh,
-                  (100, ry - gb / 2, P.POD_DOCKED[1] - gh / 2))
-        gir = gir.cut(box(P.SPIKE_L - 240, gb - 16, gh - 16,
-                          (220, ry - (gb - 16) / 2,
+        # the girder runs from the BIGHT to the cross tie, so the O is
+        # closed at both ends - it used to stop 220 mm short of the
+        # bight and the frame was open there
+        g0 = P.HANGAR_BIGHT_X
+        glen = 100 + P.SPIKE_L - g0
+        gir = box(glen, gb, gh,
+                  (g0, ry - gb / 2, P.POD_DOCKED[1] - gh / 2))
+        gir = gir.cut(box(glen - 240, gb - 16, gh - 16,
+                          (g0 + 120, ry - (gb - 16) / 2,
                            P.POD_DOCKED[1] - (gh - 16) / 2)))
         parts.append(gir)
         # the docking nose: a tapered lead-in at the aft end
         locks.append(Part.makeCone(
             gh / 2 - 20, 30, P.SPIKE_TAPER,
-            Vector(100, ry, P.POD_DOCKED[1]), Vector(-1, 0, 0)))
+            Vector(g0, ry, P.POD_DOCKED[1]), Vector(-1, 0, 0)))
         # bayonet lock gearmotor on the girder web
         locks.append(Part.makeCylinder(
             45, 110, Vector(700, ry + sy * (gb / 2), P.POD_DOCKED[1]),
@@ -600,6 +624,23 @@ def build_hangar(phi, coupled=True, tow="sea"):
     # no extra struts: the parallelogram IS the structure, exactly as
     # on the boats this pattern comes from. Each arm is a deep box beam
     # and the four pins are the only moving parts.
+
+    # ---- the forward CROSS TIE: the open end of the U is closed by a
+    # beam under the keel, so the two girders work as a frame and each
+    # swing arm sheds part of its moment into the other side instead of
+    # taking it all in its own pins. It hangs 120 mm below the keel -
+    # still 200 mm of ground clearance under it.
+    tie_x = 100 + P.SPIKE_L - 260
+    tie_y = P.STEM_HW + gb / 2 - 20
+    tie_z = -120
+    parts.append(box(200, 2 * tie_y + gb, 190,
+                     (tie_x - 100, -tie_y - gb / 2, tie_z - 95)))
+    for sy in (-1, 1):                       # knee braces up to the girders
+        parts.append(rod((tie_x, sy * tie_y, tie_z),
+                         (tie_x - 1100, sy * tie_y, P.POD_DOCKED[1]), 90))
+        parts.append(box(150, gb + 40, 260,
+                         (tie_x - 75, sy * tie_y - (gb + 40) / 2,
+                          tie_z - 30)))
 
     # ---- bight + drawbar: a FIXED, small triangle at docked width.
     # It belongs to the ROAD function; the extended floats leave it
