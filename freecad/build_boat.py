@@ -72,8 +72,10 @@ def box(l, w, h, at):
 
 def loft_sections(secs):
     """secs = [(x, [(y, z), ...]), ...]"""
+    # RULED: straight lines between stations. A smoothed loft turns the
+    # T into a blob; ruled keeps every section exactly as drawn.
     return Part.makeLoft(
-        [wire([(x, y, z) for y, z in pts]) for x, pts in secs], True, False)
+        [wire([(x, y, z) for y, z in pts]) for x, pts in secs], True, True)
 
 
 # ---------------------------------------------------------------
@@ -107,20 +109,28 @@ def hull_sections(inner=False):
         if inner:
             yg, yc = max(yg - WALL, 15), max(yc - WALL, 10)
             zk, zc, zs = zk + 60, zc + 40, DECK_Z - 30
-        # every station keeps the SAME 10-point topology so the loft
-        # is well-conditioned; the bow simply degenerates the T step
+        # ONE 12-point topology everywhere, and it is a REAL T below
+        # the step: flat bottom across the full stem, vertical stem
+        # sides, square step, lip, sheer. The bow reuses the same
+        # template at full width, so the loft never has to invent
+        # geometry between different shapes.
         if x <= 6005:
-            stem = min(P.STEM_HW - (WALL if inner else 0), yc)
-            tz = P.T_STEP_Z + (30 if inner else 0)
+            w_bot = min(P.STEM_HW - (WALL if inner else 0), yc)
+            z_mid = P.T_STEP_Z + (30 if inner else 0)
+            z_lip = P.T_LIP_Z + (30 if inner else 0)
         else:
-            stem = yc - 2
-            tz = zc + 0.55 * (zs - zc)
-        lip = P.T_LIP_Z + (30 if inner else 0)
-        lin = yg - (65 if not inner else 45)      # lip inner face
-        pts = [(P.KEEL_FLAT, zk), (stem, zc), (stem, tz),
-               (lin, tz), (lin, lip), (yg, lip), (yg, zs),
-               (-yg, zs), (-yg, lip), (-lin, lip), (-lin, tz),
-               (-stem, tz), (-stem, zc), (-P.KEEL_FLAT, zk)]
+            w_bot = yc
+            z_lip = max(P.T_LIP_Z + (30 if inner else 0), zk + 40)
+            z_mid = max(P.T_STEP_Z + (30 if inner else 0), z_lip + 30)
+        w_in = yg - (45 if inner else 65)         # lip inner face
+        w_in = max(w_in, w_bot + 10)
+        pts = [(w_bot, zk), (w_bot, z_mid), (w_in, z_mid),
+               (w_in, z_lip), (yg, z_lip), (yg, zs),
+               (-yg, zs), (-yg, z_lip), (-w_in, z_lip),
+               (-w_in, z_mid), (-w_in if False else -w_in, z_mid),
+               (-w_bot, z_mid), (-w_bot, zk)]
+        # dedupe the accidental repeat, keep symmetric 13-pt ring
+        pts = [p for i, p in enumerate(pts) if i == 0 or p != pts[i - 1]]
         out.append((x, pts))
     return out
 
