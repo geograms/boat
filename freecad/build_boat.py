@@ -337,10 +337,13 @@ def build_float(pod, roll, flip=0.0):
     ky = P.FLOAT_W / 400.0            # loft table is 400 wide, 900 tall
     kz = P.FLOAT_H / 900.0
     for u, yg, yc, zk, zc in FLOAT_STATIONS:
-        # the HEAD curves up FROM THE BOTTOM: a spoon nose, not a slab
-        if u >= 0.25:
-            f = (u - 0.25) / 0.25
-            zk = zk + (760 - zk) * f * f
+        # the HEAD curves up FROM THE BOTTOM over the last half-metre
+        # only - a spoon TIP. The body keeps full depth past the last
+        # wheel bay; the earlier version started the rise at 25% of the
+        # length and left the whole forward quarter without a hull.
+        if u >= 0.46:
+            f = (u - 0.46) / 0.04
+            zk = zk + (430 - zk) * min(1.0, f)
             zc = max(zc, zk + 40)
         x = P.FLOAT_X + u * P.FLOAT_LEN
         h2 = P.FLOAT_H / 2
@@ -354,11 +357,17 @@ def build_float(pod, roll, flip=0.0):
     # OPEN WHEEL BAYS: at each station the float body is cut through -
     # only the flip tube spans the bay, so the wheel nests inside the
     # envelope in either pose (local frame: x along, y across, z up)
+    # the bay is a WELL, not a trench: open below for the wheel, but a
+    # deck bridge stays over the top - only a narrow slot lets the
+    # wheel stand up through it. From the side the float reads closed.
     for dx in P.WHEEL_XS:
-        hull_f = hull_f.cut(box(
-            P.WELL_L, P.WELL_W, P.FLOAT_H + 200,
-            (P.FLOAT_X + dx - P.WELL_L / 2, -P.WELL_W / 2 + 25,
-             -P.FLOAT_H / 2 - 100)))
+        wx = P.FLOAT_X + dx
+        hull_f = hull_f.cut(box(                     # wheel well from below
+            P.WELL_L, P.WELL_W, P.FLOAT_H - 55,
+            (wx - P.WELL_L / 2, -P.WELL_W / 2 + 25, -P.FLOAT_H / 2 - 10)))
+        hull_f = hull_f.cut(box(                     # top slot, wheel width
+            680, 230, 90,
+            (wx - 340, -115 + 25, P.FLOAT_H / 2 - 60)))
     hull_f.Placement = place.multiply(hull_f.Placement)
 
     # solar strips on the deck, in the gaps between the wheels
@@ -418,34 +427,46 @@ def build_float(pod, roll, flip=0.0):
     hydraulics = Part.makeCompound(hyd)
     hydraulics.Placement = place.multiply(hydraulics.Placement)
 
-    # flush-intake WATERJET (docs/propulsion.md): perforated grids on
-    # BOTH sides -> plenum -> internal duct -> enclosed pump -> tail jet
-    gx = P.FLOAT_X + P.JET_GRID_X_LOCAL
-    gz = P.JET_Z_LOCAL
+    # U-INTAKE waterjet (docs/floater.md): three perforated faces wrap
+    # the BOTTOM of the machinery bay - port, floor, starboard - so
+    # water reaches the enclosed pump from all directions; the jet
+    # leaves through the tail nozzle. Nothing rotating touches water.
+    gx = P.FLOAT_X + P.MOTOR_BAY_DX
+    gl = 560
+    bot = -P.FLOAT_H / 2
     thr = []
+    # floor plate of the U
+    thr.append(box(gl + 40, P.FLOAT_W - 110, 14,
+                   (gx - gl / 2 - 20, -(P.FLOAT_W - 110) / 2, bot - 4)))
+    for ix in range(11):
+        for iy in range(6):
+            thr.append(Part.makeCylinder(
+                P.JET_HOLE_D / 2 + 2, 8,
+                Vector(gx - gl / 2 + 30 + ix * 50,
+                       -(P.FLOAT_W - 160) / 2 + iy * 50, bot - 8),
+                Vector(0, 0, 1)))
+    # the two side cheeks of the U, low on each face
     for sgn in (-1, 1):
-        gy = sgn * (P.FLOAT_W / 2 * 0.85)    # slim float side face
-        # recessed dark panel + frame, flush with the side
-        thr.append(box(P.JET_GRID_L + 60, 16, P.JET_GRID_H + 60,
-                       (gx - P.JET_GRID_L / 2 - 30, gy - 8 * sgn - 8,
-                        gz - P.JET_GRID_H / 2 - 30)))
-        # hole pattern: light discs proud of the panel
-        for ix in range(28):
-            for iz in range(5):
-                hx = gx - P.JET_GRID_L / 2 + 45 + ix * 45
-                hz = gz - P.JET_GRID_H / 2 + 30 + iz * 45
-                d = Part.makeCylinder(
-                    P.JET_HOLE_D / 2 + 3, 6,
-                    Vector(hx, gy + 9 * sgn, hz), Vector(0, sgn, 0))
-                thr.append(d)
+        gy = sgn * (P.FLOAT_W / 2)
+        thr.append(box(gl, 12, 130,
+                       (gx - gl / 2, gy - (12 if sgn > 0 else 0), bot + 6)))
+        for ix in range(10):
+            for iz in range(2):
+                thr.append(Part.makeCylinder(
+                    P.JET_HOLE_D / 2 + 2, 8,
+                    Vector(gx - gl / 2 + 45 + ix * 50, gy + sgn * 6,
+                           bot + 40 + iz * 55), Vector(0, sgn, 0)))
     # jet nozzle out the tail cone
     tail = P.FLOAT_X - P.FLOAT_LEN / 2
-    noz = Part.makeCone(110, P.JET_NOZZLE_D / 2, 200,
-                        Vector(tail + 40, 0, gz), Vector(-1, 0, 0))
+    noz = Part.makeCone(90, P.JET_NOZZLE_D / 2, 200,
+                        Vector(tail + 40, 0, bot + 110), Vector(-1, 0, 0))
     thr.append(noz)
     thr.append(Part.makeCylinder(P.JET_NOZZLE_D / 2 - 12, 30,
-                                 Vector(tail - 165, 0, gz),
+                                 Vector(tail - 165, 0, bot + 110),
                                  Vector(-1, 0, 0)))
+    # rub strake along the outer face at the waterline
+    thr.append(rod((P.FLOAT_X - 2800, P.FLOAT_W / 2 + 10, 40),
+                   (P.FLOAT_X + 2700, P.FLOAT_W / 2 + 10, 40), 36))
     thruster = Part.makeCompound(thr)
     thruster.Placement = place.multiply(thruster.Placement)
 

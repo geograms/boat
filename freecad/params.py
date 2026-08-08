@@ -172,8 +172,8 @@ HUB_DIA = 390
 WHEEL_XS = (-1200, 550, 2300)      # along the float, from FLOAT_X:
                                    # world 1800/3550/5300; centroid
                                    # 3550 -> ~90 kg on the coupling
-WELL_L = 900                       # bay opening along the float:
-                                   # wheel 668 + arm + real clearance
+WELL_L = 730                       # bay along the float: wheel 668 +
+                                   # swing clearance, nothing more
 WELL_W = 300                       # bay opening across: the wheel
                                    # swings IN through the outboard
                                    # side, so it needs lead-in play
