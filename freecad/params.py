@@ -165,9 +165,11 @@ POD_SEA = (POD_DOCKED[0] + 1650, POD_DOCKED[1])     # extended 1.65 m -
                                                     # choice (2/3 of 2.5)
 EXT_VEC = (POD_SEA[0] - POD_DOCKED[0], 0.0)
 EXT_STROKE = EXT_VEC[0]
-EXT_BEAM = (150, 230)              # SOLID alu box halves, b x h - the
-                                   # bar the boat actually sits on
-EXT_SLEEVE = (200, 290)            # central guide sleeve under the stem
+# the cross tie is WIDE AND FLAT so it can hide in a shallow keel
+# channel: a deep bar hanging in the flow is pure drag
+TIE_W, TIE_H = 900, 90             # section of the tie
+TIE_CHANNEL_D = 110                # channel cut into the hull bottom
+TIE_CHANNEL_W = 980
 EXT_STATIONS = (92, 1792)        # midway BETWEEN the wheel
                                    # stations - the strong bays of
                                    # the float, clear of the wells

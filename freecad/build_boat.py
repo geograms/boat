@@ -163,24 +163,24 @@ def build_hull():
          (P.CABIN_X0 + 50, P.CABIN_W / 2 - 70)],
         DECK_Z - 60, DECK_Z + 60))
     # the float notches are built into the T sections themselves
-    # ---- KEEL GUIDE for the hangar's cross tie. The tie travels the
-    # whole way forward under the hull as the assembly docks, so it
-    # gets a pair of runners to ride on, flared at the aft end to
-    # catch it, and a stop with two lock lugs where it seats.
-    guide_x0, guide_x1 = 120, 3220
+    # ---- KEEL CHANNEL for the hangar's cross tie. The tie has to
+    # travel the whole length of the hull bottom to dock, so instead of
+    # hanging in the flow it runs in a shallow channel cut into the
+    # keel and finishes FLUSH: no bar in the water, no drag. The
+    # forward end of the channel is ramped so the water closes over it.
+    ch_x1 = 3400
+    shell = shell.cut(box(ch_x1, P.TIE_CHANNEL_W, P.TIE_CHANNEL_D + 10,
+                          (-40, -P.TIE_CHANNEL_W / 2, -10)))
+    ramp = Part.makeBox(420, P.TIE_CHANNEL_W, P.TIE_CHANNEL_D,
+                        Vector(ch_x1, -P.TIE_CHANNEL_W / 2, 0))
+    ramp.rotate(Vector(ch_x1, 0, P.TIE_CHANNEL_D), Vector(0, 1, 0), 15)
+    shell = shell.cut(ramp)
+    # guide strips INSIDE the channel, and the stop the tie seats on
     for sy in (-1, 1):
-        shell = shell.fuse(box(guide_x1 - guide_x0, 90, 70,
-                               (guide_x0, sy * 300 - 45, -70)))
-        # flared lead-in at the aft end
-        shell = shell.fuse(Part.makeBox(
-            300, 90, 70, Vector(guide_x0 - 300, sy * 420 - 45, -70)))
-        shell = shell.fuse(box(320, 90, 70,
-                               (guide_x0 - 300, sy * 300 - 45, -70)))
-    # the stop and its lock lugs, where the tie seats
-    shell = shell.fuse(box(120, 900, 150, (guide_x1, -450, -150)))
-    for sy in (-1, 1):
-        shell = shell.fuse(box(180, 120, 210,
-                               (guide_x1 - 60, sy * 330 - 60, -210)))
+        shell = shell.fuse(box(ch_x1 - 200, 70, 34,
+                               (60, sy * 400 - 35, P.TIE_CHANNEL_D - 34)))
+    shell = shell.fuse(box(90, P.TIE_CHANNEL_W - 60, P.TIE_CHANNEL_D,
+                           (ch_x1 - 120, -(P.TIE_CHANNEL_W - 60) / 2, 0)))
 
     # the dome is a ROOM, not a bubble on the deck: open the foredeck
     # under it so the saloon sole runs on through, leaving a 130 mm
@@ -630,17 +630,18 @@ def build_hangar(phi, coupled=True, tow="sea"):
     # swing arm sheds part of its moment into the other side instead of
     # taking it all in its own pins. It hangs 120 mm below the keel -
     # still 200 mm of ground clearance under it.
-    tie_x = 100 + P.SPIKE_L - 260
+    tie_x = 100 + P.SPIKE_L - 300
     tie_y = P.STEM_HW + gb / 2 - 20
-    tie_z = -120
-    parts.append(box(200, 2 * tie_y + gb, 190,
-                     (tie_x - 100, -tie_y - gb / 2, tie_z - 95)))
-    for sy in (-1, 1):                       # knee braces up to the girders
-        parts.append(rod((tie_x, sy * tie_y, tie_z),
-                         (tie_x - 1100, sy * tie_y, P.POD_DOCKED[1]), 90))
-        parts.append(box(150, gb + 40, 260,
-                         (tie_x - 75, sy * tie_y - (gb + 40) / 2,
-                          tie_z - 30)))
+    tie_z = 12                               # sits IN the keel channel
+    parts.append(box(P.TIE_W, 2 * tie_y + gb, P.TIE_H,
+                     (tie_x - P.TIE_W / 2, -tie_y - gb / 2, tie_z)))
+    # the wings that reach out to the girders stay inside the notch
+    for sy in (-1, 1):
+        parts.append(box(P.TIE_W - 260, gb + 30, 150,
+                         (tie_x - (P.TIE_W - 260) / 2,
+                          sy * tie_y - (gb + 30) / 2, tie_z + P.TIE_H - 30)))
+        parts.append(rod((tie_x, sy * tie_y, tie_z + 120),
+                         (tie_x - 900, sy * tie_y, P.POD_DOCKED[1]), 80))
 
     # ---- bight + drawbar: a FIXED, small triangle at docked width.
     # It belongs to the ROAD function; the extended floats leave it
