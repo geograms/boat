@@ -103,7 +103,33 @@ centimetres, not a duct.
 - **Detachable**: docks and undocks on the water, fork-and-lock, with
   the crew in the cockpit.
 
-## 8. Open engineering (not yet modelled)
+## 8. Scantlings — calculated, not guessed
+
+`freecad/structure_calc.py` proves the three members that carry the
+boat. 6082-T6 aluminium, 260 MPa proof, **0.60 knockdown for the weld
+HAZ** and 1.5 on yield → **104 MPa allowable**. Load cases: ×2.5 road
+shock on a trailer axle, ×3.0 wave slam on an outrigger.
+
+| Member | Case | Moment | Stress | SF | Section |
+|---|---|---|---|---|---|
+| U-girder | 3 599 kg × 2.5 over 3 wheel stations, 1.7 m bay | 2.0 kNm | 7 MPa | **14.8** | 140 × 200 × 8 box |
+| Swing arm | one float's full 559 kg buoyancy × 3.0 on **one** arm, 1 918 mm lever | 31.6 kNm | 66 MPa | **1.6** | 165 × 230 × 10 box |
+| Flip-arm tube | one wheel's share × 2.5 on the 516 mm arm | 7.0 kNm | 70 MPa | **1.5** | ⌀120 × 12 tube |
+
+Two results changed the design:
+
+- **The ⌀70 flip tube failed at 324 MPa** — three times over. It is now
+  ⌀120 × 12.
+- **The U-girder was drawn at 190 × 300 × 10 and came out at SF 39** —
+  294 kg of aluminium doing a 2 kNm job. Cut to 140 × 200 × 8: still
+  SF 15, and 132 kg lighter.
+
+The swing arm at SF 1.6 is the tightest member and the one to watch: it
+carries a whole float's buoyancy on a single 1.9 m cantilever, which is
+the honest worst case (float pitching on a crest with the other arm
+unloaded).
+
+## 9. Open engineering (not yet modelled)
 
 - Compartment bulkheads and the flooded-cell stability case.
 - The dock connector (48 V + signals) — wet-mate, location TBD at the

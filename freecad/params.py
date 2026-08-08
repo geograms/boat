@@ -214,8 +214,11 @@ WELL_L = 730                       # bay along the float: wheel 668 +
 WELL_W = 300                       # bay opening across: the wheel
                                    # swings IN through the outboard
                                    # side, so it needs lead-in play
-FLIP_TUBE_D = 70                   # the tube the arm swings on
-FLIP_ARM_D = 60
+FLIP_TUBE_D = 120                  # the tube the arm swings on: d70
+                                   # came out at 324 MPa against a
+                                   # 104 MPa allowable - see
+                                   # freecad/structure_calc.py
+FLIP_ARM_D = 110
 FLIP_ARM_LEN = 516                 # tube centre to axle
 AXLE_DOWN_Z = POD_DOCKED[1] + FLOAT_H / 2 - FLIP_ARM_LEN   # 74, in the bay
 GROUND_Z = AXLE_DOWN_Z - WHEEL_DIA / 2             # -260: the keel rides
@@ -262,8 +265,8 @@ def hangar_mass():
     bight_m = 2 * (POD_DOCKED[0] + FLOAT_W / 2) / 1000
     alu = bight_m * HANGAR_BIGHT[0] * HANGAR_BIGHT[1] * 0.15 * 2.7e-3
     return (floats + MASS_WHEELS_HUBS + MASS_EXTENDERS + MASS_FLIPGEAR +
-            MASS_HYDRAULICS + alu + 4 * LOCK_MOTOR_KG + 20 +
-            DINGHY_BATT_KG + 25)
+            MASS_HYDRAULICS + MASS_UGIRDER + alu +
+            4 * LOCK_MOTOR_KG + 20 + DINGHY_BATT_KG + 25)
 
 
 def float_buoyancy():
@@ -938,10 +941,14 @@ FAIR_COAT_MM = 2                   # per side, bog and primer
 BULKHEAD_X = (900, 2400, 3900, 5400, 6200)
 
 # masses that are NOT laminate, kg. Sources in the docs named alongside.
-MASS_EXOSKELETON = 260     # S355 tube frame 180 + brackets + tow arch, galvanised
+MASS_EXOSKELETON = 260     # S355 tube frame + brackets, galvanised
+MASS_UGIRDER = 162         # the two 140x200x8 alu box girders that
+                           # carry the boat on the road
 MASS_WHEELS_HUBS = 270     # 6 x (tire 14 + rim 8 + hub motor 11 + stub axle 12)
-MASS_EXTENDERS = 4 * 16    # scissor units, 24 V leadscrews
-MASS_FLIPGEAR = 6 * 9      # tubes, curved arms, pins
+MASS_EXTENDERS = 4 * 30    # swing arms, 165x230x10 alu box + pins
+                           # (structure_calc.py)
+MASS_FLIPGEAR = 6 * 16     # d120x12 tubes, arms, pins - the d70
+                           # tube failed at 324 MPa
 MASS_HYDRAULICS = 120      # 2 x (BLDC + pump + manifold), hoses, oil, reservoir
 MASS_JETS = 75             # 3 x 2 kW waterjet cartridges incl. ducting
 MASS_ELECTRICS = 120       # inverter/charger, MPPTs, busbars, cabling
@@ -1727,8 +1734,9 @@ def checks(verbose=True, strict=True):
     if all_up + CREW_STORES > 3500:
         open_items.append(
             f"category O2: {all_up + CREW_STORES:.0f} kg loaded, "
-            f"{all_up + CREW_STORES - 3500:.0f} kg over the 3500 limit - the "
-            "wide sea stance cost 90 kg of arm; find it back or go O3")
+            f"{all_up + CREW_STORES - 3500:.0f} kg over the 3500 limit - "
+            "the calculated scantlings (structure_calc.py) cost more "
+            "than the guessed ones; see docs/weight.md for the levers")
     if all_up > DESIGN_ALL_UP:
         open_items.append(
             f"mass budget: {all_up:.0f} kg computed vs {DESIGN_ALL_UP} kg "

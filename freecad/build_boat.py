@@ -535,14 +535,14 @@ def build_hangar(phi, coupled=True, tow="sea"):
     # tubes. The girders run the length of the notch inside the stem
     # face; the float's fork grooves ride their outer web, and the
     # tapered nose closes the fit as the float slides in from astern.
-    gb, gh = 190, 300
+    gb, gh = 140, 200            # sized in structure_calc.py: SF 15
     for sy in (-1, 1):
         ry = sy * (P.STEM_HW + gb / 2 - 20)
         gir = box(P.SPIKE_L, gb, gh,
                   (100, ry - gb / 2, P.POD_DOCKED[1] - gh / 2))
-        gir = gir.cut(box(P.SPIKE_L - 240, gb - 44, gh - 44,
-                          (220, ry - (gb - 44) / 2,
-                           P.POD_DOCKED[1] - (gh - 44) / 2)))
+        gir = gir.cut(box(P.SPIKE_L - 240, gb - 16, gh - 16,
+                          (220, ry - (gb - 16) / 2,
+                           P.POD_DOCKED[1] - (gh - 16) / 2)))
         parts.append(gir)
         # the docking nose: a tapered lead-in at the aft end
         locks.append(Part.makeCone(
