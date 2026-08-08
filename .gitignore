@@ -6,3 +6,6 @@ __pycache__/
 *.pyc
 freecad/*.FCBak
 STL/
+
+# generated: python3 docs/make_pdf.py
+docs/boat-home.pdf
