@@ -374,7 +374,7 @@ def build_float(pod, roll, flip=0.0, fx=None):
 
     # solar strips on the deck, in the gaps between the wheels
     strips = []
-    for x0 in (P.FLOAT_X - 2600, P.FLOAT_X + 1600):
+    for x0 in (P.FLOAT_X - 1900, P.FLOAT_X + 700):
         s = box(P.DINGHY_PANEL[0], P.FLOAT_W - 90, 12,
                 (x0, -(P.FLOAT_W - 90) / 2, P.FLOAT_H / 2))
         s.Placement = place.multiply(s.Placement)
@@ -387,8 +387,9 @@ def build_float(pod, roll, flip=0.0, fx=None):
     tube_yz, up_yz, down_yz = P.flip_points((ty, tz))
     axle = up_yz if flip < 90 else down_yz
     forks, tires, rims = [], [], []
+    fxc = P.FLOAT_X if fx is None else fx      # the float's CURRENT centre
     for dx in P.WHEEL_XS:
-        wx = P.FLOAT_X + dx
+        wx = fxc + dx                          # wheels ride WITH the float
         # the tube across the bay
         forks.append(rod((wx - P.WELL_L / 2 - 40, tube_yz[0], tube_yz[1]),
                          (wx + P.WELL_L / 2 + 40, tube_yz[0], tube_yz[1]),
@@ -467,8 +468,9 @@ def build_float(pod, roll, flip=0.0, fx=None):
                                  Vector(tail - 165, 0, bot + 110),
                                  Vector(-1, 0, 0)))
     # rub strake along the outer face at the waterline
-    thr.append(rod((P.FLOAT_X - 2800, P.FLOAT_W / 2 + 10, 40),
-                   (P.FLOAT_X + 2700, P.FLOAT_W / 2 + 10, 40), 36))
+    thr.append(rod((P.FLOAT_X - P.FLOAT_LEN / 2 + 260, P.FLOAT_W / 2 + 8, 40),
+                   (P.FLOAT_X + P.FLOAT_LEN / 2 - 500, P.FLOAT_W / 2 + 8, 40),
+                   30))
     thruster = Part.makeCompound(thr)
     thruster.Placement = place.multiply(thruster.Placement)
 
@@ -563,7 +565,7 @@ def build_hangar(phi, coupled=True, tow="sea"):
     import math as _m
     ang = _m.radians(P.swing_angle(phi))
     fx = P.float_x(phi)
-    arm_b, arm_h = 170, 120
+    arm_b, arm_h = 230, 165        # heavy box beams, not tubes
     for sy in (-1, 1):
         for k, px in enumerate((P.SWING_PIVOT_X - P.SWING_ARM_GAP,
                                 P.SWING_PIVOT_X)):
@@ -594,15 +596,9 @@ def build_hangar(phi, coupled=True, tow="sea"):
                             P.POD_DOCKED[1] + arm_h / 2 + 10),
             Vector(0, 0, 1)))
 
-    if phi > 5:
-        # deployed: a folding strut from the forward arm down to the
-        # float takes slam in a triangle, not through the pins
-        for sy in (-1, 1):
-            tx = P.SWING_PIVOT_X + P.SWING_ARM_R * _m.cos(ang)
-            ty = sy * (P.SWING_PIVOT_Y + P.SWING_ARM_R * _m.sin(ang))
-            locks.append(rod((P.SWING_PIVOT_X - 700, sy * P.SWING_PIVOT_Y,
-                              P.POD_DOCKED[1] + 130),
-                             (tx, ty, P.POD_DOCKED[1] - 120), 60))
+    # no extra struts: the parallelogram IS the structure, exactly as
+    # on the boats this pattern comes from. Each arm is a deep box beam
+    # and the four pins are the only moving parts.
 
     # ---- bight + drawbar: a FIXED, small triangle at docked width.
     # It belongs to the ROAD function; the extended floats leave it

@@ -128,10 +128,16 @@ FLOAT_H = 540                      # bottom flush with the keel plane
 # float is 4600 in a 6000 notch - docked it lies AFT in the notch with
 # the bow shoulders closed over the empty forward end; deployed it
 # swings forward and out, where a forward float earns its stability.
-SWING_PIVOT_X = 1792               # vertical pins, both sides
+SWING_PIVOT_X = 641                # aft vertical pin, both sides.
+                                   # A parallelogram's travel depends
+                                   # only on arm length and angles, so
+                                   # the pins are free to sit where the
+                                   # float needs support
 SWING_PIVOT_Y = 810                # on the stem face
 SWING_ARM_R = 1918                 # pin to float, both arms
-SWING_ARM_GAP = -1700              # fore/aft arm pin spacing (arms lie aft)
+SWING_ARM_GAP = -2300              # fore/aft pin spacing: the arms land
+                                   # at float x 1150 and 3450 deployed,
+                                   # so nothing is cantilevered
 SWING_DEG_DOCK = 6.0               # arm angle, docked (lying forward)
 SWING_DEG_SEA = 74.6               # arm angle, deployed
 FLOAT_X_DOCKED = 3700              # docked: float 1400..6000, wholly
