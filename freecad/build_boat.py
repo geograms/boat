@@ -607,10 +607,13 @@ def build_hangar(phi, coupled=True, tow="sea"):
     by = P.POD_DOCKED[0] + P.FLOAT_W / 2
     parts.append(box(bb, 2 * by, bh,
                      (P.HANGAR_BIGHT_X - bb, -by, P.POD_DOCKED[1] - bh / 2)))
-    for sy in (-1, 1):                       # ties to the DOCKED tails
+    # ties run from the bight to the DOCKED float's transom, which sits
+    # 1400 mm forward of the boat's - they used to stop in mid air
+    tail_x = P.FLOAT_X_DOCKED - P.FLOAT_LEN / 2
+    for sy in (-1, 1):
         parts.append(rod((P.HANGAR_BIGHT_X - bb / 2, sy * P.POD_DOCKED[0],
                           P.POD_DOCKED[1]),
-                         (60, sy * P.POD_DOCKED[0], P.POD_DOCKED[1]), 70))
+                         (tail_x, sy * P.POD_DOCKED[0], P.POD_DOCKED[1]), 90))
     # THE A-FRAME IS DEMOUNTABLE. On the road it pins into two sockets
     # on the bight and meets the car ball 445 mm over the tarmac; at sea
     # it comes off and stows flat on a float deck - nothing stands in

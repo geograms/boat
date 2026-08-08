@@ -235,7 +235,8 @@ def flip_points(pod):
 
 # ---- the float pair as a vehicle, and as a dinghy ----
 LOCK_MOTOR_KG = 2.6                # bayonet lock gearmotor, per spike
-HANGAR_BIGHT_X = -320              # cross beam joining the float tails
+HANGAR_BIGHT_X = -120              # cross beam joining the float tails,
+                                   # just clear of the transom
 HANGAR_BIGHT = (140, 180)
 DRAWBAR_LEN = 1900
 DRAWBAR_TUBE = 100

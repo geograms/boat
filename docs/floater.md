@@ -61,11 +61,11 @@ centimetres, not a duct.
 | Item | Spec | Where |
 |---|---|---|
 | Wheels | 3 × 205/70 R15 AT, hub motors | bays at x 1 800 / 3 550 / 5 300 |
-| Bays | **wells, not trenches**: open below, deck bridge on top with a 680 × 230 slot for the wheel to stand through — the profile stays closed | 730 × 300 below, slot above |
+| Bays | **wells, not trenches**: open below, deck bridge on top with a 680 × 230 slot for the wheel to stand through — the profile stays closed. Roughly half the wheel is inside the bay on the road | 730 × 300 below, slot above |
 | Flip arm | curved, bulging **outboard**; 180° about a tube spanning the bay | tube on the bay centreline, z +230 |
 | Pins | spring pin at each end of the swing — **manual, no electrics** | tube ends |
 | Sequence | flip only while **extended** (the T-wing forbids it docked); wheels down before the trusses retract | — |
-| Road pose | wheel protrudes below the bottom just enough to roll; ground at −400 (global) | — |
+| Road pose | wheel top sits in the bay, bottom **310 mm proud** of the float — that protrusion IS the ground clearance, and it cannot be tucked away without grounding the hull | ground at −320 |
 
 ## 5. Docking and extension
 
