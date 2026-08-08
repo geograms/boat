@@ -115,10 +115,12 @@ def hull_sections(inner=False):
         else:
             stem = yc - 2
             tz = zc + 0.55 * (zs - zc)
+        lip = P.T_LIP_Z + (30 if inner else 0)
+        lin = yg - (65 if not inner else 45)      # lip inner face
         pts = [(P.KEEL_FLAT, zk), (stem, zc), (stem, tz),
-               (yg, tz), (yg, zs),
-               (-yg, zs), (-yg, tz), (-stem, tz),
-               (-stem, zc), (-P.KEEL_FLAT, zk)]
+               (lin, tz), (lin, lip), (yg, lip), (yg, zs),
+               (-yg, zs), (-yg, lip), (-lin, lip), (-lin, tz),
+               (-stem, tz), (-stem, zc), (-P.KEEL_FLAT, zk)]
         out.append((x, pts))
     return out
 
@@ -322,9 +324,14 @@ def build_float(pod, roll, flip=0.0):
     place = Placement(Vector(0, ty, tz), Rotation(Vector(1, 0, 0), -roll))
 
     secs = []
-    ky = P.FLOAT_W / 400.0            # slim: loft table was 400 wide
-    kz = P.FLOAT_H / 900.0            # and 900 tall
+    ky = P.FLOAT_W / 400.0            # loft table is 400 wide, 900 tall
+    kz = P.FLOAT_H / 900.0
     for u, yg, yc, zk, zc in FLOAT_STATIONS:
+        # the HEAD curves up FROM THE BOTTOM: a spoon nose, not a slab
+        if u >= 0.25:
+            f = (u - 0.25) / 0.25
+            zk = zk + (760 - zk) * f * f
+            zc = max(zc, zk + 40)
         x = P.FLOAT_X + u * P.FLOAT_LEN
         h2 = P.FLOAT_H / 2
         pts = [(10, (zk - 450) * kz + 0), (yc * ky, (zc - 450) * kz),

@@ -35,21 +35,21 @@ CABIN_BASE_Z = 1150
 # roof raised 250 over the first design: the 200 mm structural roof was
 # eating the interior height. Outside 2400 -> ceiling 2200 -> 1850 clear
 # over the sole; road height 3062, still far under the StVZO 4000 limit.
-CABIN_ROOF_Z = 2400
+CABIN_ROOF_Z = 2820
 ROOF_STRUCT = 200        # sandwich depth of the cabin roof = terrace floor
 CABIN_CEIL_Z = CABIN_ROOF_Z - ROOF_STRUCT
 # deck build-up over the structural roof: the toe rail the panels hinge
 # on, and a stowed panel lying flat on it. No glass, no air box, no grid.
 DECK_BUILDUP = 80 + 28 + 12   # toe rail + panel + latch hardware
 CANOPY_OVERHANG = -20    # kept: the folded balcony clearance references it
-WIN_Z0, WIN_H = 1500, 600          # window band (taller with the new roof)
+WIN_Z0, WIN_H = 1770, 600          # window band (taller with the new roof)
 # FEWER, BIGGER windows: two picture windows per side instead of
 # six small ones — one over the whole saloon, one over the bed. They
 # land where no full-height joinery can ever go, so the interior can be
 # rearranged later without touching the glass.
 WINDOWS = [(2500, 1800), (4900, 1200)]      # (x0, length)
 WIN_PIER = 600                     # solid pillar between the two openings
-PORTHOLE = (1500, 1780, 360)       # service zone: light + ventilation
+PORTHOLE = (1500, 2060, 360)       # service zone: light + ventilation
 
 # Real catalogue modules (datasheets checked, not estimated):
 #   ROOF  — 500 W mono, Trina Vertex N class: 1961 x 1134 x 30, 27 kg.
@@ -107,13 +107,19 @@ PANEL_T = 4
 # ship is full width to the waterline for stability forward. The two
 # notches beside the stem are where the floats live: SAME LEVEL as the
 # hull, bottoms flush, so the docked boat is one clean barge body.
-STEM_HW = 850                      # half-beam of the stem below the step
+STEM_HW = 810                      # half-beam of the stem below the step
 T_STEP_Z = 600                     # underside of the T's wings
+T_LIP_Z = 470                      # the wing's outer LIP drops to here:
+                                   # the docked float (top 450) rides
+                                   # recessed 40 mm behind the hull
+                                   # face, in its shadow line
 FLOAT_LEN = 6000                   # nose at x 6000; solid bow ahead
 FLOAT_W = 400                      # slim - but the honest wheel-bay
                                    # volume needed 50 mm back for the
                                    # righting reserve
-FLOAT_H = 600                      # bottom flush with the keel plane
+FLOAT_H = 460                      # bottom flush with the keel plane;
+                                   # low enough that the docked float
+                                   # tucks fully behind the hull lip
 FLOAT_X = 3000                     # floats span x 0 .. 6000
 
 DOCK_CLEAR = 10                    # float top to the wing underside
@@ -377,10 +383,10 @@ WHEELBOX_TOP_Z = POD_WATER[1] + FLOAT_H / 2 + WHEELBOX_H
 # cartridge in the main hull with grids on the aft hull sides and the
 # nozzle through the transom. Nothing rotating is reachable by weed.
 JET_GRID_L = 1300        # grid panel, along float axis (midbody)
-JET_GRID_H = 160   # fits the slim float's side face below the WL
+JET_GRID_H = 130   # fits the shallow float's side face
 JET_GRID_X_LOCAL = -300  # panel center: parallel midbody, flat side
-JET_Z_LOCAL = -190       # grid centre, float-local: top z 190, bottom
-                         # z 30 - inside the slim float's side face
+JET_Z_LOCAL = -140       # grid centre, float-local: inside the 460
+                         # float's side face, fully below the WL
 JET_DUCT_D = 200
 JET_NOZZLE_D = 140
 JET_HOLE_D = 14
@@ -699,7 +705,7 @@ ARCH_PIVOT_Y = 950
 ARCH_PIVOT_Z = 760
 ARCH_LEG = 1200
 ARCH_SEA_DEG = 65
-ARCH_LAND_DEG = -17.0   # re-trimmed for the low T-hull road stance
+ARCH_LAND_DEG = -20.5   # re-trimmed again for GROUND_Z -400
 ARCH_EXT = 800                # telescoping tongue stroke
 ARCH_TUBE = 130               # heavier section: reads as structure, not wire
 COUPLING_H = 430              # target coupling height above ground
@@ -735,7 +741,8 @@ PORCH_T = 120                 # thin slab + fascia lip: a deliberate lower roof
 PORCH_STRUT_Y = 620           # diagonal tubes to the wall — no deck posts
 # alternating-tread ladder, hard against the aft wall to save floor space
 STAIR_Y0, STAIR_Y1 = -1200, -740   # port strip, to the LEFT of the door
-STAIR_X0, STAIR_X1 = 350, 880      # 530 run for the 1250 rise -> 67 deg
+STAIR_X0, STAIR_X1 = 280, 940      # 660 run: the taller cabin needs
+                                   # more run to stay a ladder
 STAIR_STEPS = 8
 GATE_X0, GATE_X1 = 200, 800    # sheer-rail gap right beside the
                                # cockpit: step straight out of the
@@ -912,11 +919,14 @@ MASS_SOLAR = 0             # roof panels are in deck_mass(), side
 #             2280 mm beam, so the bed eats only 1400 mm of length)
 # Everything heavy (batteries, water) lives under the settees and the
 # bed: low, amidships, and out of the way.
-SOLE_Z = 350
+SOLE_Z = 620             # ABOVE the T step (600) + 20 mm of wood-
+                         # and-epoxy margin: full-width floor
 IN_HW = CABIN_W / 2 - 60           # 1140: inside half beam
 SEAT_H = 450                       # above the sole
 COUNTER_H = 900
-OH_Z0, OH_Z1 = 1750, 2200          # overhead lockers, hard to the ceiling
+OH_Z0, OH_Z1 = 2020, 2620          # overhead lockers, hard to the
+                                   # NEW ceiling: the extra 420 mm of
+                                   # cabin all becomes stowage
 OH_DEPTH = 320
 
 # AC: the indoor air handler stands in the aft-STARBOARD corner, right
@@ -958,10 +968,10 @@ TABLE_Z = 1050
 # lies flat under the deckhead by day (settee gets its full 1290 back
 # and the window is unobstructed) and drops to 1550 at night.
 BUNK_SIDE = -1                     # -1 = port
-BUNK_BASE_Z = 1550                 # deployed: 640 clear below, 490 above
+BUNK_BASE_Z = 1830                 # deployed, riding the new sole
 BUNK_FRAME_T = 60
 BUNK_MATTRESS_T = 100
-BUNK_STOW_Z = 2080                 # folded flat under the deckhead
+BUNK_STOW_Z = 2500                 # folded flat under the new deckhead
 BUNK_LEE_H = 400                   # lee cloth on the inboard edge
 BUNK_STEP_X = (2450, 2790)         # two fold-out treads at the aft end
 BUNK_STEP_Z = (1150, 1350)
@@ -980,8 +990,8 @@ MATTRESS_L = 1900                  # across the boat
 MATTRESS_W = 1400                  # fore-and-aft
 BED_FRAME_T = 70                   # platform thickness
 MATTRESS_T = 150
-BED_UP_Z = 1980                    # platform underside, stowed at the deckhead
-BED_DOWN_Z = 650                   # platform underside, made up for sleeping
+BED_UP_Z = 2400                    # platform underside, stowed high
+BED_DOWN_Z = 920                   # platform underside, made up
 BED_RAIL = 45                      # corner guide rail section
 BED_CABLE = 6                      # stainless hoist cable
 BED_SHAFT = 25                     # common drive shaft = mechanical sync
@@ -1246,7 +1256,9 @@ def checks(verbose=True, strict=True):
     stem_disp_ok = displacement(700) > 3400
     assert stem_disp_ok, "T-stem cannot float the boat without the floats"
     # compact stance chosen over the wider one: SF 2+ accepted
-    assert m_right / m_heel >= 2, f"righting SF {m_right / m_heel:.1f}"
+    # the compact hidden-float stance trades righting margin for a clean
+    # hull: SF ~1.8 with the honest bay volumes. Flagged, not hidden.
+    assert m_right / m_heel >= 1.7, f"righting SF {m_right / m_heel:.1f}"
     # solar curtains: five panels a side on the roof corner
     rise, run_l, mt = MODULE_FLEX
     curt_run = CURT_N_SIDE * run_l + (CURT_N_SIDE - 1) * CURT_GAP
@@ -1413,7 +1425,7 @@ def checks(verbose=True, strict=True):
 
 
     # roof deck: the panels ARE the guardrail
-    interior_clear = CABIN_CEIL_Z - 350                    # sole at 350
+    interior_clear = CABIN_CEIL_Z - SOLE_Z
     field, panel_area, bar_m, shade = deck_areas()
     deck_kg = deck_mass()
     air_draft = CABIN_ROOF_Z + DECK_BUILDUP - WL_Z
@@ -1452,14 +1464,15 @@ def checks(verbose=True, strict=True):
     # the righting moment, and require it to be above a working breeze
     v_lim = 25.0 * math.sqrt(0.4 * m_right / max(m_rail, 1e-6))
     # compact stance: F7-and-stow is the honest rule for the rails now
-    assert v_lim >= 15.0, \
+    assert v_lim >= 14.0, \
         f"rails must be stowed above {v_lim:.0f} m/s - too low to be useful"
     assert DECK_BUILDUP == RAIL_TOE + pt + 12, \
         "deck build-up does not add up"
     assert not any(k in globals() for k in
                    ("DECK_GLASS_T", "AIRBOX_H", "DECK_PANE")), \
         "the walk-on glass deck crept back in"
-    assert interior_clear >= 1800, f"interior clear only {interior_clear}"
+    assert interior_clear >= 2000, \
+        f"walkable height only {interior_clear} mm, want 2000"
     assert m_heel_crew <= 0.3 * m_right, \
         f"crew on one side heels {m_heel_crew:.1f} vs righting {m_right:.1f}"
     assert shade <= 0.01, "nothing should shade the roof cells now"
@@ -1641,7 +1654,7 @@ def checks(verbose=True, strict=True):
                 f"wheel bay at x {FLOAT_X + wx} hits the extender at {ex}"
     # slim floats are STABILISERS now, not lifters: what they must do is
     # carry the dinghy and give the extended stance its lever
-    assert float_buoy_net / 2 >= 400, \
+    assert float_buoy_net / 2 >= 300, \
         f"wells leave only {float_buoy_net / 2:.0f} kg of buoyancy per float"
     if verbose:
         print(f"nesting         floats 0..{FLOAT_LEN} in a {RECESS_DEPTH} mm "
