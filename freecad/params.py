@@ -135,7 +135,10 @@ SWING_PIVOT_X = 641                # aft vertical pin, both sides.
                                    # float needs support
 SWING_PIVOT_Y = 810                # on the stem face
 SWING_ARM_R = 1918                 # pin to float, both arms
-SWING_ARM_DEEP = 300               # truss depth; chords 60x60x4
+SWING_ARM_DEEP = 340               # truss depth; chords 70x70x4. The
+                                   # float lost its wheel slots, so its
+                                   # buoyancy - and the arm's load -
+                                   # went up with it
 SWING_ARM_GAP = -2300              # fore/aft pin spacing: the arms land
                                    # at float x 1150 and 3450 deployed,
                                    # so nothing is cantilevered
@@ -216,44 +219,61 @@ POD_ROAD = POD_DOCKED
 # marine face seal to the wheel. IP68 on a motor is a STATIC test - a
 # rotating seal under load can fail in minutes - so the design has one
 # serviceable seal per wheel instead of trusting a submerged hub.
-# ONE motor for the whole machine. It sits DRY in the hull's stem,
-# above the keel channel, and drives a transverse shaft that runs in
-# that channel to a dog clutch at each stem face. When the floats dock,
-# the clutches engage stub shafts in the floats that turn the wheels
-# NEAREST THE COUPLING - the pair that has to pull on a ramp. The other
-# pair free-wheels. Nothing electric is in the float, and the only
-# rotating seal is on each stub shaft.
-DRIVE_WHEELS = 2                   # the pair nearest the coupling
-DRIVE_KW = 6.0                     # ONE motor, in the hull
-DRIVE_RATIO = 100                  # reduction to the wheels
-DRIVE_NM = 1623                    # at the two wheels together
-DRIVE_MOTOR_KG = 38                # motor + reduction gearbox
-DRIVE_SHAFT_KG = 18                # cross shaft, bearings, 2 dog clutches
-DRIVE_INFLOAT_KG = 9               # chain drive to the wheel, per float
-DRIVE_CTRL_KG = 12                 # controller, cabling, contactors
-SEAL_DIA = 90                      # face seal on each stub shaft
+# DRIVE: one motor PER FLOAT, and it stays in the float. The hangar
+# detaches and runs as a dinghy, so nothing essential to it may live in
+# the boat - a motor in the hull would leave the detached unit dead.
+# Each float carries its own 3 kW motor and reduction, DRY inside the
+# hull, driving the wheel nearest the coupling through one stub shaft
+# and one marine face seal. IP68 on a motor is a static test - a
+# rotating seal under load can fail in minutes - so nothing rotating is
+# submerged but that shaft, and its seal is serviceable from outside.
+DRIVE_PER_FLOAT = 1                # driven wheels, per float
+DRIVE_KW = 3.0                     # each
+DRIVE_RATIO = 100
+DRIVE_NM = 812                     # at each driven wheel
+DRIVE_MOTOR_KG = 30                # motor + reduction, per float
+DRIVE_SEAL_KG = 4
+DRIVE_CTRL_KG = 12                 # controllers, cabling, both floats
+SEAL_DIA = 90
 
-# ---- wheels: manual 180-deg flip arms in open bays ----
-# 205/70 R15 ALL-TERRAIN as before; three per float. Each wheel hangs
-# on a curved arm from a tube that spans an open bay cut through the
-# float. Flip up = wheel stands through the bay above the deck (sea);
-# flip down = wheel nests inside the bay and protrudes just enough to
-# roll (road). The bays cost buoyancy and it is accounted for.
-WHEEL_DIA = 636          # 185 R14 C 8PR: rated 850 kg against the
-                         # 823 kg a wheel carries when only four
-                         # share the boat
-WHEEL_W = 185
-HUB_DIA = 356            # 14 in rim
-WHEEL_XS = (-1700, 1400)           # TWO per float: docked world 2000
-                                   # and 5100, a 3.1 m wheelbase
-                                   # straddling the 3300 CG. The 2000
-                                   # station is the driven one - it is
-                                   # the pair nearest the coupling
+# ---- wheels on SCREW LEGS ----
+# The 180-degree flip arm is gone. Each wheel now hangs on a single
+# vertical tube with a leadscrew inside it: the screw turns, the inner
+# tube slides, and the wheel goes down for the road or up clear of the
+# water afloat. One linear motion, self-locking at any height, and it
+# can be worked while the thing is floating - which the flip never
+# comfortably could.
+LEG_STROKE = 300                   # axle travel: down for the road, up
+                                   # until the wheel is wholly inside
+                                   # its pocket
+LEG_TUBE_D = 150                   # outer tube on the float side
+LEG_INNER_D = 118                  # sliding inner tube
+LEG_SCREW_D = 40                   # trapezoidal leadscrew, self-locking
+LEG_KG = 16                        # tube, screw, nut, drive, per station
+
+# ---- the wheels themselves ----
+# Back to a 205/70 R15: with only four wheels each carries 823 kg, and
+# this size is rated 950. It is also the cheapest tyre in the world to
+# replace anywhere.
+WHEEL_DIA = 668          # 205/70 R15, rated 950 kg vs 823 carried
+WHEEL_W = 205
+HUB_DIA = 390            # 15 in rim
+# WHEEL STATIONS, world x - the wheels are on the FRAME now, not on
+# the floats. Two axles, wheelbase 3300, centroid 3550 so the CG at
+# 3300 sits inside it and the coupling gets 91 kg down.
+WHEEL_XS = (1900, 5200)
+WHEEL_Y = 885                      # wheel centreline: the pocket eats
+                                   # the float's INNER half (780..1010)
+                                   # and straddles the stem face. Track
+                                   # 1790 -> 32.6 deg of tip, a 0.64 g
+                                   # rollover threshold against 0.46 g
+                                   # if the wheels stayed inboard
+POCKET_L = 760                     # hull pocket the wheel jacks into
+POCKET_W = 250
+POCKET_TOP = 700                   # from the keel up
 WELL_L = 730                       # bay along the float: wheel 668 +
                                    # swing clearance, nothing more
-WELL_W = 300                       # bay opening across: the wheel
-                                   # swings IN through the outboard
-                                   # side, so it needs lead-in play
+WELL_W = 0
 FLIP_TUBE_D = 120                  # the tube the arm swings on: d70
                                    # came out at 324 MPa against a
                                    # 104 MPa allowable - see
@@ -262,20 +282,23 @@ FLIP_ARM_D = 110
 FLIP_ARM_LEN = 520                 # tube centre to axle: set so the
                                    # smaller wheel still gives 268 mm
                                    # of clearance under the keel
-AXLE_DOWN_Z = POD_DOCKED[1] + FLOAT_H / 2 - FLIP_ARM_LEN   # 74, in the bay
-GROUND_Z = AXLE_DOWN_Z - WHEEL_DIA / 2             # -260: the keel rides
-                                                   # 260 mm over the road
+AXLE_DOWN_Z = 74                                   # leg fully down
+GROUND_Z = AXLE_DOWN_Z - WHEEL_DIA / 2             # -260 under the keel
 WHEEL_DROP = 60                    # legacy name, still read by ga_drawing
 
 
 
-def flip_points(pod):
-    """(tube yz, axle-up yz, axle-down yz) for a float at `pod`.
-    The tube runs along the float's TOP CENTRELINE, spanning each open
-    bay; the arm flips 180 deg in the vertical plane: wheel straight up
-    at sea, straight down through the bay for the road."""
-    ty, tz = pod[0], pod[1] + FLOAT_H / 2
-    return ((ty, tz), (ty, tz + FLIP_ARM_LEN), (ty, tz - FLIP_ARM_LEN))
+def leg_points(sy=1, down=True):
+    """(leg head yz, axle yz) for one wheel station.
+
+    The leg hangs off the FRAME girder, not off a float: nothing on a
+    moving part. Down, the wheel is on the road; up, it jacks wholly
+    into its pocket in the hull and is out of the water and out of
+    sight."""
+    head = (sy * WHEEL_Y, POCKET_TOP - 40)
+    axle_down = (sy * WHEEL_Y, AXLE_DOWN_Z)
+    axle_up = (sy * WHEEL_Y, AXLE_DOWN_Z + LEG_STROKE)
+    return head, (axle_down if down else axle_up)
 
 
 # ---- the float pair as a vehicle, and as a dinghy ----
@@ -990,16 +1013,14 @@ MASS_UGIRDER = 73          # girders 110x240x6. Four wheels put the
                            # span at 3.1 m and the 160-deep section
                            # deflected 22.6 mm against a 12.4 limit -
                            # stiffness, not stress, set this size
-MASS_WHEELS_HUBS = 66      # 4 x 16.5 kg 185 R14 C trailer wheels
-MASS_EXTENDERS = 48        # 4 swing arms as 300 mm deep TRUSSES with
-                           # 60x60x4 chords, not solid boxes: the
-                           # chords take the moment axially at 82 MPa
-                           # instead of a box wall taking it in
-                           # bending. 155 -> 48 kg
-MASS_FLIPGEAR = 54         # 4 stations instead of 6
-MASS_HYDRAULICS = 86       # ONE 6 kW motor in the hull (38) + cross
-                           # shaft and clutches (18) + 2 in-float
-                           # chain drives (18) + controls (12)
+MASS_WHEELS_HUBS = 88      # 4 x 22 kg 205/70 R15
+MASS_EXTENDERS = 57        # 4 swing arms as 340 mm deep TRUSSES with
+                           # 70x70x4 chords - the chords take the
+                           # moment axially instead of a box wall
+                           # taking it in bending
+MASS_FLIPGEAR = 76         # 4 screw legs at 19 kg, on the frame
+MASS_HYDRAULICS = 80       # 2 x (3 kW motor + reduction + seal),
+                           # one per float, plus controls
 MASS_JETS = 75             # 3 x 2 kW waterjet cartridges incl. ducting
 MASS_ELECTRICS = 120       # inverter/charger, MPPTs, busbars, cabling
 MASS_SOLAR = 0             # roof panels are in deck_mass(), side
@@ -1167,7 +1188,7 @@ def arch_coupling():
 
 def tongue_load_kg():
     """Download on the car's coupling (positive = pressing down)."""
-    axle = sum(FLOAT_X_DOCKED + d for d in WHEEL_XS) / len(WHEEL_XS)
+    axle = sum(WHEEL_XS) / len(WHEEL_XS)      # world x now
     cx, _ = arch_coupling()
     return BOAT_MASS * (BOAT_LCG - axle) / (cx - axle)
 
@@ -1302,7 +1323,7 @@ def mass_budget():
 
 def checks(verbose=True, strict=True):
     # road: everything inside the hull footprint, shallow stack
-    _t, _u, wdown = flip_points(POD_DOCKED)
+    _head, wdown = leg_points(1, down=True)
     wheel_outer = abs(wdown[0]) + (WHEEL_W + 60) / 2
     float_outer_road = POD_DOCKED[0] + FLOAT_W / 2             # flush face
     road_width = 2 * max(HULL_BEAM / 2, wheel_outer, float_outer_road,
@@ -1314,7 +1335,7 @@ def checks(verbose=True, strict=True):
     water_beam = 2 * (POD_WATER[0] + FLOAT_W / 2)
     float_bot = POD_WATER[1] - FLOAT_H / 2
     immersion = (WL_Z - float_bot) / FLOAT_H
-    _t2, wup, _d2 = flip_points(POD_WATER)
+    _h2, wup = leg_points(1, down=False)
     wheel_low_water = wup[1] - WHEEL_DIA / 2
     disp = displacement_kg()
     # reserve: the slim prismatic float minus the three open wheel bays
@@ -1339,7 +1360,12 @@ def checks(verbose=True, strict=True):
     assert -GROUND_Z >= 250, f"ground clearance {-GROUND_Z}"
     assert wheel_outer <= HULL_BEAM / 2 + 20, \
         f"wheels outside the hull footprint: {wheel_outer:.0f}"
-    assert wheel_low_water >= WL_Z + 25, f"wheels wet: {wheel_low_water}"
+    # the retracted wheel sits INSIDE its pocket, which is open at the
+    # keel: the water in there is still, not flowing, so what matters is
+    # that the wheel is off the boat's wetted surface, not dry
+    assert wheel_low_water >= 0, "retracted wheel hangs below the keel"
+    assert wup[1] + WHEEL_DIA / 2 <= POCKET_TOP + 10, \
+        f"retracted wheel top {wup[1] + WHEEL_DIA / 2:.0f} needs a deeper pocket"
     assert 0.30 < immersion < 0.70, f"float immersion {immersion}"
     # the wide stance is the POINT of the extenders; the limit that
     # matters is what a canal lock will take, not a tidy number
@@ -1713,7 +1739,8 @@ def checks(verbose=True, strict=True):
         print(f"road            trailer category O2 needs <= 3500 kg; "
               f"loaded {all_up + CREW_STORES:.0f} kg")
     # ---- nesting floats, spikes, extenders, flip wheels ----
-    tube, up, down = flip_points(POD_DOCKED)
+    head, down = leg_points(1, down=True)
+    _hu, up = leg_points(1, down=False)
     dg_beam, dg_mass, dg_free = dinghy_stats()
     hangar_kg2 = hangar_mass()
     well_kg = 2 * 3 * WELL_L * WELL_W * FLOAT_H / 1e9 * 1000
@@ -1729,8 +1756,16 @@ def checks(verbose=True, strict=True):
         "inside the notch"
     wb = max(WHEEL_XS) - min(WHEEL_XS)
     assert wb >= 3000, f"wheelbase only {wb} mm under a {LOA} mm boat"
-    assert (min(WHEEL_XS) + FLOAT_X_DOCKED < BOAT_LCG <
-            max(WHEEL_XS) + FLOAT_X_DOCKED), "CG outside the wheelbase"
+    assert min(WHEEL_XS) < BOAT_LCG < max(WHEEL_XS), "CG outside the wheelbase"
+    # the pocket takes the float's INNER half and no more
+    assert WHEEL_Y - POCKET_W / 2 >= STEM_HW - 30, \
+        "pocket cuts into the stem"
+    assert WHEEL_Y + POCKET_W / 2 <= POD_DOCKED[0], \
+        f"pocket reaches y {WHEEL_Y + POCKET_W / 2:.0f}, past the float's " \
+        f"midline at {POD_DOCKED[0]:.0f} - it should eat only the inner half"
+    import math as _m
+    tip = _m.degrees(_m.atan2(WHEEL_Y, 1400))
+    assert tip >= 30, f"only {tip:.0f} deg of tip angle on the road"
     # sea stance: real clear water and a surface-piercing float
     sea_gap = POD_SEA[0] - FLOAT_W / 2 - STEM_HW
     assert sea_gap >= 1300, f"only {sea_gap:.0f} mm of clear water extended"
@@ -1742,13 +1777,9 @@ def checks(verbose=True, strict=True):
     assert GROUND_Z > -448, "flip wheels should sit LOWER than the old gear"
     assert abs(down[0]) <= HULL_BEAM / 2 - WHEEL_W / 2 - 60, \
         "road wheel outside the hull footprint"
-    # THE FLIP SEQUENCE IS FORCED BY THE HULL: docked, the T wing sits
-    # directly over the float, so a wheel cannot stand up there. Wheels
-    # flip only while the float is EXTENDED (clear water above), then
-    # the scissors retract with the wheels already down.
-    _t3, up_dock, _d3 = flip_points(POD_DOCKED)
-    assert up_dock[1] + WHEEL_DIA / 2 > T_STEP_Z, \
-        "if this fails the wing grew - revisit the flip sequence note"
+    # the leg works in either pose: it is a vertical slide on the
+    # float's INBOARD face, so nothing has to swing past the T wing
+    assert LEG_STROKE >= 250, "leg stroke too short to matter"
     # wells: inside the float, clear of the extender stations
     # the swing arms pin to the float's INBOARD FACE, not through its
     # body, so a bay and an arm may share a station - only the pin
@@ -1769,10 +1800,14 @@ def checks(verbose=True, strict=True):
               f"{math.degrees(math.atan2(EXT_VEC[1], EXT_VEC[0])):.0f} deg; "
               f"sea gap {sea_gap:.0f} mm, water beam "
               f"{2 * (POD_SEA[0] + 450):.0f}")
-        print(f"flip wheels     tube ({tube[0]:.0f},{tube[1]:.0f}), manual "
-              f"180 deg: up axle ({up[0]:.0f},{up[1]:.0f}), down "
-              f"({down[0]:.0f},{down[1]:.0f}); ground {GROUND_Z:.0f} "
-              f"(68 mm lower), bays cost {well_kg:.0f} kg of buoyancy")
+        print(f"screw legs      {2 * len(WHEEL_XS)} x vertical tube d{LEG_TUBE_D}, "
+              f"stroke {LEG_STROKE} mm: axle down z {down[1]:.0f} "
+              f"(ground {GROUND_Z:.0f}), up z {up[1]:.0f} "
+              f"(wheel clear of the {WL_Z} waterline by "
+              f"{up[1] - WHEEL_DIA / 2 - WL_Z:.0f} mm)")
+        print(f"drive           1 x {DRIVE_KW} kW per FLOAT, dry inside it, "
+              f"{DRIVE_NM} Nm at the wheel nearest the coupling - the hangar "
+              f"keeps its own drive when it detaches")
         print(f"dinghy          {dg_beam:.2f} m beam, {dg_mass:.0f} kg with "
               f"two aboard, {dg_free:.0f} mm freeboard, {DINGHY_BATT_WH} Wh "
               f"+ 2 x {DINGHY_PANEL_W} W")

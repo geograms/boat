@@ -94,7 +94,7 @@ def main():
     # the girder is a beam on three supports (three wheel stations);
     # the governing span is the longest bay, loaded by the boat's
     # weight as a distributed line load, times the road factor.
-    wheels = sorted(P.FLOAT_X_DOCKED + d for d in P.WHEEL_XS)
+    wheels = sorted(P.WHEEL_XS)               # frame stations, world x
     spans = [wheels[i + 1] - wheels[i] for i in range(len(wheels) - 1)]
     span = max(spans)
     # with only two wheel stations the girder is a simple span, and
@@ -141,7 +141,7 @@ def main():
     V2 = F
     # a TRUSS carries bending in its chords, axially - far lighter than
     # a box wall doing it in bending
-    chord = 60 * 60 - 52 * 52
+    chord = 70 * 70 - 62 * 62
     Z2 = chord * P.SWING_ARM_DEEP        # couple: chord force x depth
     A2 = 2 * chord
     I2 = 2 * chord * (P.SWING_ARM_DEEP / 2) ** 2
@@ -151,7 +151,7 @@ def main():
     print(f"  float reserve buoyancy {reserve:.0f} kg x slam {DYN_SLAM} "
           f"x {ARM_SHARE:.0%} share -> {F / 1e3:.1f} kN on the worse arm")
     print(f"  cantilever {lever:.0f} mm from the pin")
-    ok2 = report(f"  truss {P.SWING_ARM_DEEP} deep, 60x60x4 chords",
+    ok2 = report(f"  truss {P.SWING_ARM_DEEP} deep, 70x70x4 chords",
                  M2, V2, Z2, A2, I2, 0,
                  note=f"{ARM_SHARE:.0%} of the float on the worse arm")
     if not ok2:
@@ -163,25 +163,27 @@ def main():
                   f"{'OK' if s <= ALU_FY * WELD_KNOCKDOWN / SF_STATIC else ''}")
 
     # =================================================================
-    # 3. THE FLIP-ARM TUBE
     # =================================================================
-    # On the road each wheel carries its share of the boat, times the
-    # road factor, on the arm's offset from the tube.
-    per_wheel = on_wheels / (2 * len(P.WHEEL_XS)) * G * DYN_ROAD
-    M3 = per_wheel * P.FLIP_ARM_LEN
-    A4, I4, Z4 = tube_section(P.FLIP_TUBE_D, 12)
+    # 3. THE SCREW LEG
+    # =================================================================
+    # Each leg carries a quarter of the boat in compression, plus the
+    # bending from the axle's offset out to the wheel centreline.
+    per_wheel = on_wheels / 4 * G * DYN_ROAD
+    offset = 125.0
+    M3 = per_wheel * offset
+    A4, I4, Z4 = tube_section(P.LEG_TUBE_D, 10)
     print("\n" + "=" * 68)
-    print("3. THE WHEEL FLIP ARM  (road: one wheel's share)")
+    print("3. THE SCREW LEG  (road: a quarter of the boat, on one tube)")
     print("=" * 68)
-    print(f"  {per_wheel / 1e3:.1f} kN per wheel on a "
-          f"{P.FLIP_ARM_LEN} mm arm")
-    ok3 = report(f"  tube d{P.FLIP_TUBE_D} x 12", M3, per_wheel, Z4, A4, I4, 0)
+    print(f"  {per_wheel / 1e3:.1f} kN per wheel, {offset:.0f} mm out from the "
+          f"tube axis")
+    print(f"  direct compression {per_wheel / A4:.0f} MPa on top of the bending")
+    ok3 = report(f"  tube d{P.LEG_TUBE_D} x 10", M3, per_wheel, Z4, A4, I4, 0)
     if not ok3:
-        for d, t in ((100, 10), (120, 12), (140, 12), (160, 14)):
+        for d, t in ((150, 12), (170, 12), (190, 14)):
             A5, I5, Z5 = tube_section(d, t)
-            s = M3 / Z5
-            if s <= ALU_FY * WELD_KNOCKDOWN / SF_STATIC:
-                print(f"  -> tube d{d} x {t} passes ({s:.0f} MPa)")
+            if M3 / Z5 <= ALU_FY * WELD_KNOCKDOWN / SF_STATIC:
+                print(f"  -> tube d{d} x {t} passes ({M3 / Z5:.0f} MPa)")
                 break
 
     print("\n" + "=" * 68)
@@ -195,7 +197,7 @@ def main():
     print("VERDICT")
     print("=" * 68)
     for nm, ok in (("U-girder", ok1), ("swing arm", ok2),
-                   ("flip-arm tube", ok3)):
+                   ("screw leg", ok3)):
         print(f"  {nm:16s} {'PASS' if ok else 'FAILS AS DRAWN'}")
 
 

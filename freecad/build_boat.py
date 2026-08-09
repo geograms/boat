@@ -163,21 +163,30 @@ def build_hull():
          (P.CABIN_X0 + 50, P.CABIN_W / 2 - 70)],
         DECK_Z - 60, DECK_Z + 60))
     # the float notches are built into the T sections themselves
-    # ---- THE DRIVE, all of it inside the boat. One 6 kW motor and its
-    # reduction sit dry in the stem above the keel channel; a transverse
-    # shaft runs in the channel to a dog clutch at each stem face, which
-    # engages the float's stub shaft when it docks. No electrics in the
-    # float, no motor near the water.
-    dvx = P.FLOAT_X_DOCKED + P.WHEEL_XS[0]
-    shell = shell.fuse(box(520, 300, 300, (dvx - 260, -150, 210)))
-    shell = shell.fuse(Part.makeCylinder(
-        150, 420, Vector(dvx - 40, -210, 360), Vector(0, 1, 0)))
-    for sy in (-1, 1):
-        shell = shell.fuse(Part.makeCylinder(
-            55, P.STEM_HW - 60, Vector(dvx, 0, 300), Vector(0, sy, 0)))
-        shell = shell.fuse(Part.makeCylinder(     # dog clutch at the face
-            95, 120, Vector(dvx, sy * (P.STEM_HW - 60), 300),
-            Vector(0, sy, 0)))
+    # ---- WHEEL POCKETS. Four holes in the hull bottom, one per tyre.
+    # The screw jack raises the wheel wholly inside its pocket, so
+    # nothing hangs in the flow and nothing shows from outside. Each
+    # pocket is lined - roof and four walls - so the hull stays closed.
+    for wx in P.WHEEL_XS:
+        for sy in (-1, 1):
+            py = sy * P.WHEEL_Y
+            shell = shell.cut(box(P.POCKET_L, P.POCKET_W, P.POCKET_TOP + 20,
+                                  (wx - P.POCKET_L / 2, py - P.POCKET_W / 2,
+                                   -20)))
+            shell = shell.fuse(box(P.POCKET_L + 40, P.POCKET_W + 40, 22,
+                                   (wx - (P.POCKET_L + 40) / 2,
+                                    py - (P.POCKET_W + 40) / 2,
+                                    P.POCKET_TOP)))
+            for dy in (-1, 1):
+                shell = shell.fuse(box(
+                    P.POCKET_L + 40, 20, P.POCKET_TOP,
+                    (wx - (P.POCKET_L + 40) / 2,
+                     py + dy * (P.POCKET_W / 2) - (20 if dy > 0 else 0), 0)))
+            for dx in (-1, 1):
+                shell = shell.fuse(box(
+                    20, P.POCKET_W + 40, P.POCKET_TOP,
+                    (wx + dx * (P.POCKET_L / 2) - (20 if dx > 0 else 0),
+                     py - (P.POCKET_W + 40) / 2, 0)))
 
     # ---- KEEL CHANNEL for the hangar's cross tie. The tie has to
     # travel the whole length of the hull bottom to dock, so instead of
@@ -401,17 +410,6 @@ def build_float(pod, roll, flip=0.0, fx=None):
     # OPEN WHEEL BAYS: at each station the float body is cut through -
     # only the flip tube spans the bay, so the wheel nests inside the
     # envelope in either pose (local frame: x along, y across, z up)
-    # the bay is a WELL, not a trench: open below for the wheel, but a
-    # deck bridge stays over the top - only a narrow slot lets the
-    # wheel stand up through it. From the side the float reads closed.
-    for dx in P.WHEEL_XS:
-        wx = P.FLOAT_X + dx
-        hull_f = hull_f.cut(box(                     # wheel well from below
-            P.WELL_L, P.WELL_W, P.FLOAT_H - 55,
-            (wx - P.WELL_L / 2, -P.WELL_W / 2 + 25, -P.FLOAT_H / 2 - 10)))
-        hull_f = hull_f.cut(box(                     # top slot, wheel width
-            680, 230, 90,
-            (wx - 340, -115 + 25, P.FLOAT_H / 2 - 60)))
     hull_f.Placement = place.multiply(hull_f.Placement)
 
     # solar strips on the deck, in the gaps between the wheels
@@ -422,41 +420,10 @@ def build_float(pod, roll, flip=0.0, fx=None):
         s.Placement = place.multiply(s.Placement)
         strips.append(s)
 
-    # MANUAL FLIP WHEELS: a curved arm swings 180 deg about a tube that
-    # spans the open bay. flip 0 = wheel up through the bay (sea),
-    # flip 180 = wheel down in the bay, protruding just enough to roll.
-    # A spring pin at each end of the swing - no electrics.
-    tube_yz, up_yz, down_yz = P.flip_points((ty, tz))
-    axle = up_yz if flip < 90 else down_yz
+    # the float has NO running gear at all now: no legs, no wheels,
+    # no slots. It is a closed buoyancy body that swings for stability
     forks, tires, rims = [], [], []
-    fxc = P.FLOAT_X if fx is None else fx      # the float's CURRENT centre
-    for dx in P.WHEEL_XS:
-        wx = fxc + dx                          # wheels ride WITH the float
-        # the tube across the bay
-        forks.append(rod((wx - P.WELL_L / 2 - 40, tube_yz[0], tube_yz[1]),
-                         (wx + P.WELL_L / 2 + 40, tube_yz[0], tube_yz[1]),
-                         P.FLIP_TUBE_D))
-        # the curved arm bulges OUTBOARD: the 180-deg swing passes the
-        # float's outboard side, which is the only clear volume
-        ky = tube_yz[0] + 140
-        kz = (tube_yz[1] + axle[1]) / 2
-        forks.append(rod((wx, tube_yz[0], tube_yz[1]), (wx, ky, kz),
-                         P.FLIP_ARM_D))
-        forks.append(rod((wx, ky, kz), (wx, axle[0], axle[1]),
-                         P.FLIP_ARM_D))
-        # spring pin boss
-        forks.append(Part.makeCylinder(
-            26, 90, Vector(wx - 45, tube_yz[0], tube_yz[1] + 60),
-            Vector(1, 0, 0)))
-        # wheel: plane vertical, axle along y? no - axle along the arm
-        # normal; the wheel rolls along x, so its axis is y
-        tires.append(Part.makeTorus(
-            (P.WHEEL_DIA - P.WHEEL_W) / 2, P.WHEEL_W / 2,
-            Vector(wx, axle[0], axle[1]), Vector(0, 1, 0)))
-        rims.append(Part.makeCylinder(
-            P.HUB_DIA / 2, P.WHEEL_W + 40,
-            Vector(wx, axle[0] - (P.WHEEL_W + 40) / 2, axle[1]),
-            Vector(0, 1, 0)))
+
     # in-float hydraulic drive (docs/wheels.md): gasketed deck hatch
     # over the machinery bay, pump unit inside, hoses to each hub,
     # goldenrod hub-motor caps
@@ -472,15 +439,17 @@ def build_float(pod, roll, flip=0.0, fx=None):
     # face seal to the wheel. Nothing rotating is submerged except that
     # shaft, and its seal can be changed without opening the float.
     hyd = []
-    for dxw in P.WHEEL_XS[:1]:                   # the driven station only
+    for dxw in (P.MOTOR_BAY_DX,):                # the drive bay
         wx = P.FLOAT_X + dxw
-        # no motor in the float: a stub shaft in from the dog clutch and
-        # a chain case up to the wheel's flip tube
-        hyd.append(Part.makeCylinder(45, P.FLOAT_W + 40,
-                                     Vector(wx, -P.FLOAT_W / 2 - 20, 0),
-                                     Vector(0, 1, 0)))
-        hyd.append(box(120, P.FLOAT_W - 80, 300,
-                       (wx - 60, -(P.FLOAT_W - 80) / 2, 0)))     # chain case
+        # the float's OWN motor and reduction, dry inside it, and one
+        # stub shaft out through a face seal to the leg's chain case
+        hyd.append(Part.makeCylinder(78, 260, Vector(wx - 320, 0, 0),
+                                     Vector(1, 0, 0)))
+        hyd.append(Part.makeCylinder(92, 190, Vector(wx - 60, 0, 0),
+                                     Vector(1, 0, 0)))
+        hyd.append(Part.makeCylinder(
+            P.SEAL_DIA / 2, 70, Vector(wx, -P.FLOAT_W / 2 - 35, 0),
+            Vector(0, 1, 0)))
         # seal housing on the shell, and the stub shaft through it
         hyd.append(Part.makeCylinder(
             P.SEAL_DIA / 2, 60, Vector(wx, -P.FLOAT_W / 2 - 30, 0),
@@ -625,6 +594,43 @@ def build_hangar(phi, coupled=True, tow="sea"):
             parts.append(box(90, gb + 70, gh + 60,
                              (lx, ry - (gb + 70) / 2,
                               P.POD_DOCKED[1] - (gh + 60) / 2)))
+
+    # ---- SCREW LEGS AND WHEELS, on the FRAME. Each leg is a vertical
+    # tube with a trapezoidal leadscrew inside, bolted to the girder;
+    # the screw turns, the inner tube slides, and the wheel goes down to
+    # the road or up wholly inside its pocket in the hull. Self-locking
+    # at any height, workable while afloat, and nothing rides on a
+    # moving part.
+    for wx in P.WHEEL_XS:
+        for sy in (-1, 1):
+            head, axle = P.leg_points(sy, down=(phi <= 5))
+            parts.append(Part.makeCylinder(
+                P.LEG_TUBE_D / 2, P.LEG_STROKE + 300,
+                Vector(wx, head[0], head[1] - P.LEG_STROKE - 150),
+                Vector(0, 0, 1)))
+            parts.append(Part.makeCylinder(
+                P.LEG_INNER_D / 2, head[1] - axle[1] + 130,
+                Vector(wx, head[0], axle[1] - 65), Vector(0, 0, 1)))
+            parts.append(Part.makeCylinder(     # leadscrew and its drive
+                P.LEG_SCREW_D / 2, 200,
+                Vector(wx, head[0], head[1] + 30), Vector(0, 0, 1)))
+            parts.append(Part.makeCylinder(
+                70, 120, Vector(wx, head[0], head[1] + 200), Vector(0, 0, 1)))
+            # stub axle, tyre and rim
+            parts.append(Part.makeCylinder(
+                46, 250, Vector(wx, axle[0] - 125, axle[1]), Vector(0, 1, 0)))
+            locks.append(Part.makeTorus(
+                (P.WHEEL_DIA - P.WHEEL_W) / 2, P.WHEEL_W / 2,
+                Vector(wx, axle[0], axle[1]), Vector(0, 1, 0)))
+            locks.append(Part.makeCylinder(
+                P.HUB_DIA / 2, P.WHEEL_W - 40,
+                Vector(wx, axle[0] - (P.WHEEL_W - 40) / 2, axle[1]),
+                Vector(0, 1, 0)))
+            # tie the leg head into the girder web
+            parts.append(box(220, abs(sy * (P.STEM_HW + 55) - head[0]) + 60,
+                             160, (wx - 110,
+                                   min(head[0], sy * (P.STEM_HW + 55)) - 30,
+                                   head[1] - 80)))
 
     # ---- SWING WING (the Dragonfly pattern): two arms per side on
     # VERTICAL pins at the stem face, ends pinned to the float. The two

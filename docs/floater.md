@@ -56,16 +56,46 @@ or in weed:
 **Rule: the intake and the pump live at the same x.** Water travels
 centimetres, not a duct.
 
-## 4. Wheels — manual flip arms
+## 4. The float has no running gear
 
-| Item | Spec | Where |
-|---|---|---|
-| Wheels | **2 per float, four in all** — 185 R14 C 8PR, 636 mm, 16.5 kg, rated 850 kg against the 823 kg a wheel carries. Six 13-inch wheels became four 14-inch ones: fewer bays, fewer flip arms, one tyre size to carry | bays at x 2 000 and 5 100, a 3.1 m wheelbase straddling the 3 300 CG |
-| Bays | **wells, not trenches**: open below, deck bridge on top with a 680 × 230 slot for the wheel to stand through — the profile stays closed. Roughly half the wheel is inside the bay on the road | 730 × 300 below, slot above |
-| Flip arm | curved, bulging **outboard**; 180° about a tube spanning the bay | tube on the bay centreline, z +230 |
-| Pins | spring pin at each end of the swing — **manual, no electrics** | tube ends |
-| Sequence | flip only while **extended** (the T-wing forbids it docked); wheels down before the trusses retract | — |
-| Road pose | wheel top sits in the bay, bottom **310 mm proud** of the float — that protrusion IS the ground clearance, and it cannot be tucked away without grounding the hull | ground at −320 |
+Nothing rolls, folds or drives on the float any more. **The wheels are
+on the frame** and jack straight up into pockets in the hull; the float
+is a closed buoyancy body whose only job is to swing out for stability.
+
+That is worth stating because it undoes three earlier problems at once:
+
+- **No slots.** The float's buoyancy is whole again — **715 kg** each,
+  against 559 when the wheels cut through it.
+- **The load path is direct.** Hull → girder → leg → wheel, instead of
+  hull → girder → swing arm → float → wheel. The boat's weight no
+  longer passes through the part that moves.
+- **Nothing that carries the boat is on a hinge.**
+
+### The wheels, on the frame
+
+| | |
+|---|---|
+| Wheel | 205/70 R15, 668 × 205, rated 950 kg against 823 carried |
+| Stations | x 1 900 and 5 200 — wheelbase **3 300**, CG 3 300 inside it, 91 kg on the coupling |
+| Track | **1 770 mm**: each pocket eats the float's **inner half** (y 780 → 1 010) and the wheel centres on y ±885 |
+| Leg | vertical tube, ⌀150 × 10, trapezoidal leadscrew inside, self-locking, ~300 mm of stroke |
+| Retracted | the wheel sits **wholly inside a 760 × 250 × 700 pocket** in the hull, flush at the keel — nothing in the flow, nothing visible |
+
+**Why the pocket takes half the float.** Keeping the wheels wholly
+inboard of the girders would give a 1 300 mm track — 24.9° of tip and a
+**0.46 g** rollover threshold, marginal under a boat 2.8 m tall. Moving
+them out to y ±885 gives:
+
+| Wheel at | Track | Tip | Rollover |
+|---|---|---|---|
+| inboard of the girders | 1 300 | 24.9° | 0.46 g |
+| **half into the float** | **1 770** | **32.3°** | **0.63 g** |
+| full float depth | 2 280 | 39.2° | 0.81 g |
+
+**+7.4° and +37 % of rollover margin** for half a float's width — a tall
+van is ≈0.5 g and a loaded truck 0.35–0.40 g, so this sits in normal
+trailer territory. The float keeps its **outboard** half solid, so the
+skin that meets the water is untouched.
 
 ## 5. Docking and extension
 
@@ -111,16 +141,16 @@ floor is **609 kg**:
 | Item | kg | What was done |
 |---|---|---|
 | Float shells | 129 | PVC80 18 mm → **PET60 15 mm, 800/600 skins** |
-| Flip tubes + arms | 54 | four stations instead of six |
+| Screw legs | 76 | four, on the frame |
 | 4 wheels | 66 | 185 R14 C trailer tyres, two per float |
 | U-girder | 73 | **110 × 240 × 6** — with only two wheel stations the 3.1 m span makes **stiffness** the governing case, not stress |
-| Swing arms | **48** | **300 mm deep trusses**, 60 × 60 × 4 chords — not boxes |
+| Swing arms | 57 | 340 mm deep trusses, 70 × 70 × 4 chords |
 | Drive | 86 | **one** 6 kW motor in the hull, cross shaft, 2 driven wheels |
 | Bight | 25 | |
 | Dock locks | 30 | |
 
 | Cross tie, knees, dinghy fit-out | **0** | **deleted** |
-| **Total** | **512** | was 1 003 |
+| **Total** | **559** | was 1 003 |
 
 **The arms were the honest mistake.** 127 kg for four beams came from
 two errors compounding: putting **100 % of a float's buoyancy on one
@@ -201,8 +231,8 @@ shock on a trailer axle, ×3.0 wave slam on an outrigger.
 | Member | Case | Moment | Stress | SF | Section |
 |---|---|---|---|---|---|
 | U-girder | 3 292 kg × 2.5 over a 3.1 m simple span | 11.0 kNm | 47 MPa | **2.2** (deflection 8.1 of 12.4 mm governs) | 110 × 240 × 6 box |
-| Swing arm | 70 % of one float's 559 kg × 3.0, 1 918 mm lever | 22.1 kNm | 82 MPa | **1.3** | 300 deep truss, 60 × 60 × 4 chords |
-| Flip-arm tube | one wheel's share × 2.5 on the 516 mm arm | 7.0 kNm | 70 MPa | **1.5** | ⌀120 × 12 tube |
+| Swing arm | 70 % of one float's **715 kg** × 3.0, 1 918 mm lever | 36.1 kNm | 101 MPa | **1.0** | 340 deep truss, 70 × 70 × 4 chords |
+| Screw leg | a quarter of the boat × 2.5, 125 mm out from the tube axis | 2.4 kNm | 17 MPa | **6.3** | ⌀150 × 10 tube |
 
 Two results changed the design:
 
