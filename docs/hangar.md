@@ -22,15 +22,15 @@ FRONT VIEW                DOCKED                    EXTENDED (sea)
  │   ┌───────┐   │   │╔══╗┌────┐╔══╗│  ~WL~   │    ┌────┐     │ ~WL~
  │   │ stem  │   │   │║FL║│stem│║FL║│     ╔══╗│    │stem│    │╔══╗
  └───┴───────┴───┘   └╨──╨┴────┴╨──╨┘     ╚══╝└────┴────┴────┘╚══╝
-                      flat bottom flush    scissors push them 1.8 m out
+                      flat bottom flush    beams push them 1.65 m out
 ```
 
 | | |
 |---|---|
-| Stem | **1 800 mm** beam below z 600 — floats the boat alone |
-| Floats | **6 000 × 350 × 600**, slim; noses protected by 1 200 mm of solid full-width bow |
+| Stem | **1 560 mm** beam below z 600 — floats the boat alone, and swallows the retracted beams |
+| Floats | **4 600 × 460 × 540**; noses protected by the solid full-width bow |
 | Docked | outer faces flush at 2 500; draft 313 mm loaded |
-| Extended | **1 800 mm** out on the scissors — righting 21 kNm from the slim floats plus the full-width T wings |
+| Extended | **1 650 mm** out on the telescopic beams — righting from the slim floats plus the full-width T wings |
 | Dinghy | both floats + bight: 6.1 m beam, 216 mm freeboard with two aboard |
 
 ## 2. Docking — the fork
@@ -42,10 +42,11 @@ first; the float noses never see slam.
 
 ## 3. Extenders
 
-**Campervan-lift scissors**, two per side at x 900 and 4 500, 24 V
-leadscrew, self-locking anywhere in the **0 → 1 800 mm** stroke. Purely
-horizontal: the float's draft never changes. Docked, they fold into the
-notch.
+**Three-stage telescopic beams**, two per side at x 2 700 and 4 600,
+24 V leadscrew, self-locking anywhere in the **0 → 1 650 mm** stroke.
+Purely horizontal: the float's draft never changes, and docked the
+whole telescope is inside the stem. See
+[floater.md](floater.md) §5 for why the swing wing was abandoned.
 
 ## 4. Wheels — four, on the frame, on swing arms
 
@@ -68,7 +69,7 @@ at the girder.
 - **Dinghy freeboard is 216 mm** with two aboard — thin. Options: bigger
   floats stern-only, or accept it as a calm-water tender.
 - The T-step at z 600 narrows the interior below that height: the sole
-  band from z 350 to 600 is **1 800 mm** wide, not 2 280. The berths sit
+  band from z 350 to 600 is **1 560 mm** wide, not 2 280. The berths sit
   above z 600, but the heads floor and the tank bays need a layout pass.
 - The stem quarters near the transom want fairing into the jets' inflow.
 - Spike rail wear pads and the bayonet preload need detailing.

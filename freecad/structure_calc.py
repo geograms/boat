@@ -4,7 +4,7 @@
 Three members were drawn by judgement and have to be proved:
 
   1. the U-girder      - carries the whole boat on the road
-  2. the swing arm     - carries the float's buoyancy at sea
+  2. the extender beam - carries the float's buoyancy at sea
   3. the swing arm     - carries one wheel's share on the road
 
 Everything below is first-principles beam theory with stated load
@@ -124,49 +124,37 @@ def main():
                 break
 
     # =================================================================
-    # 2. THE SWING ARM
+    # 2. THE EXTENDER BEAM
     # =================================================================
     # At sea each float can be pressed down by a wave to its full
-    # buoyancy. That force reaches the hull through two arms per side;
-    # the worst case puts it on ONE arm (the float pitching on a crest)
-    # with the slam factor on top.
+    # buoyancy. That force reaches the hull through two TELESCOPIC
+    # BEAMS per side; the worst case puts 70 % of it on one beam with
+    # the slam factor on top. The fixed stage, at the stem face,
+    # carries the whole moment.
     reserve = P.float_buoyancy() / 2 - P.well_loss_kg()          # kg
-    # the float is a stiff beam pinned at TWO arms and its immersion
-    # centroid sits midway between them; even pitched hard bow-down the
-    # split is about 70/30. Putting 100% on one arm double-counted the
-    # worst case.
     ARM_SHARE = 0.70
     F = reserve * G * DYN_SLAM * ARM_SHARE
-    lever = P.SWING_ARM_R
+    lever = P.POD_SEA[0] - P.BEAM_SOCKET_Y     # socket to float centre
     M2 = F * lever
     V2 = F
-    # a TRUSS carries bending in its chords, axially - far lighter than
-    # a box wall doing it in bending
-    _c, _t = P.SWING_CHORD
-    chord = _c * _c - (_c - 2 * _t) ** 2
-    Z2 = chord * P.SWING_ARM_DEEP        # couple: chord force x depth
-    A2 = 2 * chord
-    I2 = 2 * chord * (P.SWING_ARM_DEEP / 2) ** 2
+    _b, _h, _t = P.BEAM_SECTIONS[0]
+    A2, I2, Z2 = box_section(_b, _h, _t)
     print("\n" + "=" * 68)
-    print("2. THE SWING ARM  (sea: a float driven under by a wave)")
+    print("2. THE EXTENDER BEAM  (sea: a float driven under by a wave)")
     print("=" * 68)
     print(f"  float reserve buoyancy {reserve:.0f} kg x slam {DYN_SLAM} "
-          f"x {ARM_SHARE:.0%} share -> {F / 1e3:.1f} kN on the worse arm")
-    print(f"  cantilever {lever:.0f} mm from the pin")
-    ok2 = report(f"  truss {P.SWING_ARM_DEEP} deep, {_c}x{_c}x{_t} chords",
-                 M2, V2, Z2, A2, I2, 0,
-                 note=f"{ARM_SHARE:.0%} of the float on the worse arm")
+          f"x {ARM_SHARE:.0%} share -> {F / 1e3:.1f} kN on the worse beam")
+    print(f"  cantilever {lever:.0f} mm from the socket at the stem face")
+    print(f"  {P.beam_mass():.0f} kg all four beams, three stages each")
+    ok2 = report(f"  fixed stage {_b}x{_h}x{_t} box", M2, V2, Z2, A2, I2, 0,
+                 note=f"{ARM_SHARE:.0%} of the float on the worse beam")
     if not ok2:
-        print("  -> the arm must be deeper in the vertical plane:")
-        for h in (260, 300, 340, 380):
-            A3, I3, Z3 = box_section(165, h, 12)
-            s = M2 / Z3
-            print(f"     165 x {h} x 12 -> {s:5.0f} MPa "
-                  f"{'OK' if s <= ALU_FY * WELD_KNOCKDOWN / SF_STATIC else ''}")
+        for t2 in (8, 10, 12):
+            A3, I3, Z3 = box_section(_b, _h, t2)
+            print(f"     {_b} x {_h} x {t2} -> {M2 / Z3:5.0f} MPa")
 
     # =================================================================
-    # =================================================================
-    # 3. THE SCREW LEG
+    # 3. THE SWING ARM (running gear)
     # =================================================================
     # Hanging straight down the arm is a STRUT: the wheel load runs
     # along it into the pivot and a hard stop, so the boat's weight
@@ -201,7 +189,7 @@ def main():
     print("=" * 68)
     print("VERDICT")
     print("=" * 68)
-    for nm, ok in (("U-girder", ok1), ("swing arm", ok2),
+    for nm, ok in (("U-girder", ok1), ("extender beam", ok2),
                    ("swing arm (gear)", ok3)):
         print(f"  {nm:16s} {'PASS' if ok else 'FAILS AS DRAWN'}")
 

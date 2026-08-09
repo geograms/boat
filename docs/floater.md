@@ -11,7 +11,7 @@ change is checked against — nothing on it may be silently dropped.
 A slim outrigger hull, **6 000 × 400 × 460 mm**, one per side, that
 does four jobs:
 
-1. **Stabiliser** — extended 1.65 m out on the pantograph trusses, it
+1. **Stabiliser** — extended 1.65 m out on the telescopic beams, it
    is the boat's righting moment in waves.
 2. **Trailer** — docked in the hull's T-notch, its three wheels carry
    the boat on the road.
@@ -98,15 +98,44 @@ van is ≈0.5 g and a loaded truck 0.35–0.40 g, so this sits in normal
 trailer territory. The float keeps its **outboard** half solid, so the
 skin that meets the water is untouched.
 
-## 5. Docking and extension
+## 5. Docking and extension — telescopic beams, no swing
 
-| Item | Spec | Where |
-|---|---|---|
-| Fork guides | two internal guide grooves riding the hull's tapered spike rails — inside the laminate, no external hardware | inboard face, z ±150 |
-| Lock | electric bayonet keeper engaging the rail root; limit-switched | forward end of each channel |
-| Truss fittings | pinned lugs for the pantograph trusses and the deployed **lock struts** | inboard face, x 2 675 and 4 425 |
-| Docked position | outer face recessed 40 mm behind the hull's lip, top 20 mm under it | global y 1 210, top z 450 |
-| Extended position | 1.65 m of clear water to the hull | electric, self-locking anywhere |
+The float goes **straight out**. It does not rotate, it does not move
+fore and aft, and its draft never changes.
+
+| Item | Spec |
+|---|---|
+| Beams | **2 per side**, at x 2 700 and 4 600 (port offset 180 mm so the retracted tails pass each other) |
+| Stages | **three**, 1 300 mm each: 280 × 200 × 6 fixed, 240 × 170 × 5 mid, 200 × 140 × 5 inner |
+| Band | z **400 … 600** — 81 mm above the loaded waterline, top flush under the wing |
+| Stroke | **1 650 mm**, electric leadscrew, self-locking anywhere |
+| Docked | the whole telescope is **inside the 1 560 mm stem**; nothing touches the float |
+| Extended | the inner stage lands on the float's **inner face** — it never passes over the float or through it |
+| Root | 21.9 kNm at the socket, 57 MPa, **SF 1.8** |
+| Mass | **209 kg** all four, computed from the sections |
+
+### Why the swing wing was abandoned
+
+A horizontal swing needs a horizontal plane that is **clear of the
+float at every angle**. This boat has 70 mm of it — between the float
+top at z 530 and the wing underside at z 600. The arms as drawn ran at
+z 420 … 600 and passed **through the docked float's top 110 mm** at
+every intermediate angle. That is not a clearance problem to be tuned
+away; it is a solid interference, and it had been in the model since
+the swing wing was introduced.
+
+The three alternatives were: raise the wing over the recess to open a
+250 mm band (which pushes the wheel boxes 722 mm proud of the sole),
+shrink the float to 380 mm tall (which costs 30 % of its buoyancy), or
+stop rotating. Stopping rotating is the cheapest and the most
+ordinary — it is what demountable trimarans do.
+
+**Three stages, not two, and that is forced.** A single slider long
+enough for 1 650 mm of stroke would have to be 2 150 mm, and its
+retracted tail would stand 590 mm outside the 1 560 mm stem — straight
+into the other side's float. Three stages of 1 300 keep the whole
+stack inboard. The cost is weight: **209 kg against 113** for the
+swing arms that could not be built.
 
 ## 6. Energy and deck
 
@@ -152,7 +181,7 @@ floor is **609 kg**:
 | Dock locks | 30 | |
 
 | Cross tie, knees, dinghy fit-out | **0** | **deleted** |
-| **Total** | **619** | was 1 003 |
+| **Total** | **714** | was 1 003 |
 
 **The arms were the honest mistake.** 127 kg for four beams came from
 two errors compounding: putting **100 % of a float's buoyancy on one
@@ -233,7 +262,7 @@ shock on a trailer axle, ×3.0 wave slam on an outrigger.
 | Member | Case | Moment | Stress | SF | Section |
 |---|---|---|---|---|---|
 | U-girder | 3 292 kg × 2.5 over a 3.1 m simple span | 11.0 kNm | 47 MPa | **2.2** (deflection 8.1 of 12.4 mm governs) | 110 × 240 × 6 box |
-| Swing arm | 70 % of one float's **564 kg** × 3.0, 1 918 mm lever | 22.4 kNm | 62 MPa | **1.7** | **180 deep truss, 90 × 90 × 6 chords** — shallow so it clears the water, fat so it still passes |
+| Extender beam | 70 % of one float's **566 kg** × 3.0, 1 880 mm lever | 21.9 kNm | 57 MPa | **1.8** | **280 × 200 × 6 fixed stage** at the stem face |
 | Swing arm (gear) | kerb strike, 0.6 g at the contact patch on the 445 mm arm | 5.1 kNm | 31 MPa | **3.4** | ⌀150 × 12 arm |
 
 Two results changed the design:

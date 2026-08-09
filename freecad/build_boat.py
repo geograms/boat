@@ -659,7 +659,11 @@ def build_hangar(phi, coupled=True, tow="sea"):
             # the leadscrew actuator: frame lug to a lug at 0.6 R along
             # the arm. Self-locking, so the arm parks anywhere.
             lug = (wx, py, pivot[1] + (axle[1] - pivot[1]) * 0.6)
-            anc = (wx + 330, py, P.GIRDER_Z + 40)
+            anc = (wx + 330, py, P.GIRDER_Z - P.GIRDER_SECTION[1] / 2)
+            # the anchor LUG on the girder's underside - the actuator
+            # used to start at a point in space with nothing to react
+            # against, which is what made it read as a loose rod
+            parts.append(box(150, 120, 90, (anc[0] - 75, py - 60, anc[2])))
             d = Vector(lug[0] - anc[0], 0, lug[2] - anc[2])
             parts.append(Part.makeCylinder(
                 P.ACT_D / 2, d.Length, Vector(*anc), d))
@@ -689,120 +693,42 @@ def build_hangar(phi, coupled=True, tow="sea"):
                     Vector(wx, axle[0] - sy * (P.WHEEL_W / 2 + 60), axle[1]),
                     Vector(0, sy, 0)))
 
-    # ---- SWING WING (the Dragonfly pattern): two arms per side on
-    # VERTICAL pins at the stem face, ends pinned to the float. The two
-    # arms and the two hulls form a parallelogram, so the float stays
-    # parallel to the hull through the whole swing. Four pins per
-    # float, no scissors, no telescope, no sliding fit.
-    import math as _m
-    ang = _m.radians(P.swing_angle(phi))
-    fx = P.float_x(phi)
-    arm_b, arm_h = 230, 165        # heavy box beams, not tubes
+    # ---- EXTENDER BEAMS. The float slides STRAIGHT OUT on two
+    # telescopic beams a side. The swing wing that was here could not
+    # be built: a horizontal swing needs a plane clear of the float at
+    # every angle, and between the float top (530) and the wing
+    # underside (600) there are 70 mm. The arms ran at z 420..600 and
+    # passed through the docked float at every intermediate angle.
+    #
+    # Three stages, nested. Docked, the whole telescope is inside the
+    # 1560 mm stem and nothing touches the float. Extended, the inner
+    # stage reaches the float's INNER FACE - it never passes over the
+    # float or through it.
+    reach = P.beam_reach(phi)
     for sy in (-1, 1):
-        for k, px in enumerate((P.SWING_PIVOT_X - P.SWING_ARM_GAP,
-                                P.SWING_PIVOT_X)):
-            py = sy * P.SWING_PIVOT_Y
-            # arm tip follows the same angle from each pivot
-            tx = px + P.SWING_ARM_R * _m.cos(ang)
-            ty = py + sy * P.SWING_ARM_R * _m.sin(ang)
-            L = _m.hypot(tx - px, ty - py)
-            yaw = _m.degrees(_m.atan2(ty - py, tx - px))
-            # a TRUSS, not a solid box: two chords SWING_ARM_DEEP apart
-            # in the vertical plane with diagonals between them. Shallow
-            # and fat rather than deep and thin, so the whole arm fits
-            # between the waterline and the wing.
-            cw = P.SWING_CHORD[0]
-            mem = []
-            for cz in (-P.SWING_ARM_DEEP / 2, P.SWING_ARM_DEEP / 2):
-                mem.append(box(L, cw, cw, (0, -cw / 2, cz - cw / 2)))
-            n_bay = 4
-            for i in range(n_bay):
-                x0 = L * i / n_bay
-                x1 = L * (i + 1) / n_bay
-                dx_, dz_ = x1 - x0, P.SWING_ARM_DEEP
-                ln = math.hypot(dx_, dz_)
-                dia = box(ln, 45, 45, (0, -22, -22))
-                dia.Placement = Placement(
-                    Vector(x0, 0, -P.SWING_ARM_DEEP / 2 if i % 2 == 0
-                           else P.SWING_ARM_DEEP / 2),
-                    Rotation(Vector(0, 1, 0),
-                             -math.degrees(math.atan2(dz_, dx_))
-                             if i % 2 == 0
-                             else math.degrees(math.atan2(dz_, dx_))))
-                mem.append(dia)
-            for m_ in mem:
-                m_.Placement = Placement(
-                    Vector(px, py, P.SWING_ARM_Z),
-                    Rotation(Vector(0, 0, 1), yaw)).multiply(m_.Placement)
-                parts.append(m_)
-            # vertical pivot pin at the hull, and the pin at the float
-            for (cx, cy) in ((px, py), (tx, ty)):
-                parts.append(Part.makeCylinder(
-                    52, arm_h + 130,
-                    Vector(cx, cy, P.SWING_ARM_Z - (arm_h + 130) / 2),
-                    Vector(0, 0, 1)))
-            # tapered lug pads into the stem and the float face
-            parts.append(box(210, 90, arm_h + 90,
-                             (px - 105, py - (90 if sy > 0 else 0),
-                              P.SWING_ARM_Z - (arm_h + 90) / 2)))
-        # 24 V slew drive on the aft pivot swings the pair
-        parts.append(Part.makeCylinder(
-            95, 130, Vector(P.SWING_PIVOT_X - P.SWING_ARM_GAP,
-                            sy * P.SWING_PIVOT_Y,
-                            P.SWING_ARM_Z + arm_h / 2 + 10),
-            Vector(0, 0, 1)))
-
-    # no extra struts: the parallelogram IS the structure, exactly as
-    # on the boats this pattern comes from. Each arm is a deep box beam
-    # and the four pins are the only moving parts.
-
-    # ---- bight + drawbar: a FIXED, small triangle at docked width.
-    # It belongs to the ROAD function; the extended floats leave it
-    # alone (the ties couple only when docked).
-    bb, bh = P.HANGAR_BIGHT
-    by = P.POD_DOCKED[0] + P.FLOAT_W / 2
-    parts.append(box(bb, 2 * by, bh,
-                     (P.HANGAR_BIGHT_X - bb, -by, P.SWING_ARM_Z - bh / 2)))
-    # ties run from the bight to the DOCKED float's transom, which sits
-    # 1400 mm forward of the boat's - they used to stop in mid air
-    tail_x = P.FLOAT_X_DOCKED - P.FLOAT_LEN / 2
-    for sy in (-1, 1):
-        parts.append(rod((P.HANGAR_BIGHT_X - bb / 2, sy * P.POD_DOCKED[0],
-                          P.SWING_ARM_Z),
-                         (tail_x, sy * P.POD_DOCKED[0], P.SWING_ARM_Z), 90))
-    # THE A-FRAME IS DEMOUNTABLE. On the road it pins into two sockets
-    # on the bight and meets the car ball 445 mm over the tarmac; at sea
-    # it comes off and stows flat on a float deck - nothing stands in
-    # the water or rears over the transom.
-    if tow == "land":
-        nose_x = P.HANGAR_BIGHT_X - P.DRAWBAR_LEN
-        nose_z = P.GROUND_Z + P.COUPLING_H
-        for s_ in (-1, 1):                       # small A-frame, fixed
-            parts.append(rod((P.HANGAR_BIGHT_X - bb / 2, s_ * (by - 120),
-                              P.SWING_ARM_Z),
-                             (nose_x + 260, 0, nose_z + 40), P.DRAWBAR_TUBE))
-        parts.append(rod((nose_x + 300, 0, nose_z + 40),
-                         (nose_x, 0, nose_z), P.DRAWBAR_TUBE))
-        parts.append(box(220, 150, 130, (nose_x - 40, -75, nose_z - 50)))
-        parts.append(Part.makeSphere(P.COUPLING_BALL / 2,
-                                     Vector(nose_x + 30, 0, nose_z - 55)))
-        for s_ in (-1, 1):
-            parts.append(Part.makeTorus(28, 7, Vector(nose_x + 120, s_ * 90,
-                                                      nose_z - 20),
-                                        Vector(0, 1, 0)))
-        parts.append(rod((nose_x + 420, 150, nose_z + 60),
-                         (nose_x + 420, 150, nose_z - 300), 60))
-        parts.append(Part.makeCylinder(
-            P.JOCKEY_D / 2, 70, Vector(nose_x + 420, 115, nose_z - 300),
-            Vector(0, 1, 0)))
-    else:
-        # the two sockets the A-frame pins into: LUGS on the bight's
-        # face, not cylinders hanging in space
-        for s_ in (-1, 1):
-            parts.append(box(90, 150, 150,
-                             (P.HANGAR_BIGHT_X - bb - 90,
-                              s_ * (by - 120) - 75,
-                              P.SWING_ARM_Z - 75)))
+        for k, bx in enumerate(P.BEAM_XS):
+            x0 = bx + (P.BEAM_DX_PORT if sy < 0 else 0)
+            for st, (bw, bh, bt) in enumerate(P.BEAM_SECTIONS):
+                # stage 0 is fixed in the stem; each later stage steps
+                # out by an equal share of the stroke
+                out = P.BEAM_SOCKET_Y + (reach - P.BEAM_SOCKET_Y) * (
+                    st / (len(P.BEAM_SECTIONS) - 1.0))
+                y1 = out if st else P.BEAM_SOCKET_Y
+                y0 = y1 - P.BEAM_STAGE_LEN
+                parts.append(box(bw, P.BEAM_STAGE_LEN, bh,
+                                 (x0 - bw / 2,
+                                  min(sy * y0, sy * y1),
+                                  P.BEAM_Z0 + (P.BEAM_H - bh) / 2)))
+            # the socket: a collar where the beam leaves the stem face
+            parts.append(box(P.BEAM_SECTIONS[0][0] + 80, 90, P.BEAM_H + 60,
+                             (x0 - (P.BEAM_SECTIONS[0][0] + 80) / 2,
+                              sy * P.BEAM_SOCKET_Y - 45,
+                              P.BEAM_Z0 - 30)))
+            # and the landing on the float's inner face
+            parts.append(box(P.BEAM_SECTIONS[-1][0] + 60, 60, P.BEAM_H + 40,
+                             (x0 - (P.BEAM_SECTIONS[-1][0] + 60) / 2,
+                              sy * reach - 30 if sy > 0 else -sy * -reach - 30,
+                              P.BEAM_Z0 - 20)))
 
     if not coupled:
         off = Placement(Vector(P.HANGAR_STANDOFF, 0,

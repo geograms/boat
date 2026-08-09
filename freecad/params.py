@@ -161,8 +161,10 @@ SWING_DEG_SEA = 74.6               # arm angle, deployed
 FLOAT_X_DOCKED = 3700              # docked: float 1400..6000, wholly
                                    # inside the notch, nose at the bow
                                    # shoulder - nothing protrudes
-FLOAT_X_SEA = 2300                 # deployed: swings AFT and out to
-                                   # x 0..4600 (astern is fine)
+FLOAT_X_SEA = FLOAT_X_DOCKED       # the float goes STRAIGHT OUT on the
+                                   # beams now. It never moves fore and
+                                   # aft, so its bow stays behind the
+                                   # solid bow in every pose.
 FLOAT_X = FLOAT_X_DOCKED           # legacy default
 
 
@@ -175,6 +177,53 @@ def float_x(phi_deg):
 def swing_angle(phi_deg):
     t = 0.0 if phi_deg <= 0 else min(1.0, phi_deg / 90.0)
     return SWING_DEG_DOCK + t * (SWING_DEG_SEA - SWING_DEG_DOCK)
+
+# ---- THE EXTENDER BEAMS ----
+# The swing wing could not be built. A horizontal swing needs a
+# horizontal plane that is clear of the float at EVERY angle, and this
+# boat has 70 mm of it - between the float top (530) and the wing
+# underside (600). The arms as drawn ran at z 420..600 and swept
+# straight through the docked float's top 110 mm at every intermediate
+# angle. Not a clearance problem: a solid interference.
+#
+# So the float slides STRAIGHT OUT instead, on two telescopic beams a
+# side. Nothing rotates, nothing sweeps, nothing passes over or through
+# the float: the beams live wholly inside the stem when docked and
+# reach the float's INNER FACE when extended.
+#
+# Three stages, because two cannot fit. A single slider long enough for
+# 1650 mm of stroke would have to be 2150 mm and its retracted tail
+# would stick 590 mm out of the 1560 mm stem - straight into the other
+# side's float. Three stages of 1300 keep the whole stack inside.
+BEAM_Z0 = 400                      # bottom: 81 mm above the loaded
+                                   # waterline, and the beam is the only
+                                   # thing between the hull and the float
+BEAM_H = 200                       # top lands flush under the wing
+BEAM_XS = (2700, 4600)             # stations, clear of the wheel notches
+BEAM_DX_PORT = 180                 # port beams offset along the boat so
+                                   # the two sides' retracted tails pass
+                                   # each other inside the stem
+BEAM_STAGE_LEN = 1300
+BEAM_SECTIONS = ((280, 200, 6),    # fixed, in the stem: takes the root
+                 (240, 170, 5),    # mid
+                 (200, 140, 5))    # inner: carries the float
+BEAM_SOCKET_Y = STEM_HW            # where it leaves the hull
+
+
+def beam_reach(phi_deg):
+    """Outer end of the inner stage, world y (starboard). Docked it is
+    at the stem face; extended it is at the float's inner face."""
+    t = 0.0 if phi_deg <= 0 else min(1.0, phi_deg / 90.0)
+    return BEAM_SOCKET_Y + t * (POD_SEA[0] - POD_DOCKED[0])
+
+
+def beam_mass():
+    """kg of all FOUR telescopic beams, computed from the sections."""
+    tot = 0.0
+    for b, h, t in BEAM_SECTIONS:
+        tot += (b * h - (b - 2 * t) * (h - 2 * t)) * BEAM_STAGE_LEN
+    return 4 * tot * 2.7e-6 * 1.15      # +15 % for slides, pads, screws
+
 
 DOCK_CLEAR = 10                    # float top to the wing underside
 POD_DOCKED = (STEM_HW + FLOAT_W / 2, FLOAT_H / 2 - DOCK_CLEAR)
@@ -444,7 +493,7 @@ def hangar_mass():
               L.zone_mass("float_deck", areas.get("float_deck", 0.0)))
     bight_m = 2 * (POD_DOCKED[0] + FLOAT_W / 2) / 1000
     alu = bight_m * HANGAR_BIGHT[0] * HANGAR_BIGHT[1] * 0.15 * 2.7e-3
-    return (floats + MASS_WHEELS_HUBS + swing_arm_mass() + MASS_FLIPGEAR +
+    return (floats + MASS_WHEELS_HUBS + beam_mass() + MASS_FLIPGEAR +
             MASS_HYDRAULICS + girder_mass() + alu +
             4 * LOCK_MOTOR_KG + 20)
 
@@ -1930,13 +1979,24 @@ def checks(verbose=True, strict=True):
     # float's INBOARD face, so nothing has to swing past the T wing
     assert ARM_PIVOT_Z == ARM_R, \
         "the arm has to reach z 0 hanging straight down"
-    # AND SO DO THE SWING ARMS
-    assert SWING_ARM_Z - SWING_ARM_DEEP / 2 >= wl_loaded, \
-        f"swing arm bottom chord at z " \
-        f"{SWING_ARM_Z - SWING_ARM_DEEP / 2:.0f} is under the " \
-        f"{wl_loaded:.0f} mm waterline"
-    assert SWING_ARM_Z + SWING_ARM_DEEP / 2 <= T_STEP_Z, \
-        "swing arm top chord runs into the wing"
+    # THE EXTENDER BEAMS
+    assert BEAM_Z0 >= wl_loaded + 50, \
+        f"beam bottom at z {BEAM_Z0} against a {wl_loaded:.0f} mm waterline"
+    assert BEAM_Z0 + BEAM_H <= T_STEP_Z, "beam top runs into the wing"
+    # retracted, the whole telescope must fit INSIDE the stem or it
+    # spears the other side's float
+    _tail = BEAM_SOCKET_Y - BEAM_STAGE_LEN
+    assert _tail >= -STEM_HW, \
+        f"retracted beam tail reaches y {_tail:.0f}, outside the " \
+        f"{-STEM_HW:.0f} stem - it would run through the port float"
+    # and it must actually reach the float
+    assert abs(beam_reach(90) - (POD_SEA[0] - FLOAT_W / 2)) < 1, \
+        "beam does not reach the extended float's inner face"
+    # the beams must not sit where the wheels swing
+    for _bx in BEAM_XS:
+        for _wx in WHEEL_XS:
+            assert abs(_bx - _wx) > (WELL_L + BEAM_SECTIONS[0][0]) / 2, \
+                f"beam at x {_bx} lands in the wheel notch at x {_wx}"
     # THE GIRDERS HAVE TO BE OUT OF THE WATER
     assert GIRDER_Z0 >= wl_loaded + 150, \
         f"girder channel floor at z {GIRDER_Z0} against a {wl_loaded:.0f} mm " \
