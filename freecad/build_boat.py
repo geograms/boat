@@ -450,9 +450,25 @@ def build_float(pod, roll, flip=0.0, fx=None):
                  P.FLOAT_H / 2 + 12))
     hatch.Placement = place.multiply(hatch.Placement)
 
-    hyd = [Part.makeCylinder(85, 320, Vector(bx - 260, -60, 0),
-                             Vector(1, 0, 0))]         # 48V motor inside
-    hyd.append(box(240, 200, 220, (bx + 80, -160, -110)))
+    # ARCHITECTURE A: the drive lives DRY inside the float. At each of
+    # the two aft stations a 1.2 kW motor and its 100:1 planetary sit in
+    # the hull, and ONE stub shaft crosses the shell through a marine
+    # face seal to the wheel. Nothing rotating is submerged except that
+    # shaft, and its seal can be changed without opening the float.
+    hyd = []
+    for dxw in P.WHEEL_XS[:P.DRIVE_WHEELS // 2]:
+        wx = P.FLOAT_X + dxw
+        hyd.append(Part.makeCylinder(72, 250, Vector(wx - 300, 0, 0),
+                                     Vector(1, 0, 0)))          # motor
+        hyd.append(Part.makeCylinder(88, 180, Vector(wx - 50, 0, 0),
+                                     Vector(1, 0, 0)))          # planetary
+        # seal housing on the shell, and the stub shaft through it
+        hyd.append(Part.makeCylinder(
+            P.SEAL_DIA / 2, 60, Vector(wx, -P.FLOAT_W / 2 - 30, 0),
+            Vector(0, 1, 0)))
+        hyd.append(Part.makeCylinder(
+            26, P.FLOAT_W + 120, Vector(wx, -P.FLOAT_W / 2 - 60, 0),
+            Vector(0, 1, 0)))
     hydraulics = Part.makeCompound(hyd)
     hydraulics.Placement = place.multiply(hydraulics.Placement)
 

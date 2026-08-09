@@ -60,7 +60,8 @@ centimetres, not a duct.
 
 | Item | Spec | Where |
 |---|---|---|
-| Wheels | 3 × 205/70 R15 AT, hub motors | bays at x 1 800 / 3 550 / 5 300 |
+| Wheels | 3 × **155/80 R13 C trailer** tyres, 555 mm, 13.5 kg, rated 600 kg against a 549 kg wheel load. The old 205/70 R15 was a car tyre: 668 mm, 22 kg, 73 % over-rated, and its bigger radius asked 17 % more torque | bays at x 1 900 / 3 600 / 5 300 |
+| Drive | **2 per float driven** (four in all): 1.2 kW motor + 100:1 planetary **dry inside the float**, one stub shaft out through a marine face seal. ≈ 306 Nm at each wheel = 1 224 Nm, good for ramps to ~11 %; winch assist beyond | aft two stations |
 | Bays | **wells, not trenches**: open below, deck bridge on top with a 680 × 230 slot for the wheel to stand through — the profile stays closed. Roughly half the wheel is inside the bay on the road | 730 × 300 below, slot above |
 | Flip arm | curved, bulging **outboard**; 180° about a tube spanning the bay | tube on the bay centreline, z +230 |
 | Pins | spring pin at each end of the swing — **manual, no electrics** | tube ends |
@@ -141,13 +142,18 @@ roughly 1 800 kg loaded it needs four wheels instead of six and
 proportionally lighter beams, which lands near the target. The lever is
 in [weight.md](weight.md), not here.
 
-**One feature was traded, and it should be a conscious choice:**
-deleting the hydraulic hub drive (−312 kg with its wheels) means the
-boat **no longer drives itself up a slipway**. That is affordable now
-only because the hangar became the trailer — self-propulsion on land
-was originally there for the certification argument, which no longer
-needs it, and the winch plus the waterjets cover ramp work. Restoring
-it costs 312 kg.
+**Self-launching is back, electrically, for 74 kg.** The hydraulic hub
+layout cost 312 kg and was deleted; the electric equivalent —
+architecture A below — costs 71 kg of motors, gearboxes and controllers
+plus 3 kg of wheel, and drives four wheels at ~306 Nm each.
+
+**Why the motor is not in the wheel.** IP68 is a *static* test: the unit
+is dipped, not run. A rotating seal under load can fail within minutes
+on an IP68-rated motor, which is the standard warning from marine motor
+suppliers. So the motor and gearbox live **dry inside the float** and a
+single stub shaft crosses the shell through **one marine face seal** per
+driven wheel — the saildrive pattern. One seal, serviceable from
+outside, nothing rotating submerged but the shaft itself.
 
 ## 8. Scantlings — calculated, not guessed
 

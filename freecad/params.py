@@ -205,15 +205,34 @@ PHI_SPLAY = PHI_WATER              # detached floats sit at the sea stance
 POD_WATER = pod_at(PHI_WATER)
 POD_ROAD = POD_DOCKED
 
+# ---- wheels: 13-inch TRAILER wheels, four of them driven ----
+# 205/70 R15 was a car tyre: 668 mm, 22 kg, rated 950 kg against a
+# 549 kg wheel load. A 155/80 R13 C trailer tyre is the right part -
+# 555 mm, 13.5 kg, rated 600 kg - and the smaller radius asks 17 % less
+# torque for the same pull, because torque = force x radius.
+#
+# DRIVE (architecture A): the motor and its planetary gearbox live DRY
+# INSIDE the float; a single stub shaft crosses the hull through one
+# marine face seal to the wheel. IP68 on a motor is a STATIC test - a
+# rotating seal under load can fail in minutes - so the design has one
+# serviceable seal per wheel instead of trusting a submerged hub.
+DRIVE_WHEELS = 4                   # the two aft stations each side
+DRIVE_KW = 1.2                     # per wheel
+DRIVE_RATIO = 100                  # planetary, into the stub shaft
+DRIVE_NM = 306                     # at the wheel, per driven station
+DRIVE_KG = 14                      # motor + gearbox + seal housing
+DRIVE_CTRL_KG = 15                 # controllers, cabling, contactors
+SEAL_DIA = 90                      # face seal on the stub shaft
+
 # ---- wheels: manual 180-deg flip arms in open bays ----
 # 205/70 R15 ALL-TERRAIN as before; three per float. Each wheel hangs
 # on a curved arm from a tube that spans an open bay cut through the
 # float. Flip up = wheel stands through the bay above the deck (sea);
 # flip down = wheel nests inside the bay and protrudes just enough to
 # roll (road). The bays cost buoyancy and it is accounted for.
-WHEEL_DIA = 668
-WHEEL_W = 205
-HUB_DIA = 390
+WHEEL_DIA = 555          # 155/80 R13 C trailer tyre
+WHEEL_W = 155
+HUB_DIA = 330            # 13 in rim
 WHEEL_XS = (-1800, -100, 1600)     # along the float, from its centre:
                                    # docked world 1900/3600/5300 -
                                    # a 3.4 m wheelbase straddling the
@@ -228,7 +247,9 @@ FLIP_TUBE_D = 120                  # the tube the arm swings on: d70
                                    # 104 MPa allowable - see
                                    # freecad/structure_calc.py
 FLIP_ARM_D = 110
-FLIP_ARM_LEN = 516                 # tube centre to axle
+FLIP_ARM_LEN = 520                 # tube centre to axle: set so the
+                                   # smaller wheel still gives 268 mm
+                                   # of clearance under the keel
 AXLE_DOWN_Z = POD_DOCKED[1] + FLOAT_H / 2 - FLIP_ARM_LEN   # 74, in the bay
 GROUND_Z = AXLE_DOWN_Z - WHEEL_DIA / 2             # -260: the keel rides
                                                    # 260 mm over the road
@@ -757,7 +778,7 @@ ARCH_PIVOT_Y = 950
 ARCH_PIVOT_Z = 760
 ARCH_LEG = 1200
 ARCH_SEA_DEG = 65
-ARCH_LAND_DEG = -19.5   # re-trimmed again for GROUND_Z -400
+ARCH_LAND_DEG = -18.0   # re-trimmed for the 13-inch wheels
 ARCH_EXT = 800                # telescoping tongue stroke
 ARCH_TUBE = 130               # heavier section: reads as structure, not wire
 COUPLING_H = 430              # target coupling height above ground
@@ -955,19 +976,17 @@ BULKHEAD_X = (900, 2400, 3900, 5400, 6200)
 MASS_EXOSKELETON = 260     # S355 tube frame + brackets, galvanised
 MASS_UGIRDER = 56          # girders 110x160x6, SF 4.1. The cross tie
                            # and its knees are gone - see below
-MASS_WHEELS_HUBS = 78      # 6 x 13 kg PLAIN trailer wheels. The
-                           # hydraulic hub drive is deleted: with the
-                           # hangar as the trailer, self-propulsion on
-                           # land is no longer needed for the
-                           # certification story, and it cost 192 kg
-                           # of hub motors plus 120 kg of hydraulics
+MASS_WHEELS_HUBS = 81      # 6 x 13.5 kg 155/80 R13 C trailer wheels
 MASS_EXTENDERS = 48        # 4 swing arms as 300 mm deep TRUSSES with
                            # 60x60x4 chords, not solid boxes: the
                            # chords take the moment axially at 82 MPa
                            # instead of a box wall taking it in
                            # bending. 155 -> 48 kg
 MASS_FLIPGEAR = 81         # d120x12 tubes and d110 arms, as built
-MASS_HYDRAULICS = 0        # deleted with the hub drive
+MASS_HYDRAULICS = 71       # ELECTRIC drive, architecture A: 4 dry
+                           # in-float motor/gearbox units at 14 kg
+                           # plus controllers and cabling. The old
+                           # hydraulic layout cost 312 kg for this
 MASS_JETS = 75             # 3 x 2 kW waterjet cartridges incl. ducting
 MASS_ELECTRICS = 120       # inverter/charger, MPPTs, busbars, cabling
 MASS_SOLAR = 0             # roof panels are in deck_mass(), side
