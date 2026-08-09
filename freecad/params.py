@@ -113,7 +113,11 @@ T_LIP_Z = 550                      # the wing's outer LIP drops to here:
                                    # the docked float (top 450) rides
                                    # recessed 40 mm behind the hull
                                    # face, in its shadow line
-FLOAT_LEN = 4600                   # SHORTER than its 6000 notch: the
+FLOAT_LEN = 5400           # see the EXTENDER SLIDERS block: righting
+                           # is reserve x lever, and buying it with
+                           # FLOAT LENGTH is far cheaper than buying
+                           # it with extension, because the arm pays
+                           # for reach twice - in load and in length
                                    # swing wing needs fore-and-aft room
 FLOAT_W = 460                      # the shorter swing-wing float has to
                                    # win its volume back in section
@@ -158,7 +162,9 @@ SWING_ARM_GAP = -2300              # fore/aft pin spacing: the arms land
                                    # so nothing is cantilevered
 SWING_DEG_DOCK = 6.0               # arm angle, docked (lying forward)
 SWING_DEG_SEA = 74.6               # arm angle, deployed
-FLOAT_X_DOCKED = 3700              # docked: float 1400..6000, wholly
+FLOAT_X_DOCKED = 3300      # the 5400 float sits 600..6000, so the bow
+                           # keeps 1200 mm of solid full-width hull
+                           # ahead of the float noses
                                    # inside the notch, nose at the bow
                                    # shoulder - nothing protrudes
 FLOAT_X_SEA = FLOAT_X_DOCKED       # the float goes STRAIGHT OUT on the
@@ -178,56 +184,63 @@ def swing_angle(phi_deg):
     t = 0.0 if phi_deg <= 0 else min(1.0, phi_deg / 90.0)
     return SWING_DEG_DOCK + t * (SWING_DEG_SEA - SWING_DEG_DOCK)
 
-# ---- THE EXTENDER BEAMS ----
-# The swing wing could not be built. A horizontal swing needs a
-# horizontal plane that is clear of the float at EVERY angle, and this
-# boat has 70 mm of it - between the float top (530) and the wing
-# underside (600). The arms as drawn ran at z 420..600 and swept
-# straight through the docked float's top 110 mm at every intermediate
-# angle. Not a clearance problem: a solid interference.
+# ---- THE EXTENDER SLIDERS ----
+# A three-stage telescope reaching 1650 mm weighed 52 kg an arm, 209 kg
+# the set. That is not a stabiliser mount, it is a crane boom, and it
+# came from picking the extension first and paying for it afterwards.
 #
-# So the float slides STRAIGHT OUT instead, on two telescopic beams a
-# side. Nothing rotates, nothing sweeps, nothing passes over or through
-# the float: the beams live wholly inside the stem when docked and
-# reach the float's INNER FACE when extended.
+# Sized the other way round, from a 10 kg budget an arm, the answer is
+# a PLAIN SINGLE-STAGE SLIDER and the extension falls out of it:
 #
-# Three stages, because two cannot fit. A single slider long enough for
-# 1650 mm of stroke would have to be 2150 mm and its retracted tail
-# would stick 590 mm out of the 1560 mm stem - straight into the other
-# side's float. Three stages of 1300 keep the whole stack inside.
-BEAM_Z0 = 400                      # bottom: 81 mm above the loaded
-                                   # waterline, and the beam is the only
-                                   # thing between the hull and the float
-BEAM_H = 200                       # top lands flush under the wing
+#   the beam carries 70 % of the float's 566 kg reserve x 3.0 slam on a
+#   lever of (230 + extension); the slider has to be extension + 320 of
+#   overlap long; mass = section area x that length. Both the load AND
+#   the length grow with extension, so mass grows faster than linearly.
+#
+#      extension   section        beam SF   kg/arm
+#         700     160 x 220 x 4     1.53       9.4   <- chosen
+#         800     180 x 220 x 4     1.50      10.9
+#        1000     210 x 220 x 4     1.50      14.1
+#        1650     three stages      1.81      52.0
+#
+# But 700 mm of extension does not right the boat on its own, and that
+# is the second half of the answer. Righting = float reserve x lever.
+# Lever is expensive: the arm pays for it TWICE, once in load and once
+# in length. Reserve is cheap: the float just gets longer, in a hull
+# that has the room. So FLOAT_LEN goes 4600 -> 5400 and the extension
+# comes DOWN to 700. Righting SF 2.08 against the 1.9 required, on a
+# 9.3 kg arm instead of a 52 kg telescope.
+#
+# One tube sliding in one socket. No stages, no nesting, and the whole
+# slider is swallowed by the 1560 mm stem when docked.
+BEAM_STROKE = 700                  # what 10 kg an arm actually buys
+BEAM_Z0 = 380                      # 57 mm over the loaded waterline
+BEAM_H = 220                       # top flush under the wing at 600
+BEAM_SECTION = (160, 220, 4)       # 6082-T6 box - nothing here is steel
+BEAM_OVERLAP = 320                 # retained in the socket, fully out
+BEAM_LEN = BEAM_STROKE + BEAM_OVERLAP
 BEAM_XS = (2700, 4600)             # stations, clear of the wheel notches
-BEAM_DX_PORT = 180                 # port beams offset along the boat so
-                                   # the two sides' retracted tails pass
-                                   # each other inside the stem
-BEAM_STAGE_LEN = 1300
-BEAM_SECTIONS = ((280, 200, 6),    # fixed, in the stem: takes the root
-                 (240, 170, 5),    # mid
-                 (200, 140, 5))    # inner: carries the float
-BEAM_SOCKET_Y = STEM_HW            # where it leaves the hull
+BEAM_DX_PORT = 180                 # port sliders offset along the boat so
+                                   # the two sides' tails pass each other
+BEAM_PAD_MARGIN = 1.15             # slide pads, local doublers, end fittings
 
 
 def beam_reach(phi_deg):
-    """Outer end of the inner stage, world y (starboard). Docked it is
-    at the stem face; extended it is at the float's inner face."""
+    """Outer end of the slider, world y (starboard)."""
     t = 0.0 if phi_deg <= 0 else min(1.0, phi_deg / 90.0)
-    return BEAM_SOCKET_Y + t * (POD_SEA[0] - POD_DOCKED[0])
+    return STEM_HW + t * BEAM_STROKE
 
 
 def beam_mass():
-    """kg of all FOUR telescopic beams, computed from the sections."""
-    tot = 0.0
-    for b, h, t in BEAM_SECTIONS:
-        tot += (b * h - (b - 2 * t) * (h - 2 * t)) * BEAM_STAGE_LEN
-    return 4 * tot * 2.7e-6 * 1.15      # +15 % for slides, pads, screws
+    """kg of all FOUR sliders, computed from the section."""
+    b, h, t = BEAM_SECTION
+    a = b * h - (b - 2 * t) * (h - 2 * t)
+    return 4 * a * BEAM_LEN * 2.7e-6 * BEAM_PAD_MARGIN
 
 
 DOCK_CLEAR = 10                    # float top to the wing underside
 POD_DOCKED = (STEM_HW + FLOAT_W / 2, FLOAT_H / 2 - DOCK_CLEAR)
-POD_SEA = (POD_DOCKED[0] + 1650, POD_DOCKED[1])     # extended 1.65 m -
+POD_SEA = (POD_DOCKED[0] + BEAM_STROKE, POD_DOCKED[1])  # extended -
                                                     # compact stance by
                                                     # choice (2/3 of 2.5)
 EXT_VEC = (POD_SEA[0] - POD_DOCKED[0], 0.0)
@@ -1511,10 +1524,11 @@ def checks(verbose=True, strict=True):
     _h2, wup = arm_points(1, down=False)
     wheel_low_water = wup[1] - WHEEL_DIA / 2
     disp = displacement_kg()
-    # reserve: the slim prismatic float minus the three open wheel bays
-    wells_mm3 = 3 * WELL_L * WELL_W * FLOAT_H
-    reserve_kg = (FLOAT_LEN * FLOAT_W * FLOAT_H * 0.80
-                  - wells_mm3) * 1e-6
+    # reserve: the prismatic float minus the wheel notches. This used
+    # to subtract THREE full-height bays - the flip-arm era - which
+    # over-penalised it by 156 kg and made the righting look worse than
+    # it is. One source of truth now: well_loss_kg().
+    reserve_kg = FLOAT_LEN * FLOAT_W * FLOAT_H * 0.80 * 1e-6 - well_loss_kg()
     m_right = reserve_kg * 9.81 * POD_WATER[0] / 1e6
     m_heel = 0.5 * 1.2 * 1.1 * 11.5 * 25.7**2 * 1.5 / 1000
 
@@ -1542,7 +1556,11 @@ def checks(verbose=True, strict=True):
     assert 0.30 < immersion < 0.70, f"float immersion {immersion}"
     # the wide stance is the POINT of the extenders; the limit that
     # matters is what a canal lock will take, not a tidy number
-    assert 4500 <= water_beam <= 8000, f"water beam {water_beam}"
+    # 4500 was written when the extenders reached 1650 mm. They now
+    # reach 870, because that is what a 10 kg arm buys - see the
+    # EXTENDER SLIDERS block. Re-baselined openly rather than left to
+    # fail quietly.
+    assert 3800 <= water_beam <= 8000, f"water beam {water_beam}"
     assert 1700 < disp < 2400, f"displacement {disp}"
     assert reserve_kg >= 500, f"ama reserve {reserve_kg:.0f}"
     # slim floats: the STEM must float the boat on its own when the
@@ -1966,7 +1984,8 @@ def checks(verbose=True, strict=True):
         f"float notch {WELL_H} mm deep does not clear the wheel down"
     # sea stance: real clear water and a surface-piercing float
     sea_gap = POD_SEA[0] - FLOAT_W / 2 - STEM_HW
-    assert sea_gap >= 1300, f"only {sea_gap:.0f} mm of clear water extended"
+    # likewise: 1300 belonged to the 1650 mm extension
+    assert sea_gap >= 650, f"only {sea_gap:.0f} mm of clear water extended"
     assert POD_SEA[1] + FLOAT_H / 2 > WL_Z + 100, \
         "extended float fully submerged - no righting reserve"
     assert POD_SEA[1] - FLOAT_H / 2 < WL_Z, "extended float flies above the water"
@@ -1983,19 +2002,18 @@ def checks(verbose=True, strict=True):
     assert BEAM_Z0 >= wl_loaded + 50, \
         f"beam bottom at z {BEAM_Z0} against a {wl_loaded:.0f} mm waterline"
     assert BEAM_Z0 + BEAM_H <= T_STEP_Z, "beam top runs into the wing"
-    # retracted, the whole telescope must fit INSIDE the stem or it
-    # spears the other side's float
-    _tail = BEAM_SOCKET_Y - BEAM_STAGE_LEN
+    # retracted, the WHOLE slider must fit inside the stem or its tail
+    # spears the other side's float. This is what caps the extension at
+    # a single stage - and a single stage is what keeps it at 10 kg.
+    _tail = STEM_HW - BEAM_LEN
     assert _tail >= -STEM_HW, \
-        f"retracted beam tail reaches y {_tail:.0f}, outside the " \
+        f"retracted slider tail reaches y {_tail:.0f}, outside the " \
         f"{-STEM_HW:.0f} stem - it would run through the port float"
-    # and it must actually reach the float
-    assert abs(beam_reach(90) - (POD_SEA[0] - FLOAT_W / 2)) < 1, \
-        "beam does not reach the extended float's inner face"
+    assert BEAM_OVERLAP >= 0.25 * BEAM_STROKE, "slider overlap too short"
     # the beams must not sit where the wheels swing
     for _bx in BEAM_XS:
         for _wx in WHEEL_XS:
-            assert abs(_bx - _wx) > (WELL_L + BEAM_SECTIONS[0][0]) / 2, \
+            assert abs(_bx - _wx) > (WELL_L + BEAM_SECTION[0]) / 2, \
                 f"beam at x {_bx} lands in the wheel notch at x {_wx}"
     # THE GIRDERS HAVE TO BE OUT OF THE WATER
     assert GIRDER_Z0 >= wl_loaded + 150, \

@@ -8,10 +8,10 @@ change is checked against — nothing on it may be silently dropped.
 
 ## 1. What the floater is
 
-A slim outrigger hull, **6 000 × 400 × 460 mm**, one per side, that
+A slim outrigger hull, **5 400 × 460 × 540 mm**, one per side, that
 does four jobs:
 
-1. **Stabiliser** — extended 1.65 m out on the telescopic beams, it
+1. **Stabiliser** — extended 0.7 m out on the sliders, it
    is the boat's righting moment in waves.
 2. **Trailer** — docked in the hull's T-notch, its three wheels carry
    the boat on the road.
@@ -98,44 +98,58 @@ van is ≈0.5 g and a loaded truck 0.35–0.40 g, so this sits in normal
 trailer territory. The float keeps its **outboard** half solid, so the
 skin that meets the water is untouched.
 
-## 5. Docking and extension — telescopic beams, no swing
+## 5. Docking and extension — one slider, sized from a weight budget
 
-The float goes **straight out**. It does not rotate, it does not move
-fore and aft, and its draft never changes.
+The float goes **straight out** on a plain single-stage slider. No
+stages, no nesting, no rotation, and its draft never changes.
 
 | Item | Spec |
 |---|---|
-| Beams | **2 per side**, at x 2 700 and 4 600 (port offset 180 mm so the retracted tails pass each other) |
-| Stages | **three**, 1 300 mm each: 280 × 200 × 6 fixed, 240 × 170 × 5 mid, 200 × 140 × 5 inner |
-| Band | z **400 … 600** — 81 mm above the loaded waterline, top flush under the wing |
-| Stroke | **1 650 mm**, electric leadscrew, self-locking anywhere |
-| Docked | the whole telescope is **inside the 1 560 mm stem**; nothing touches the float |
-| Extended | the inner stage lands on the float's **inner face** — it never passes over the float or through it |
-| Root | 21.9 kNm at the socket, 57 MPa, **SF 1.8** |
-| Mass | **209 kg** all four, computed from the sections |
+| Sliders | **2 per side**, x 2 700 and 4 600 (port offset 180 mm so the retracted tails pass) |
+| Section | **160 × 220 × 4** box, 6082-T6 — nothing in the hangar is steel |
+| Band | z **380 … 600** — 57 mm above the loaded waterline, top flush under the wing |
+| Stroke | **700 mm**, electric leadscrew, self-locking anywhere |
+| Length | 1 020 mm, 320 of it retained in the socket — swallowed whole by the 1 560 mm stem |
+| Root | 13.2 kNm at the socket, 69 MPa, **SF 1.53** |
+| Mass | **9.4 kg the arm, 38 kg all four** |
 
-### Why the swing wing was abandoned
+### How 700 mm was arrived at
 
-A horizontal swing needs a horizontal plane that is **clear of the
-float at every angle**. This boat has 70 mm of it — between the float
-top at z 530 and the wing underside at z 600. The arms as drawn ran at
-z 420 … 600 and passed **through the docked float's top 110 mm** at
-every intermediate angle. That is not a clearance problem to be tuned
-away; it is a solid interference, and it had been in the model since
-the swing wing was introduced.
+Backwards from the weight, not forwards from a wish. A three-stage
+telescope reaching 1 650 mm weighed **52 kg an arm, 209 kg the set** —
+a crane boom, not a stabiliser mount. It came from choosing the
+extension first and paying for it afterwards.
 
-The three alternatives were: raise the wing over the recess to open a
-250 mm band (which pushes the wheel boxes 722 mm proud of the sole),
-shrink the float to 380 mm tall (which costs 30 % of its buoyancy), or
-stop rotating. Stopping rotating is the cheapest and the most
-ordinary — it is what demountable trimarans do.
+**The arm pays for reach twice**: the load grows with the lever *and*
+the slider grows with the stroke, so mass climbs faster than linearly.
 
-**Three stages, not two, and that is forced.** A single slider long
-enough for 1 650 mm of stroke would have to be 2 150 mm, and its
-retracted tail would stand 590 mm outside the 1 560 mm stem — straight
-into the other side's float. Three stages of 1 300 keep the whole
-stack inboard. The cost is weight: **209 kg against 113** for the
-swing arms that could not be built.
+| Extension | Section | Beam SF | kg/arm |
+|---|---|---|---|
+| **700** | **160 × 220 × 4** | **1.53** | **9.4** |
+| 800 | 180 × 220 × 4 | 1.50 | 10.9 |
+| 1 000 | 210 × 220 × 4 | 1.50 | 14.1 |
+| 1 650 | three stages | 1.81 | 52.0 |
+
+Past about 1 200 mm a single stage no longer fits inside the stem at
+all, and the moment it becomes a telescope the weight triples.
+
+### And the float got longer instead
+
+700 mm of lever does not right the boat on its own. Righting is
+**reserve × lever**, and the two are priced completely differently:
+
+- **Lever is expensive** — the arm pays for it twice, as above.
+- **Reserve is cheap** — the float just gets longer, in a hull that
+  has the room for it.
+
+So **FLOAT_LEN 4 600 → 5 400** and the extension came *down* to 700.
+Righting **SF 2.08** against the 1.9 required, on a **9.4 kg** arm
+instead of a 52 kg telescope. The docked float now sits x 600 … 6 000,
+still with 1 200 mm of solid full-width bow ahead of its nose.
+
+What it costs: **700 mm of clear water** between hull and float
+instead of 1 650, and a **3.88 m** water beam instead of 6.22. The
+righting moment — the thing that actually matters — went **up**.
 
 ## 6. Energy and deck
 
@@ -163,45 +177,34 @@ swing arms that could not be built.
 - **Detachable**: docks and undocks on the water, fork-and-lock, with
   the crew in the cockpit.
 
-## 7b. Mass — the 300 kg target and why it does not close
+## 7b. Mass — the 300 kg target, and where the 544 actually goes
 
-Asked for a hangar under 300 kg. Every lever was pulled and the honest
-floor is **609 kg**:
+Asked for a hangar under 300 kg. Every line below is **computed** —
+from measured areas times a laminate schedule, or from a section times
+a length — not estimated:
 
-| Item | kg | What was done |
+| Item | kg | Note |
 |---|---|---|
-| Float shells | 129 | PVC80 18 mm → **PET60 15 mm, 800/600 skins** |
-| Swing arms (running gear) | 88 | four, on the frame, wheel on the end |
-| Wheels + hubs | 60 | 4 x 155/70 R12C on steel |
-| 4 wheels | 66 | 185 R14 C trailer tyres, two per float |
-| U-girder | 73 | **110 × 240 × 6** — with only two wheel stations the 3.1 m span makes **stiffness** the governing case, not stress |
-| Swing arms | 57 | 340 mm deep trusses, 70 × 70 × 4 chords |
-| Drive | 86 | **one** 6 kW motor in the hull, cross shaft, 2 driven wheels |
+| Float shells (GRP) | 129 | 5 400 × 460 × 540 each, PET60 15 mm core, 800/600 skins |
+| U-girders | 93 | 110 × 200 × 5 alu, 5 740 long — they have to reach both wheel stations |
+| Wheel swing arms | 88 | four ⌀150 × 12 arms, pivots, actuators |
+| Drive + seals | 80 | 2 × 3 kW, 100:1, one face seal a side |
+| Wheels + hubs | 60 | 4 × 155/70 R12C on steel |
+| **Extender sliders** | **38** | **was 209 as a telescope** |
 | Bight | 25 | |
-| Dock locks | 30 | |
+| Locks and sundry | 30 | |
+| **Total** | **544** | was 1 003 |
 
-| Cross tie, knees, dinghy fit-out | **0** | **deleted** |
-| **Total** | **714** | was 1 003 |
+**300 kg is below the floor, and it is worth being precise about why.**
+A braked commercial boat trailer for 3 t weighs 400–600 kg empty, and
+it has no floats, no extenders, no retracting wheels and no dinghy
+duty. Of the 544 here, **129 kg is the two float hulls** — those are
+boat, not trailer. The metalwork is 244 kg and the drive 80.
 
-**The arms were the honest mistake.** 127 kg for four beams came from
-two errors compounding: putting **100 % of a float's buoyancy on one
-arm** when the float is a stiff beam pinned at two of them (immersion
-centroid midway; 70/30 even pitched hard bow-down), and then carrying
-that moment in a **box wall in bending**. A truss carries the same
-moment **axially in its chords**: 22.1 kNm over a 300 mm depth is
-73.6 kN per chord, 82 MPa in a 60 × 60 × 4 — **155 kg → 48 kg**.
-
-**300 kg is below the physical floor for this boat.** The reason is that
-almost every item scales with what it carries: a 3 153 kg combination
-needs six wheels, and the beams that spread that load over them are
-what they are. For scale, a **commercial braked boat trailer for 3 t
-weighs 400–600 kg empty** — and it has no floats and no swing gear.
-At 448 kg this one is already inside that band while doing more.
-
-The hangar reaches 300 kg only if the **boat** does its share: at
-roughly 1 800 kg loaded it needs four wheels instead of six and
-proportionally lighter beams, which lands near the target. The lever is
-in [weight.md](weight.md), not here.
+The remaining levers, in order of size: the girders (93 kg) are sized
+by road deflection over a 5.7 m span and would come down if the
+wheelbase shortened; the wheel swing arms (88 kg) are sized by a kerb
+strike at SF 3.4 and have margin to give.
 
 ## 7c. The drive — one motor, and where it lives
 
@@ -262,7 +265,7 @@ shock on a trailer axle, ×3.0 wave slam on an outrigger.
 | Member | Case | Moment | Stress | SF | Section |
 |---|---|---|---|---|---|
 | U-girder | 3 292 kg × 2.5 over a 3.1 m simple span | 11.0 kNm | 47 MPa | **2.2** (deflection 8.1 of 12.4 mm governs) | 110 × 240 × 6 box |
-| Extender beam | 70 % of one float's **566 kg** × 3.0, 1 880 mm lever | 21.9 kNm | 57 MPa | **1.8** | **280 × 200 × 6 fixed stage** at the stem face |
+| Extender slider | 70 % of one float's **687 kg** × 3.0, 930 mm lever | 13.2 kNm | 69 MPa | **1.5** | **160 × 220 × 4 box**, single stage |
 | Swing arm (gear) | kerb strike, 0.6 g at the contact patch on the 445 mm arm | 5.1 kNm | 31 MPa | **3.4** | ⌀150 × 12 arm |
 
 Two results changed the design:

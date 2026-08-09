@@ -22,15 +22,15 @@ FRONT VIEW                DOCKED                    EXTENDED (sea)
  │   ┌───────┐   │   │╔══╗┌────┐╔══╗│  ~WL~   │    ┌────┐     │ ~WL~
  │   │ stem  │   │   │║FL║│stem│║FL║│     ╔══╗│    │stem│    │╔══╗
  └───┴───────┴───┘   └╨──╨┴────┴╨──╨┘     ╚══╝└────┴────┴────┘╚══╝
-                      flat bottom flush    beams push them 1.65 m out
+                      flat bottom flush    sliders push them 0.7 m out
 ```
 
 | | |
 |---|---|
 | Stem | **1 560 mm** beam below z 600 — floats the boat alone, and swallows the retracted beams |
-| Floats | **4 600 × 460 × 540**; noses protected by the solid full-width bow |
+| Floats | **5 400 × 460 × 540**; noses protected by 1 200 mm of solid full-width bow |
 | Docked | outer faces flush at 2 500; draft 313 mm loaded |
-| Extended | **1 650 mm** out on the telescopic beams — righting from the slim floats plus the full-width T wings |
+| Extended | **700 mm** out on the sliders — righting SF 2.08, bought with float LENGTH rather than lever |
 | Dinghy | both floats + bight: 6.1 m beam, 216 mm freeboard with two aboard |
 
 ## 2. Docking — the fork
@@ -42,8 +42,8 @@ first; the float noses never see slam.
 
 ## 3. Extenders
 
-**Three-stage telescopic beams**, two per side at x 2 700 and 4 600,
-24 V leadscrew, self-locking anywhere in the **0 → 1 650 mm** stroke.
+**Single-stage sliders**, two per side at x 2 700 and 4 600, 24 V
+leadscrew, self-locking anywhere in the **0 → 700 mm** stroke.
 Purely horizontal: the float's draft never changes, and docked the
 whole telescope is inside the stem. See
 [floater.md](floater.md) §5 for why the swing wing was abandoned.

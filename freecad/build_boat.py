@@ -693,41 +693,33 @@ def build_hangar(phi, coupled=True, tow="sea"):
                     Vector(wx, axle[0] - sy * (P.WHEEL_W / 2 + 60), axle[1]),
                     Vector(0, sy, 0)))
 
-    # ---- EXTENDER BEAMS. The float slides STRAIGHT OUT on two
-    # telescopic beams a side. The swing wing that was here could not
-    # be built: a horizontal swing needs a plane clear of the float at
-    # every angle, and between the float top (530) and the wing
-    # underside (600) there are 70 mm. The arms ran at z 420..600 and
-    # passed through the docked float at every intermediate angle.
+    # ---- EXTENDER SLIDERS. One tube per station sliding in one
+    # socket - no stages, no nesting. The extension is what a 10 kg
+    # arm buys, not the other way round: both the load and the slider
+    # length grow with reach, so mass grows faster than linearly and
+    # 870 mm is where a 110 x 230 x 4 box lands at 9.8 kg.
     #
-    # Three stages, nested. Docked, the whole telescope is inside the
-    # 1560 mm stem and nothing touches the float. Extended, the inner
-    # stage reaches the float's INNER FACE - it never passes over the
-    # float or through it.
+    # The swing wing that used to be here could not be built at all: a
+    # horizontal swing needs a plane clear of the float at every angle,
+    # and between the float top (530) and the wing underside (600)
+    # there are 70 mm.
     reach = P.beam_reach(phi)
+    bw, bh, bt = P.BEAM_SECTION
     for sy in (-1, 1):
-        for k, bx in enumerate(P.BEAM_XS):
+        for bx in P.BEAM_XS:
             x0 = bx + (P.BEAM_DX_PORT if sy < 0 else 0)
-            for st, (bw, bh, bt) in enumerate(P.BEAM_SECTIONS):
-                # stage 0 is fixed in the stem; each later stage steps
-                # out by an equal share of the stroke
-                out = P.BEAM_SOCKET_Y + (reach - P.BEAM_SOCKET_Y) * (
-                    st / (len(P.BEAM_SECTIONS) - 1.0))
-                y1 = out if st else P.BEAM_SOCKET_Y
-                y0 = y1 - P.BEAM_STAGE_LEN
-                parts.append(box(bw, P.BEAM_STAGE_LEN, bh,
-                                 (x0 - bw / 2,
-                                  min(sy * y0, sy * y1),
-                                  P.BEAM_Z0 + (P.BEAM_H - bh) / 2)))
-            # the socket: a collar where the beam leaves the stem face
-            parts.append(box(P.BEAM_SECTIONS[0][0] + 80, 90, P.BEAM_H + 60,
-                             (x0 - (P.BEAM_SECTIONS[0][0] + 80) / 2,
-                              sy * P.BEAM_SOCKET_Y - 45,
-                              P.BEAM_Z0 - 30)))
-            # and the landing on the float's inner face
-            parts.append(box(P.BEAM_SECTIONS[-1][0] + 60, 60, P.BEAM_H + 40,
-                             (x0 - (P.BEAM_SECTIONS[-1][0] + 60) / 2,
-                              sy * reach - 30 if sy > 0 else -sy * -reach - 30,
+            y1 = reach                       # outer end
+            y0 = y1 - P.BEAM_LEN             # tail, inside the stem
+            parts.append(box(bw, P.BEAM_LEN, bh,
+                             (x0 - bw / 2, min(sy * y0, sy * y1), P.BEAM_Z0)))
+            # the socket at the stem face: guide, pads and the screw nut
+            parts.append(box(bw + 90, 120, bh + 60,
+                             (x0 - (bw + 90) / 2,
+                              sy * P.STEM_HW - 60, P.BEAM_Z0 - 30)))
+            # landing on the float's inner face
+            parts.append(box(bw + 70, 70, bh + 40,
+                             (x0 - (bw + 70) / 2,
+                              (sy * reach - 35) if sy > 0 else (sy * reach - 35),
                               P.BEAM_Z0 - 20)))
 
     if not coupled:

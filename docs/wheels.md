@@ -207,8 +207,8 @@ inspection. There was room above it the whole time.
 | Girders | z 140…380, hanging under the hull | **z 600…800, in a lined channel in the wing** |
 | Clearance | −179 mm (submerged) | **+281 mm above the waterline** |
 | Versus the docked float | overlapped it, unmodelled | **clears it** — float top is 530 |
-| Extender beams | z 90…430, centred on the waterline | **z 400…600** |
-| Clearance | −229 mm (submerged) | **+81 mm** |
+| Extender sliders | z 90…430, centred on the waterline | **z 380…600** |
+| Clearance | −229 mm (submerged) | **+57 mm** |
 
 The girder channel is cut into the wing underside and lined, open at
 the bottom and at the stern, so the hangar still slides on from
