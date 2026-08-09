@@ -5,7 +5,7 @@ Three members were drawn by judgement and have to be proved:
 
   1. the U-girder      - carries the whole boat on the road
   2. the swing arm     - carries the float's buoyancy at sea
-  3. the screw leg     - carries one wheel's share on the road
+  3. the swing arm     - carries one wheel's share on the road
 
 Everything below is first-principles beam theory with stated load
 cases and stated allowables. Run: python3 freecad/structure_calc.py
@@ -99,18 +99,20 @@ def main():
     span = max(spans)
     # with only two wheel stations the girder is a simple span, and
     # DEFLECTION governs, not stress
-    w = on_wheels * G * DYN_ROAD / 2 / (P.SPIKE_L)    # N/mm per girder
+    w = on_wheels * G * DYN_ROAD / 2 / P.GIRDER_LEN   # N/mm per girder
     # continuous beam over equal spans: M ~ w L^2 / 10, V ~ 0.6 w L
     M = w * span ** 2 / 10
     V = 0.6 * w * span
-    A, I, Z = box_section(110, 240, 6)
+    A, I, Z = box_section(*P.GIRDER_SECTION)
     print("\n" + "=" * 68)
     print("1. THE U-GIRDER  (road: the boat's whole weight)")
     print("=" * 68)
     print(f"  wheel stations at x {wheels}, longest bay {span:.0f} mm")
-    print(f"  girder mass {A * P.SPIKE_L * ALU_RHO / 1e9 * 2:.0f} kg the pair")
+    print(f"  girder mass {P.girder_mass():.0f} kg the pair, "
+          f"{P.GIRDER_LEN:.0f} mm long")
     print(f"  line load {w:.2f} N/mm per girder "
-          f"({on_wheels:.0f} kg x {DYN_ROAD} / 2 girders / {P.SPIKE_L} mm)")
+          f"({on_wheels:.0f} kg x {DYN_ROAD} / 2 girders / "
+          f"{P.GIRDER_LEN:.0f} mm)")
     ok1 = report("  110 x 240 x 6 alu box", M, V, Z, A, I, span,
                  note="continuous over 3 wheel stations: M = wL^2/10")
     if not ok1:
@@ -165,21 +167,22 @@ def main():
     # =================================================================
     # 3. THE SCREW LEG
     # =================================================================
-    # Each leg carries a quarter of the boat in compression, plus the
-    # bending from the wheel standing 380 mm forward of the tube axis -
-    # the offset that lets the wheel pass the tube through 660 mm of
-    # travel. The SLIDING INNER tube is the slender member and governs.
+    # Hanging straight down the arm is a STRUT: the wheel load runs
+    # along it into the pivot and a hard stop, so the boat's weight
+    # makes no bending at all. What bends it is a horizontal blow at
+    # the contact patch - kerb strike or hard braking - taken at 0.6 g
+    # on the arm's full 445 mm.
     per_wheel = on_wheels / 4 * G * DYN_ROAD
-    offset = float(P.LEG_OFFSET_X)
-    M3 = per_wheel * offset
-    A4, I4, Z4 = tube_section(P.LEG_INNER_D, 12)
+    offset = float(P.ARM_R)
+    M3 = 0.6 * per_wheel * offset
+    A4, I4, Z4 = tube_section(P.ARM_D, 12)
     print("\n" + "=" * 68)
-    print("3. THE SCREW LEG  (road: a quarter of the boat, on one tube)")
+    print("3. THE SWING ARM  (road: kerb strike at the contact patch)")
     print("=" * 68)
-    print(f"  {per_wheel / 1e3:.1f} kN per wheel, {offset:.0f} mm forward of "
-          f"the tube axis (the offset that lets the wheel pass the tube)")
+    print(f"  {per_wheel / 1e3:.1f} kN per wheel; 0.6 g of it sideways on "
+          f"the {offset:.0f} mm arm")
     print(f"  direct compression {per_wheel / A4:.0f} MPa on top of the bending")
-    ok3 = report(f"  inner tube d{P.LEG_INNER_D} x 12 (outer d{P.LEG_TUBE_D})", M3, per_wheel, Z4, A4, I4, 0)
+    ok3 = report(f"  arm tube d{P.ARM_D} x 12", M3, per_wheel, Z4, A4, I4, 0)
     if not ok3:
         for d, t in ((150, 14), (170, 14), (190, 16)):
             A5, I5, Z5 = tube_section(d, t)
@@ -198,7 +201,7 @@ def main():
     print("VERDICT")
     print("=" * 68)
     for nm, ok in (("U-girder", ok1), ("swing arm", ok2),
-                   ("screw leg", ok3)):
+                   ("swing arm (gear)", ok3)):
         print(f"  {nm:16s} {'PASS' if ok else 'FAILS AS DRAWN'}")
 
 

@@ -1,7 +1,7 @@
 # The T-Hull and the Nesting Floats
 
 Status: design study. Geometry in `freecad/params.py` (`STEM_HW`,
-`T_STEP_Z`, `POD_DOCKED`, `POD_SEA`, `leg_points()`), shapes in
+`T_STEP_Z`, `POD_DOCKED`, `POD_SEA`, `arm_points()`), shapes in
 `build_boat.py`, limits asserted in `checks()`.
 
 ## 1. The T
@@ -47,14 +47,14 @@ leadscrew, self-locking anywhere in the **0 → 1 800 mm** stroke. Purely
 horizontal: the float's draft never changes. Docked, they fold into the
 notch.
 
-## 4. Wheels — four, on the frame, on screw jacks
+## 4. Wheels — four, on the frame, on swing arms
 
-Superseded twice over: they are no longer on the floats and they no
-longer flip. See **[wheels.md](wheels.md)** for the current mechanism.
-In short: four **155/70 R12C** trailer wheels hang off the frame
-girders on vertical screw legs and wind straight up into lined pockets
-in the hull bottom. Track 1 820, ground clearance 261, self-locking at
-any height, workable afloat.
+They are no longer on the floats. See **[wheels.md](wheels.md)** for
+the mechanism. In short: four **155/70 R12C** trailer wheels, each on
+the end of a **445 mm arm** pivoted off the girder web, swinging 180°
+between the road and a lined box in the **T-wing**. Track 1 820,
+ground clearance 261, tyre stowed 310 mm above the waterline,
+self-locking, workable afloat.
 
 ## 5. What it does to certification
 

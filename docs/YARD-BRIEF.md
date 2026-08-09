@@ -64,7 +64,7 @@ owner does the part that only needs time:
 | Power | 4.60 kWp solar (one panel type, 20 panels), 50 kWh LiFePO₄ at 48 V |
 | Speed / range | 4.7 kn maximum; 233 NM at 3 kn; solar-neutral at 4.2 kn |
 | Accommodation | 5 berths, 1 850 mm headroom, 12.1 m² floor, wetroom, galley |
-| Running gear | 4 × 155/70 R12C on screw legs off the frame, jacking into hull pockets, ≤ 6 km/h |
+| Running gear | 4 × 155/70 R12C on 445 mm swing arms off the frame, 180° into boxes in the T-wing, ≤ 6 km/h |
 | Road status | category O2 trailer, 243 kg inside the 3 500 kg limit |
 
 ## Construction, in one page

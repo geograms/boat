@@ -6,9 +6,9 @@ source of truth, asserted by `checks()`); shapes in
 
 ## 1. Concept
 
-**Four wheels, on the frame, on screw jacks.** Each one winds straight
-down for the road and straight up into a box in the **T-wing** for the
-water — high enough that the retracted tyre sits **310 mm above the
+**Four wheels, on the frame, on swing arms.** Each one hangs straight
+down for the road and swings 180° up into a box in the **T-wing** for
+the water — high enough that the retracted tyre sits **310 mm above the
 waterline**, dry, out of the flow. Nothing folds, nothing swings, and
 nothing that carries the boat is on a hinge.
 
@@ -50,10 +50,11 @@ retracted wheel has to clear the waterline by its own radius.
 | | 205/70 R15 | **155/70 R12C** | |
 |---|---|---|---|
 | Tyre | 668 × 205 | **522 × 155** | |
-| Box, at equal duty | 940 × 250 × 700 | **800 × 200 × 580** | **−44 % of volume** |
-| Four boxes | 658 L | **371 L** | out of the interior |
+| Box, at equal duty | 1 180 × 250 × 700 | **1 000 × 200 × 580** | **−44 % of volume** |
+| Four boxes | 826 L | **464 L** | out of the interior |
 | Proud of the sole | 707 mm | **560 mm** | −147 mm of furniture |
 | Lift needed | 954 mm | **890 mm** | 600 wing + 20 + radius |
+| Arm | 477 mm | **445 mm** | half the lift |
 | Wheel set | 88 kg | **60 kg** | −28 kg |
 | Rated | 950 kg | 900 kg | vs 753 carried |
 | Drive torque | 812 Nm | **635 Nm** | −22 %, torque = force × radius |
@@ -68,77 +69,63 @@ pays.** The axle winds 74 mm further down than the 15" wheel needed
 (`AXLE_DOWN_Z` 74 → 0), which keeps the keel **261 mm** off the road,
 as before.
 
-## 3. The screw leg
+## 3. The swing arm
 
-A vertical tube bolted to the girder web with a trapezoidal leadscrew
-inside it. The screw turns, the inner tube slides, the wheel goes up
-or down. That is the whole mechanism.
+The wheel is on the **end of a 445 mm arm**, pivoted at z 445 off the
+girder web. Hanging straight down the axle is at z 0 and the tyre is on
+the road; swung 180° it is at z 890 with the tyre stowed in the wing.
+
+**890 mm of travel out of a mechanism 445 mm long, and nothing stands
+above the girder.**
 
 | | |
 |---|---|
-| Outer tube | ⌀170 × 10, 6082-T6, bolted to the girder web, z 40 → 1180 |
-| Inner tube | ⌀130 × 12, sliding — the slender member, and the one that governs |
-| Screw | Tr45, self-locking — it holds at any height with no power and no pin |
-| Stroke | **890 mm** |
-| Down | axle at z 0, ground at **−261**, keel 261 mm clear |
-| Up | axle at z 890 — tyre bottom at **z 629, wholly inside the wing and 310 mm above the 319 mm loaded waterline** |
-| Stress | 59.5 MPa against a 104 MPa allowable, **SF 1.75** |
+| Arm | ⌀150 × 12, 6082-T6, 445 mm pivot to axle |
+| Pivot | z 445, on a bracket off the girder web, ⌀190 boss |
+| Sweep | 180° |
+| Down | axle z 0, ground at **−261**, keel 261 mm clear |
+| Up | axle z 890 — tyre bottom at **z 629**, in the wing, 310 mm above the loaded waterline |
+| Actuator | Tr45 leadscrew, frame lug to a lug at 0.6 R along the arm, self-locking |
+| Stress | 30.6 MPa against a 104 MPa allowable, **SF 3.4** |
+| Mass | 22 kg a station — arm, pivot, bearings, actuator |
 
-### The tube stands beside the wheel, not over it
+### Why not a straight jack
 
-The stroke is set by **where the hull actually is.** Below z 600 the
-hull is only the T's 1 560 mm stem — at the wheel's y ±910 there is no
-hull at all down there, that band is the float's recess. Cut a
-"pocket" at the keel there and you get four plates hanging in mid air.
-Above z 600 the **wing** runs the full 2 500 mm beam, and that is real
-structure. So the wheel retracts into the wing: 600 + 20 clearance +
-261 radius = 881, rounded to **890 mm of lift**. The tyre lands at
-z 629 — which also puts it 310 mm above the waterline, so the
-dry-wheel requirement comes free.
+A straight jack needs a **column at least as long as its stroke**.
+890 mm of lift therefore means a 1 140 mm tube standing off each
+girder — four of them, ~960 mm proud, with the wheel dangling off a
+380 mm bracket beside the tube because a coaxial telescope of that
+stroke would reach z 1 800. That was drawn, rendered, and it looked
+like what it was: a forest of poles with the wheels not even on them.
 
-That stroke breaks a coaxial telescope. Coaxial, the outer tube has to
-begin above the retracted tyre (z 1151) and still hold 250 mm of the
-inner when the leg is fully out — which puts its top well past
-z 1800, a metre-plus column standing in the saloon, four times over.
-
-Offset the tube **380 mm along the boat** and the problem disappears:
-the wheel and the tube pass each other instead of colliding. The axle
-rides on a short bracket **100 mm** up from the inner tube's foot —
-short on purpose. Carry the axle high on a long bracket and the tube's
-foot reaches below the tyre's contact patch and drags on the tarmac; at
-100 mm the foot stops at z −100, still **161 mm clear of the road**.
+The arm has none of that. It is shorter than its own travel, the
+wheel is *on* it, and it disappears into the wing with the tyre.
 
 ```
-        ROAD (down)                 WATER (up)
+   ROAD                        WATER
 
- z1160 ┌───┐                       ┌───┐  inner swallowed whole
-       │ ▓ │ outer, fixed          │ ▓▓│
-       │ ▓ │                       │ ▓▓│
-       │ ▓ │                  z660 │ ▓▓│      ● axle
-  z500 │ ▓ │ inner top             │ ▓▓│  ┌───────┐
-       │ ▓ │                  z560 └─┬─┘  │ (  o  )│ tyre bottom 399
-  z240 └─┬─┘                    ~~~~~~~~~~~~~~~~~~~~~ WL 319
-         │ inner
-    z0 ──●───(  o  )──  axle           80 mm of air under the tyre
-  z-100  └── foot, 161 clear
-  -261 ══════════════ road
-       ├── 380 ──┤
+  ──┐ pivot z 445             ──┐ pivot z 445
+    │                            └───● axle z 890
+    │ 445 arm                    ( o ) tyre 629..1151, in the WING
+    ● axle z 0             ═══════════ wing underside z 600
+  ( o )                    ~~~~~~~~~~~ WL 319
+ ══════════ road z −261     nothing above the girder
 ```
 
-The price is paid in bending, not height: the wheel sits 380 mm out
-from the tube axis, so the inner tube carries 7.17 kNm instead of
-2.36. ⌀130 × 12 takes it at 59.5 MPa — **SF 1.75**, down from 6.4 but
-still ample, and the outer tube lands the load straight into the
-girder web it passes through.
+### Over-centre — the screw does not hold the boat up
 
-Self-locking matters more than it sounds. A leadscrew at this lead
-angle cannot be back-driven, so the boat's weight cannot wind the
-wheel up, and there is no lock pin to forget on a slipway with the
-tide coming in.
+Hanging straight down, the wheel's load line runs **through the
+pivot** into a hard stop. The road load goes tyre → arm → pivot →
+girder as pure compression; the actuator carries almost none of it and
+only has to swing the arm. That is why the arm is a strut in the
+scantlings and not a cantilever: what sizes it is a **kerb strike** —
+0.6 g sideways at the contact patch on the full 445 mm — not the
+boat's weight.
 
-It can be worked **afloat**, which the old flip arm never comfortably
-could: the leg is happy submerged, there is nothing electrical below
-the girder, and the screw does not care about the water.
+Self-locking still matters for the stowed position, and the leadscrew
+gives it: the arm parks anywhere with no power and no pin. The whole
+mechanism is happy submerged; there is nothing electrical below the
+girder.
 
 ## 4. The wheel boxes, and what the track buys
 
@@ -155,8 +142,10 @@ produced exactly what it should have: four lining plates floating in
 open air with no hull to join.
 
 **The boxes stand 560 mm proud of the sole**, and that is the honest
-cost. 800 long × 200 wide, from the wing underside at z 600 up to
-z 1180, against a sole at z 620. They sit at the hull sides, at seat height:
+cost. 1 000 long × 200 wide, from the wing underside at z 600 up
+to z 1180 — long because the tyre comes in on an **arc**: crossing
+z 600 the axle is 417 mm out from the pivot and the tyre reaches 678,
+while stowed it sits back at ±261, against a sole at z 620. They sit at the hull sides, at seat height:
 the two aft boxes carry the settee bases, the two forward ones are
 steps at the dome threshold. There is no way to lift a wheel 890 mm
 and leave the interior untouched — the alternative was to leave the
@@ -185,9 +174,9 @@ Docked on the road, the float and the wheel-down tyre want the same
 space: the tyre's inner flank runs through the float's inner-lower
 corner. So the corner is **cut away** at each wheel station — 800 long
 × 230 wide × 320 deep from the float bottom, the top 220 mm of the
-inner half left solid — plus a **260 mm full-height slot** at the aft
-end of each notch, because the leg's outer tube is fixed and stands in
-the recess from z 40 to 1180: the float has to dock past it.
+inner half left solid — plus a **240 mm full-height slot** at the wheel
+station itself, because the arm and its pivot live in the recess up to
+z 445 and the float has to dock past them.
 
 It only has to clear the wheel **down**, which is what keeps the cut
 small. That imposes one rule on the order of operations:
@@ -256,8 +245,8 @@ URLs are representative product pages to see the item class.
 | 1 | Tyre 155/70 R12C 104/102N (Kenda K399, Security TR603) | 4 + 1 spare | 45 | 225 | <https://www.kendatire.com> · <https://www.reifen.com> |
 | 2 | Steel rim 12×4J, 4×100 | 5 | 35 | 175 | <https://www.anhaengerteile.de> |
 | 3 | Braked trailer hub + stub axle, 900 kg | 4 | 90 | 360 | <https://www.knott.de> · <https://www.alko-tech.com> |
-| 4 | Screw leg: ⌀150 tube, Tr40 screw + bronze nut, thrust bearings | 4 | 210 | 840 | local machine shop + <https://www.norelem.de> |
-| 5 | 24 V leg gearmotor + limit switches | 4 | 130 | 520 | <https://www.framo-morat.com> |
+| 4 | Swing arm: ⌀150 tube, pivot boss, bearings, hard stop | 4 | 190 | 760 | local machine shop + <https://www.skf.com> |
+| 5 | Tr45 leadscrew actuator, 24 V, self-locking, with limit switches | 4 | 240 | 960 | <https://www.framo-morat.com> |
 | 6 | 48 V BLDC motor 3 kW + controller | 2 | 550 | 1 100 | <https://www.goldenmotor.com> · <https://www.kellycontroller.com> |
 | 7 | 100:1 planetary reduction | 2 | 320 | 640 | <https://www.apex-dynamics.de> |
 | 8 | Marine face seal + housing, ⌀90 shaft | 2 | 140 | 280 | <https://www.volvopenta.com> class · SKF/CR catalogue |
@@ -270,7 +259,7 @@ hub motors dropped out.
 
 ## 7. Model objects (FreeCAD tree)
 
-`HangarFrame` — girders, legs, drive boxes, drawbar. `HangarTyres` —
+`HangarFrame` — girders, swing arms, actuators, drive boxes, drawbar. `HangarTyres` —
 the four wheels, dark. `HangarLocks` — bayonet spikes, gold.
 `DriveHatchStb/Port` and `HydraulicsStb/Port` — the float's own bay,
 which now holds only the **waterjet** pump and motor. Hide `HullShell`

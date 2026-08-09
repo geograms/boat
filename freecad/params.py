@@ -233,47 +233,38 @@ DRIVE_SEAL_KG = 4
 DRIVE_CTRL_KG = 12                 # controllers, cabling, both sides
 SEAL_DIA = 90
 
-# ---- wheels on SCREW LEGS ----
-# The 180-degree flip arm is gone. Each wheel now hangs on a single
-# vertical tube with a leadscrew inside it: the screw turns, the inner
-# tube slides, and the wheel goes down for the road or up clear of the
-# water afloat. One linear motion, self-locking at any height, and it
-# can be worked while the thing is floating - which the flip never
-# comfortably could.
-LEG_STROKE = 890                   # axle travel. Set by WHERE THE HULL IS.
-                                   # Below z 600 the hull is only the
-                                   # 1560 mm stem, so at y +-910 there is
-                                   # nothing to cut a pocket into - that
-                                   # band is the float's recess. Above
-                                   # 600 the T-wing runs the full 2500
-                                   # beam, and that is real hull. So the
-                                   # wheel retracts INTO THE WING: 600 +
-                                   # 20 clearance + 261 radius = 881,
-                                   # rounded to 890. Tyre bottom lands at
-                                   # z 629 - 310 mm above the loaded
-                                   # waterline, dry and out of the flow.
-LEG_TUBE_D = 170                   # fixed outer tube, bolted to the girder
-LEG_INNER_D = 130                  # sliding inner tube, 12 wall
-LEG_SCREW_D = 45                   # trapezoidal leadscrew, self-locking
-LEG_KG = 26                        # tube, screw, nut, drive, per station
-# The tube stands BESIDE the wheel, not over it. A coaxial telescope
-# cannot work at this stroke: the outer tube would have to begin above
-# the retracted tyre (z 921) and still hold 250 mm of the inner when the
-# leg is fully out, which puts its top at z 1570 - a 950 mm column
-# standing in the saloon, four times over. Offset 380 mm along the boat
-# and the wheel and the tube pass each other; the axle rides on a short
-# bracket 100 mm up from the inner tube's foot.
-LEG_OFFSET_X = 380                 # tube axis, aft of the wheel centre
-LEG_BRACKET_Z = 100                # axle above the inner tube's foot. Kept
-                                   # SHORT on purpose: any more and the
-                                   # tube's foot reaches below the tyre's
-                                   # contact patch and drags on the road.
-                                   # At 100 the foot sits z -100, still
-                                   # 161 mm clear of the tarmac.
-LEG_OUTER_LEN = 1140               # z 40 -> 1180: holds 250 mm of the
-                                   # inner at full extension and swallows
-                                   # it whole when the leg is up
-LEG_INNER_LEN = 390
+# ---- wheels on SWING ARMS ----
+# A straight jack needs a column at least as long as its stroke, and
+# the stroke here is 890 mm - the wheel has to reach the wing. That is
+# a 1.14 m pole standing off each girder, four of them, with the wheel
+# dangling off a bracket beside it. Wrong shape for the job.
+#
+# So the wheel goes on the END of a 445 mm arm on a pivot at z 445.
+# Straight down, the axle is at z 0 and the tyre is on the road.
+# Rotate 180 deg and the axle is at z 890 with the tyre inside the
+# wing: 2 x 445 of travel out of a mechanism 445 long, and NOTHING
+# stands above the girder. It is what every amphibious craft with
+# retractable wheels does, for this reason.
+# The girders have to REACH the wheels. They ran bight-to-spike-end at
+# x 3300 while the forward station sits at 5200, so that pair hung on
+# nothing at all - visible the moment the frame is rendered on its own.
+GIRDER_SECTION = (110, 200, 5)     # b, h, wall - see structure_calc.
+                                   # 240x6 was sized when the girder
+                                   # was 3.4 m; at 5.7 m it came out
+                                   # at SF 3.7 and 5.7 mm of sag, so
+                                   # it comes back down a size
+ARM_R = 445                        # pivot to axle
+ARM_PIVOT_Z = 445                  # so the axle reaches z 0 hanging down
+ARM_LIFT = 2 * ARM_R               # 890 mm of travel
+ARM_D = 150                        # arm tube, 6082-T6
+ARM_KG = 22                        # arm, pivot, bearings, actuator, each
+ACT_D = 70                         # leadscrew actuator, arm to frame
+# OVER-CENTRE: hanging straight down, the wheel's load line passes
+# through the pivot, so the road load goes pivot -> hard stop and the
+# screw carries almost none of it. The actuator only has to swing the
+# arm, not hold the boat up.
+LEG_STROKE = ARM_LIFT              # kept as the name the rest of the
+                                   # model and the docs already use
 
 # ---- the wheels themselves ----
 # A proper TRAILER tyre, not a car tyre. 155/70 R12C, load index 104 =
@@ -308,7 +299,25 @@ WHEEL_Y = 910                      # wheel centreline: the pocket eats
 # an accident: the two aft boxes carry the settee bases, and the two
 # forward ones are steps at the dome threshold. A wheel that stays dry
 # has to be lifted 660 mm, and 660 mm of lift has to go somewhere.
-POCKET_L = 800                     # tyre 522 + the leg beside it
+GIRDER_X0 = -120                   # at the bight
+GIRDER_X1 = max(WHEEL_XS) + 420    # past the forward wheel station
+GIRDER_LEN = GIRDER_X1 - GIRDER_X0
+
+
+def girder_mass():
+    """kg of the girder PAIR, from its own section and its own length."""
+    b, h, t = GIRDER_SECTION
+    a = b * h - (b - 2 * t) * (h - 2 * t)
+    return 2 * a * GIRDER_LEN * 2.7e-6
+
+
+POCKET_L = 1000                    # the tyre swings in through the wing
+                                   # opening on an arc, so the box is
+                                   # longer than the tyre: crossing z 600
+                                   # the axle is 417 mm out from the
+                                   # pivot, the tyre reaches 678, and
+                                   # stowed it sits back at +-261
+POCKET_DX = 210                    # box centre, forward of the axle
 POCKET_W = 200
 POCKET_Z0 = T_STEP_Z               # the box opens DOWNWARD through the
                                    # wing underside at z 600, into the
@@ -330,11 +339,10 @@ WELL_L = 800                       # along the float, matching the box
 WELL_W = 230                       # the float's inner half of 460
 WELL_H = 320                       # from the float's bottom up; the top
                                    # 220 mm of the inner half stays solid
-WELL_TUBE_L = 260                  # the leg TUBE is fixed and stands in
-                                   # the recess from z 40 to 1180, so it
-                                   # needs its own full-height slot where
-                                   # it passes the float - 260 mm long at
-                                   # the aft end of each notch
+WELL_TUBE_L = 240                  # the ARM and its pivot live in the
+                                   # recess up to z 445, above the wheel
+                                   # notch, so they need a full-height
+                                   # slot where the float docks past them
 FLIP_TUBE_D = 120                  # the tube the arm swings on: d70
                                    # came out at 324 MPa against a
                                    # 104 MPa allowable - see
@@ -352,17 +360,17 @@ WHEEL_DROP = 60                    # legacy name, still read by ga_drawing
 
 
 
-def leg_points(sy=1, down=True):
+def arm_points(sy=1, down=True):
     """(leg head yz, axle yz) for one wheel station.
 
     The leg hangs off the FRAME girder, not off a float: nothing on a
     moving part. Down, the wheel is on the road; up, it jacks wholly
     into its pocket in the hull and is out of the water and out of
     sight."""
-    head = (sy * WHEEL_Y, POCKET_TOP - 40)
-    axle_down = (sy * WHEEL_Y, AXLE_DOWN_Z)
-    axle_up = (sy * WHEEL_Y, AXLE_DOWN_Z + LEG_STROKE)
-    return head, (axle_down if down else axle_up)
+    pivot = (sy * WHEEL_Y, ARM_PIVOT_Z)
+    axle_down = (sy * WHEEL_Y, ARM_PIVOT_Z - ARM_R)
+    axle_up = (sy * WHEEL_Y, ARM_PIVOT_Z + ARM_R)
+    return pivot, (axle_down if down else axle_up)
 
 
 # ---- the float pair as a vehicle, and as a dinghy ----
@@ -394,7 +402,7 @@ def hangar_mass():
     bight_m = 2 * (POD_DOCKED[0] + FLOAT_W / 2) / 1000
     alu = bight_m * HANGAR_BIGHT[0] * HANGAR_BIGHT[1] * 0.15 * 2.7e-3
     return (floats + MASS_WHEELS_HUBS + MASS_EXTENDERS + MASS_FLIPGEAR +
-            MASS_HYDRAULICS + MASS_UGIRDER + alu +
+            MASS_HYDRAULICS + girder_mass() + alu +
             4 * LOCK_MOTOR_KG + 20)
 
 
@@ -1082,7 +1090,7 @@ BULKHEAD_X = (900, 2400, 3900, 5400, 6200)
 
 # masses that are NOT laminate, kg. Sources in the docs named alongside.
 MASS_EXOSKELETON = 260     # S355 tube frame + brackets, galvanised
-MASS_UGIRDER = 73          # girders 110x240x6. Four wheels put the
+MASS_UGIRDER = 0           # computed: see girder_mass()
                            # span at 3.1 m and the 160-deep section
                            # deflected 22.6 mm against a 12.4 limit -
                            # stiffness, not stress, set this size
@@ -1091,7 +1099,7 @@ MASS_EXTENDERS = 57        # 4 swing arms as 340 mm deep TRUSSES with
                            # 70x70x4 chords - the chords take the
                            # moment axially instead of a box wall
                            # taking it in bending
-MASS_FLIPGEAR = 76         # 4 screw legs at 19 kg, on the frame
+MASS_FLIPGEAR = 4 * ARM_KG   # swing arms: arm, pivot, bearings, actuator
 MASS_HYDRAULICS = 80       # 2 x (3 kW motor + reduction + seal),
                            # one per float, plus controls
 MASS_JETS = 75             # 3 x 2 kW waterjet cartridges incl. ducting
@@ -1396,7 +1404,7 @@ def mass_budget():
 
 def checks(verbose=True, strict=True):
     # road: everything inside the hull footprint, shallow stack
-    _head, wdown = leg_points(1, down=True)
+    _head, wdown = arm_points(1, down=True)
     wheel_outer = abs(wdown[0]) + (WHEEL_W + 60) / 2
     float_outer_road = POD_DOCKED[0] + FLOAT_W / 2             # flush face
     road_width = 2 * max(HULL_BEAM / 2, wheel_outer, float_outer_road,
@@ -1408,7 +1416,7 @@ def checks(verbose=True, strict=True):
     water_beam = 2 * (POD_WATER[0] + FLOAT_W / 2)
     float_bot = POD_WATER[1] - FLOAT_H / 2
     immersion = (WL_Z - float_bot) / FLOAT_H
-    _h2, wup = leg_points(1, down=False)
+    _h2, wup = arm_points(1, down=False)
     wheel_low_water = wup[1] - WHEEL_DIA / 2
     disp = displacement_kg()
     # reserve: the slim prismatic float minus the three open wheel bays
@@ -1812,8 +1820,8 @@ def checks(verbose=True, strict=True):
         print(f"road            trailer category O2 needs <= 3500 kg; "
               f"loaded {all_up + CREW_STORES:.0f} kg")
     # ---- nesting floats, spikes, extenders, flip wheels ----
-    head, down = leg_points(1, down=True)
-    _hu, up = leg_points(1, down=False)
+    head, down = arm_points(1, down=True)
+    _hu, up = arm_points(1, down=False)
     dg_beam, dg_mass, dg_free = dinghy_stats()
     hangar_kg2 = hangar_mass()
     well_kg = 2 * well_loss_kg()
@@ -1877,7 +1885,13 @@ def checks(verbose=True, strict=True):
         "road wheel outside the hull footprint"
     # the leg works in either pose: it is a vertical slide on the
     # float's INBOARD face, so nothing has to swing past the T wing
-    assert LEG_STROKE >= 250, "leg stroke too short to matter"
+    assert ARM_PIVOT_Z == ARM_R, \
+        "the arm has to reach z 0 hanging straight down"
+    # THE GIRDERS HAVE TO REACH THE WHEELS
+    for _wx in WHEEL_XS:
+        assert GIRDER_X0 + 150 <= _wx <= GIRDER_X1 - 150, \
+            f"wheel station x {_wx} is off the girder " \
+            f"({GIRDER_X0:.0f}..{GIRDER_X1:.0f}) - it would hang on nothing"
     # wells: inside the float, clear of the extender stations
     # the swing arms pin to the float's INBOARD FACE, not through its
     # body, so a bay and an arm may share a station - only the pin
@@ -1898,8 +1912,9 @@ def checks(verbose=True, strict=True):
               f"{math.degrees(math.atan2(EXT_VEC[1], EXT_VEC[0])):.0f} deg; "
               f"sea gap {sea_gap:.0f} mm, water beam "
               f"{2 * (POD_SEA[0] + 450):.0f}")
-        print(f"screw legs      {2 * len(WHEEL_XS)} x vertical tube d{LEG_TUBE_D}, "
-              f"stroke {LEG_STROKE} mm: axle down z {down[1]:.0f} "
+        print(f"swing arms      {2 * len(WHEEL_XS)} x d{ARM_D} arm, {ARM_R} mm "
+              f"long on a pivot at z {ARM_PIVOT_Z}, 180 deg = {ARM_LIFT} mm "
+              f"of lift: axle down z {down[1]:.0f} "
               f"(ground {GROUND_Z:.0f}), up z {up[1]:.0f} "
               f"(wheel bottom z {up[1] - WHEEL_DIA / 2:.0f}, "
               f"{up[1] - WHEEL_DIA / 2 - wl_loaded:.0f} mm clear of the "

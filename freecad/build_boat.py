@@ -175,21 +175,22 @@ def build_hull():
         for sy in (-1, 1):
             py = sy * P.WHEEL_Y
             z0, zt = P.POCKET_Z0, P.POCKET_TOP
+            cx = wx + P.POCKET_DX
             shell = shell.cut(box(P.POCKET_L, P.POCKET_W, zt - z0 + 40,
-                                  (wx - P.POCKET_L / 2, py - P.POCKET_W / 2,
+                                  (cx - P.POCKET_L / 2, py - P.POCKET_W / 2,
                                    z0 - 20)))
             shell = shell.fuse(box(P.POCKET_L + 40, P.POCKET_W + 40, 22,
-                                   (wx - (P.POCKET_L + 40) / 2,
+                                   (cx - (P.POCKET_L + 40) / 2,
                                     py - (P.POCKET_W + 40) / 2, zt)))
             for dy in (-1, 1):
                 shell = shell.fuse(box(
                     P.POCKET_L + 40, 20, zt - z0,
-                    (wx - (P.POCKET_L + 40) / 2,
+                    (cx - (P.POCKET_L + 40) / 2,
                      py + dy * (P.POCKET_W / 2) - (20 if dy > 0 else 0), z0)))
             for dx in (-1, 1):
                 shell = shell.fuse(box(
                     20, P.POCKET_W + 40, zt - z0,
-                    (wx + dx * (P.POCKET_L / 2) - (20 if dx > 0 else 0),
+                    (cx + dx * (P.POCKET_L / 2) - (20 if dx > 0 else 0),
                      py - (P.POCKET_W + 40) / 2, z0)))
 
     # ---- KEEL CHANNEL for the hangar's cross tie. The tie has to
@@ -428,12 +429,11 @@ def build_float(pod, roll, flip=0.0, fx=None):
             P.WELL_L, P.WELL_W + 30, P.WELL_H,
             (_wx - P.WELL_L / 2, ty - P.FLOAT_W / 2 - 30,
              tz - P.FLOAT_H / 2 - 10)))
-        # and a full-height slot where the FIXED leg tube passes: the
-        # tube stands in the recess from z 40 to 1180 and the float has
-        # to dock past it
+        # and a full-height slot for the ARM and its pivot, which live
+        # in the recess up to z 445 - the float has to dock past them
         hull_f = hull_f.cut(box(
             P.WELL_TUBE_L, P.WELL_W + 30, P.FLOAT_H + 20,
-            (_wx + P.LEG_OFFSET_X - P.WELL_TUBE_L / 2,
+            (_wx - P.WELL_TUBE_L / 2,
              ty - P.FLOAT_W / 2 - 30, tz - P.FLOAT_H / 2 - 10)))
 
     # solar strips on the deck, in the gaps between the wheels
@@ -585,8 +585,8 @@ def build_hangar(phi, coupled=True, tow="sea"):
         # the girder runs from the BIGHT to the cross tie, so the O is
         # closed at both ends - it used to stop 220 mm short of the
         # bight and the frame was open there
-        g0 = P.HANGAR_BIGHT_X
-        glen = 100 + P.SPIKE_L - g0
+        g0 = P.GIRDER_X0
+        glen = P.GIRDER_LEN
         gir = box(glen, gb, gh,
                   (g0, ry - gb / 2, P.POD_DOCKED[1] - gh / 2))
         gir = gir.cut(box(glen - 240, gb - 16, gh - 16,
@@ -602,46 +602,48 @@ def build_hangar(phi, coupled=True, tow="sea"):
             45, 110, Vector(700, ry + sy * (gb / 2), P.POD_DOCKED[1]),
             Vector(0, sy, 0)))
         # web stiffeners every 1.2 m - the girder is the load path
-        for lx in range(500, P.SPIKE_L, 1200):
+        for lx in range(500, int(P.GIRDER_X1) - 300, 1200):
             parts.append(box(90, gb + 70, gh + 60,
                              (lx, ry - (gb + 70) / 2,
                               P.POD_DOCKED[1] - (gh + 60) / 2)))
 
-    # ---- SCREW LEGS AND WHEELS, on the FRAME. A fixed outer tube
-    # bolted to the girder web, a trapezoidal leadscrew inside it, and a
-    # sliding inner tube that carries the wheel on a short bracket 100 mm
-    # up from its foot and 380 mm forward of the tube axis. The offset is
-    # the whole trick: the wheel travels the full 660 mm past the tube
-    # instead of into it, so the retracted tyre ends up ABOVE the
-    # waterline with no 950 mm column standing in the saloon.
-    # Self-locking at any height, workable afloat, nothing on a hinge.
+    # ---- SWING ARMS AND WHEELS, on the FRAME. The wheel sits on the
+    # END of a 445 mm arm pivoted at z 445 off the girder. Hanging
+    # straight down the axle is at z 0 and the tyre is on the road;
+    # swung 180 deg it is at z 890 with the tyre stowed inside the
+    # wing. 890 mm of travel out of a 445 mm mechanism, and nothing
+    # stands above the girder - which a straight jack of the same
+    # stroke could not do, it needed a 1.14 m column.
+    #
+    # OVER-CENTRE: straight down, the load line runs through the pivot
+    # into a hard stop, so the screw actuator carries almost none of
+    # the boat. It only swings the arm.
     for wx in P.WHEEL_XS:
         for sy in (-1, 1):
-            head, axle = P.leg_points(sy, down=(phi <= 5))
-            lx = wx + P.LEG_OFFSET_X          # tube axis, aft of the wheel
-            foot = axle[1] - P.LEG_BRACKET_Z  # inner tube's bottom end
-            # fixed outer tube, bolted to the girder web
+            pivot, axle = P.arm_points(sy, down=(phi <= 5))
+            py = pivot[0]
+            # the arm itself, pivot to axle
+            arm = Part.makeCylinder(
+                P.ARM_D / 2, P.ARM_R,
+                Vector(wx, py, pivot[1]),
+                Vector(0, 0, -1 if axle[1] < pivot[1] else 1))
+            parts.append(arm)
+            # pivot boss and its bracket down onto the girder web
             parts.append(Part.makeCylinder(
-                P.LEG_TUBE_D / 2, P.LEG_OUTER_LEN,
-                Vector(lx, head[0], P.POCKET_TOP - P.LEG_OUTER_LEN),
-                Vector(0, 0, 1)))
-            # sliding inner tube: retracted it is swallowed whole, out it
-            # stands 660 mm lower and its foot stops at z -100
+                95, P.POCKET_W + 60, Vector(wx, py - (P.POCKET_W + 60) / 2,
+                                            pivot[1]), Vector(0, 1, 0)))
+            parts.append(box(200, 170, pivot[1] - P.POD_DOCKED[1] + 120,
+                             (wx - 100, py - 85, P.POD_DOCKED[1] - 120)))
+            # the leadscrew actuator: frame lug to a lug at 0.6 R along
+            # the arm. Self-locking, so the arm parks anywhere.
+            lug = (wx, py, pivot[1] + (axle[1] - pivot[1]) * 0.6)
+            anc = (wx + 330, py, P.POD_DOCKED[1] + 40)
+            d = Vector(lug[0] - anc[0], 0, lug[2] - anc[2])
             parts.append(Part.makeCylinder(
-                P.LEG_INNER_D / 2, P.LEG_INNER_LEN,
-                Vector(lx, head[0], foot), Vector(0, 0, 1)))
-            parts.append(Part.makeCylinder(     # leadscrew drive on top
-                P.LEG_SCREW_D / 2, 160,
-                Vector(lx, head[0], P.POCKET_TOP + 10), Vector(0, 0, 1)))
+                P.ACT_D / 2, d.Length, Vector(*anc), d))
             parts.append(Part.makeCylinder(
-                70, 120, Vector(lx, head[0], P.POCKET_TOP + 150),
-                Vector(0, 0, 1)))
-            # the bracket: a short beam from the inner tube's foot out
-            # to the axle, 380 mm forward. This offset is what lets the
-            # wheel and the tube pass each other through 660 mm of travel
-            parts.append(box(P.LEG_OFFSET_X + 160, 150, 150,
-                             (wx - 75, axle[0] - 75, foot)))
-            # stub axle, tyre and rim
+                P.ACT_D / 2 + 14, d.Length * 0.45, Vector(*anc), d))
+            # stub axle, tyre and rim on the END of the arm
             parts.append(Part.makeCylinder(
                 46, P.WHEEL_W + 90,
                 Vector(wx, axle[0] - (P.WHEEL_W + 90) / 2, axle[1]),
@@ -657,20 +659,13 @@ def build_hangar(phi, coupled=True, tow="sea"):
             # in a box on the girder web, one short shaft out through a
             # marine face seal to the forward wheel.
             if wx == min(P.WHEEL_XS):
-                parts.append(box(420, 240, 240,
-                                 (wx - 210, head[0] + sy * 60 - 120,
-                                  P.POCKET_TOP + 40)))
+                parts.append(box(380, 220, 220,
+                                 (wx - 480, py + sy * 60 - 110,
+                                  P.POD_DOCKED[1] - 110)))
                 parts.append(Part.makeCylinder(
                     P.SEAL_DIA / 2, 60,
                     Vector(wx, axle[0] - sy * (P.WHEEL_W / 2 + 60), axle[1]),
                     Vector(0, sy, 0)))
-            # tie the leg tube into the girder web. The tube runs from
-            # z 250 to 1160, so it passes straight through the girder's
-            # depth band and lands its load there, not on the hull.
-            parts.append(box(220, abs(sy * (P.STEM_HW + 55) - head[0]) + 60,
-                             200, (lx - 110,
-                                   min(head[0], sy * (P.STEM_HW + 55)) - 30,
-                                   P.POD_DOCKED[1] - 100)))
 
     # ---- SWING WING (the Dragonfly pattern): two arms per side on
     # VERTICAL pins at the stem face, ends pinned to the float. The two
@@ -787,7 +782,7 @@ def build_hangar(phi, coupled=True, tow="sea"):
     if not coupled:
         off = Placement(Vector(P.HANGAR_STANDOFF, 0,
                                P.hangar_standoff_z()), Rotation())
-        for grp in (parts, locks):
+        for grp in (parts, locks, rubber):
             for shp in grp:
                 shp.Placement = off.multiply(shp.Placement)
     return (Part.makeCompound(parts), Part.makeCompound(locks),
