@@ -986,8 +986,10 @@ BULKHEAD_X = (900, 2400, 3900, 5400, 6200)
 
 # masses that are NOT laminate, kg. Sources in the docs named alongside.
 MASS_EXOSKELETON = 260     # S355 tube frame + brackets, galvanised
-MASS_UGIRDER = 56          # girders 110x160x6, SF 4.1. The cross tie
-                           # and its knees are gone - see below
+MASS_UGIRDER = 73          # girders 110x240x6. Four wheels put the
+                           # span at 3.1 m and the 160-deep section
+                           # deflected 22.6 mm against a 12.4 limit -
+                           # stiffness, not stress, set this size
 MASS_WHEELS_HUBS = 66      # 4 x 16.5 kg 185 R14 C trailer wheels
 MASS_EXTENDERS = 48        # 4 swing arms as 300 mm deep TRUSSES with
                            # 60x60x4 chords, not solid boxes: the

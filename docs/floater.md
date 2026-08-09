@@ -113,14 +113,14 @@ floor is **609 kg**:
 | Float shells | 129 | PVC80 18 mm → **PET60 15 mm, 800/600 skins** |
 | Flip tubes + arms | 54 | four stations instead of six |
 | 4 wheels | 66 | 185 R14 C trailer tyres, two per float |
-| U-girder | 56 | **110 × 160 × 6**, SF 4.1 |
+| U-girder | 73 | **110 × 240 × 6** — with only two wheel stations the 3.1 m span makes **stiffness** the governing case, not stress |
 | Swing arms | **48** | **300 mm deep trusses**, 60 × 60 × 4 chords — not boxes |
 | Drive | 86 | **one** 6 kW motor in the hull, cross shaft, 2 driven wheels |
 | Bight | 25 | |
 | Dock locks | 30 | |
 
 | Cross tie, knees, dinghy fit-out | **0** | **deleted** |
-| **Total** | **495** | was 1 003 |
+| **Total** | **512** | was 1 003 |
 
 **The arms were the honest mistake.** 127 kg for four beams came from
 two errors compounding: putting **100 % of a float's buoyancy on one
@@ -200,7 +200,7 @@ shock on a trailer axle, ×3.0 wave slam on an outrigger.
 
 | Member | Case | Moment | Stress | SF | Section |
 |---|---|---|---|---|---|
-| U-girder | 2 992 kg × 2.5 over 3 wheel stations, 1.7 m bay | 3.3 kNm | 24 MPa | **4.3** | 110 × 160 × 6 box |
+| U-girder | 3 292 kg × 2.5 over a 3.1 m simple span | 11.0 kNm | 47 MPa | **2.2** (deflection 8.1 of 12.4 mm governs) | 110 × 240 × 6 box |
 | Swing arm | 70 % of one float's 559 kg × 3.0, 1 918 mm lever | 22.1 kNm | 82 MPa | **1.3** | 300 deep truss, 60 × 60 × 4 chords |
 | Flip-arm tube | one wheel's share × 2.5 on the 516 mm arm | 7.0 kNm | 70 MPa | **1.5** | ⌀120 × 12 tube |
 

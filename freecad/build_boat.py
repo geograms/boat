@@ -596,7 +596,9 @@ def build_hangar(phi, coupled=True, tow="sea"):
     # tubes. The girders run the length of the notch inside the stem
     # face; the float's fork grooves ride their outer web, and the
     # tapered nose closes the fit as the float slides in from astern.
-    gb, gh = 140, 200            # sized in structure_calc.py: SF 15
+    gb, gh = 110, 240            # sized in structure_calc.py: the 3.1 m
+                                 # span makes stiffness the governing
+                                 # case, not stress
     for sy in (-1, 1):
         ry = sy * (P.STEM_HW + gb / 2 - 20)
         # the girder runs from the BIGHT to the cross tie, so the O is

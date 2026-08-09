@@ -97,11 +97,13 @@ def main():
     wheels = sorted(P.FLOAT_X_DOCKED + d for d in P.WHEEL_XS)
     spans = [wheels[i + 1] - wheels[i] for i in range(len(wheels) - 1)]
     span = max(spans)
+    # with only two wheel stations the girder is a simple span, and
+    # DEFLECTION governs, not stress
     w = on_wheels * G * DYN_ROAD / 2 / (P.SPIKE_L)    # N/mm per girder
     # continuous beam over equal spans: M ~ w L^2 / 10, V ~ 0.6 w L
     M = w * span ** 2 / 10
     V = 0.6 * w * span
-    A, I, Z = box_section(110, 160, 6)
+    A, I, Z = box_section(110, 240, 6)
     print("\n" + "=" * 68)
     print("1. THE U-GIRDER  (road: the boat's whole weight)")
     print("=" * 68)
@@ -109,11 +111,11 @@ def main():
     print(f"  girder mass {A * P.SPIKE_L * ALU_RHO / 1e9 * 2:.0f} kg the pair")
     print(f"  line load {w:.2f} N/mm per girder "
           f"({on_wheels:.0f} kg x {DYN_ROAD} / 2 girders / {P.SPIKE_L} mm)")
-    ok1 = report("  110 x 160 x 6 alu box", M, V, Z, A, I, span,
+    ok1 = report("  110 x 240 x 6 alu box", M, V, Z, A, I, span,
                  note="continuous over 3 wheel stations: M = wL^2/10")
     if not ok1:
         for t in (12, 14, 16):
-            A2, I2, Z2 = box_section(110, 160, t)
+            A2, I2, Z2 = box_section(110, 240, t)
             if M / Z2 <= ALU_FY * WELD_KNOCKDOWN / SF_STATIC:
                 print(f"  -> {t} mm wall would pass "
                       f"({M / Z2:.0f} MPa)")
