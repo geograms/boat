@@ -240,13 +240,18 @@ SEAL_DIA = 90
 # water afloat. One linear motion, self-locking at any height, and it
 # can be worked while the thing is floating - which the flip never
 # comfortably could.
-LEG_STROKE = 660                   # axle travel. Sized by ONE number: the
-                                   # retracted wheel has to sit clear of
-                                   # the 319 mm loaded waterline, or it
-                                   # spends its life submerged in an open
-                                   # well - rusting, and dragging a
-                                   # 522 mm bluff body under the bottom.
-                                   # 319 + 80 clear + 261 radius = 660.
+LEG_STROKE = 890                   # axle travel. Set by WHERE THE HULL IS.
+                                   # Below z 600 the hull is only the
+                                   # 1560 mm stem, so at y +-910 there is
+                                   # nothing to cut a pocket into - that
+                                   # band is the float's recess. Above
+                                   # 600 the T-wing runs the full 2500
+                                   # beam, and that is real hull. So the
+                                   # wheel retracts INTO THE WING: 600 +
+                                   # 20 clearance + 261 radius = 881,
+                                   # rounded to 890. Tyre bottom lands at
+                                   # z 629 - 310 mm above the loaded
+                                   # waterline, dry and out of the flow.
 LEG_TUBE_D = 170                   # fixed outer tube, bolted to the girder
 LEG_INNER_D = 130                  # sliding inner tube, 12 wall
 LEG_SCREW_D = 45                   # trapezoidal leadscrew, self-locking
@@ -265,10 +270,10 @@ LEG_BRACKET_Z = 100                # axle above the inner tube's foot. Kept
                                    # contact patch and drags on the road.
                                    # At 100 the foot sits z -100, still
                                    # 161 mm clear of the tarmac.
-LEG_OUTER_LEN = 920                # z 240 -> 1160: holds 260 mm of the
+LEG_OUTER_LEN = 1140               # z 40 -> 1180: holds 250 mm of the
                                    # inner at full extension and swallows
                                    # it whole when the leg is up
-LEG_INNER_LEN = 600
+LEG_INNER_LEN = 390
 
 # ---- the wheels themselves ----
 # A proper TRAILER tyre, not a car tyre. 155/70 R12C, load index 104 =
@@ -305,7 +310,13 @@ WHEEL_Y = 910                      # wheel centreline: the pocket eats
 # has to be lifted 660 mm, and 660 mm of lift has to go somewhere.
 POCKET_L = 800                     # tyre 522 + the leg beside it
 POCKET_W = 200
-POCKET_TOP = 1160                  # from the keel up; sole is at 620
+POCKET_Z0 = T_STEP_Z               # the box opens DOWNWARD through the
+                                   # wing underside at z 600, into the
+                                   # float recess. Nothing is cut from
+                                   # the keel: the stem stays a clean
+                                   # unbroken bottom, and the opening
+                                   # sits 281 mm ABOVE the waterline
+POCKET_TOP = 1180                  # sole is at 620, so 560 mm proud
 # ---- the notch in the float ----
 # On the ROAD the float is docked and the wheel is DOWN, and the two
 # want the same space: the tyre's inner flank runs through the float's
@@ -319,6 +330,11 @@ WELL_L = 800                       # along the float, matching the box
 WELL_W = 230                       # the float's inner half of 460
 WELL_H = 320                       # from the float's bottom up; the top
                                    # 220 mm of the inner half stays solid
+WELL_TUBE_L = 260                  # the leg TUBE is fixed and stands in
+                                   # the recess from z 40 to 1180, so it
+                                   # needs its own full-height slot where
+                                   # it passes the float - 260 mm long at
+                                   # the aft end of each notch
 FLIP_TUBE_D = 120                  # the tube the arm swings on: d70
                                    # came out at 324 MPa against a
                                    # 104 MPa allowable - see
@@ -383,8 +399,17 @@ def hangar_mass():
 
 
 def float_buoyancy():
-    """kg, both floats fully submerged (before the wheel bays)."""
+    """kg, both floats fully submerged (before the wheel notches)."""
     return 2 * FLOAT_LEN * FLOAT_W * FLOAT_H * 0.62 / 1e9 * 1000
+
+
+def well_loss_kg():
+    """kg of buoyancy the wheel notches take out of ONE float: the notch
+    that lets the wheel down past it, plus the full-height slot where
+    the fixed leg tube passes."""
+    return (2 * (WELL_L * WELL_W * WELL_H
+                 + WELL_TUBE_L * WELL_W * (FLOAT_H - WELL_H))
+            / 1e9 * 1000)
 
 
 def dinghy_stats():
@@ -1791,7 +1816,7 @@ def checks(verbose=True, strict=True):
     _hu, up = leg_points(1, down=False)
     dg_beam, dg_mass, dg_free = dinghy_stats()
     hangar_kg2 = hangar_mass()
-    well_kg = 2 * 2 * WELL_L * WELL_W * WELL_H / 1e9 * 1000
+    well_kg = 2 * well_loss_kg()
     float_buoy_net = float_buoyancy() - well_kg
     # docked float nests: outer face inside the hull line
     assert POD_DOCKED[0] + FLOAT_W / 2 <= HULL_BEAM / 2 + 5, \
@@ -1826,6 +1851,16 @@ def checks(verbose=True, strict=True):
     # and the box has to be tall enough to swallow the tyre and the leg
     assert POCKET_TOP >= _wheel_up_bottom + WHEEL_DIA + 20, \
         "wheel box too short for the retracted tyre"
+    # THE BOX HAS TO BE CUT INTO HULL THAT EXISTS. Below the T step the
+    # hull is only the stem, so a "pocket" at the wheel's y would be
+    # four plates hanging in the float's recess. The retracted wheel
+    # must therefore sit wholly ABOVE the step, in the full-beam wing.
+    if WHEEL_Y + POCKET_W / 2 > STEM_HW:
+        assert _wheel_up_bottom >= POCKET_Z0 + 20, \
+            f"wheel retracts to z {_wheel_up_bottom:.0f} but the hull at " \
+            f"y {WHEEL_Y:.0f} only starts at z {POCKET_Z0:.0f} - the box " \
+            "would be plates hanging in mid air"
+        assert POCKET_Z0 >= T_STEP_Z, "box opens below the wing underside"
     # the notch in the float only has to clear the wheel DOWN
     assert WELL_H >= WHEEL_DIA / 2 - (POD_DOCKED[1] - FLOAT_H / 2) + 40, \
         f"float notch {WELL_H} mm deep does not clear the wheel down"

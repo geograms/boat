@@ -163,30 +163,34 @@ def build_hull():
          (P.CABIN_X0 + 50, P.CABIN_W / 2 - 70)],
         DECK_Z - 60, DECK_Z + 60))
     # the float notches are built into the T sections themselves
-    # ---- WHEEL POCKETS. Four holes in the hull bottom, one per tyre.
-    # The screw jack raises the wheel wholly inside its pocket, so
-    # nothing hangs in the flow and nothing shows from outside. Each
-    # pocket is lined - roof and four walls - so the hull stays closed.
+    # ---- WHEEL BOXES. Four of them, and they are cut into the T's
+    # WING, not into the keel. Below z 600 the hull is only the 1560 mm
+    # stem: at the wheel's y +-910 there is simply no hull to cut, that
+    # band is the float's recess. The wing above 600 runs the full beam,
+    # so each box opens DOWNWARD through the wing underside and rises
+    # 580 mm into the interior. Lined - roof and four walls - so the
+    # hull stays closed, and the opening sits 281 mm above the
+    # waterline: dry, and out of the flow.
     for wx in P.WHEEL_XS:
         for sy in (-1, 1):
             py = sy * P.WHEEL_Y
-            shell = shell.cut(box(P.POCKET_L, P.POCKET_W, P.POCKET_TOP + 20,
+            z0, zt = P.POCKET_Z0, P.POCKET_TOP
+            shell = shell.cut(box(P.POCKET_L, P.POCKET_W, zt - z0 + 40,
                                   (wx - P.POCKET_L / 2, py - P.POCKET_W / 2,
-                                   -20)))
+                                   z0 - 20)))
             shell = shell.fuse(box(P.POCKET_L + 40, P.POCKET_W + 40, 22,
                                    (wx - (P.POCKET_L + 40) / 2,
-                                    py - (P.POCKET_W + 40) / 2,
-                                    P.POCKET_TOP)))
+                                    py - (P.POCKET_W + 40) / 2, zt)))
             for dy in (-1, 1):
                 shell = shell.fuse(box(
-                    P.POCKET_L + 40, 20, P.POCKET_TOP,
+                    P.POCKET_L + 40, 20, zt - z0,
                     (wx - (P.POCKET_L + 40) / 2,
-                     py + dy * (P.POCKET_W / 2) - (20 if dy > 0 else 0), 0)))
+                     py + dy * (P.POCKET_W / 2) - (20 if dy > 0 else 0), z0)))
             for dx in (-1, 1):
                 shell = shell.fuse(box(
-                    20, P.POCKET_W + 40, P.POCKET_TOP,
+                    20, P.POCKET_W + 40, zt - z0,
                     (wx + dx * (P.POCKET_L / 2) - (20 if dx > 0 else 0),
-                     py - (P.POCKET_W + 40) / 2, 0)))
+                     py - (P.POCKET_W + 40) / 2, z0)))
 
     # ---- KEEL CHANNEL for the hangar's cross tie. The tie has to
     # travel the whole length of the hull bottom to dock, so instead of
@@ -420,10 +424,17 @@ def build_float(pod, roll, flip=0.0, fx=None):
     # floats swing OUT before the wheels come up; that costs 118 kg of
     # buoyancy across both floats instead of 328 for the full travel.
     for _wx in P.WHEEL_XS:
-        _n = box(P.WELL_L, P.WELL_W + 30, P.WELL_H,
-                 (_wx - P.WELL_L / 2, ty - P.FLOAT_W / 2 - 30,
-                  tz - P.FLOAT_H / 2 - 10))
-        hull_f = hull_f.cut(_n)
+        hull_f = hull_f.cut(box(
+            P.WELL_L, P.WELL_W + 30, P.WELL_H,
+            (_wx - P.WELL_L / 2, ty - P.FLOAT_W / 2 - 30,
+             tz - P.FLOAT_H / 2 - 10)))
+        # and a full-height slot where the FIXED leg tube passes: the
+        # tube stands in the recess from z 40 to 1180 and the float has
+        # to dock past it
+        hull_f = hull_f.cut(box(
+            P.WELL_TUBE_L, P.WELL_W + 30, P.FLOAT_H + 20,
+            (_wx + P.LEG_OFFSET_X - P.WELL_TUBE_L / 2,
+             ty - P.FLOAT_W / 2 - 30, tz - P.FLOAT_H / 2 - 10)))
 
     # solar strips on the deck, in the gaps between the wheels
     strips = []

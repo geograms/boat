@@ -7,8 +7,8 @@ source of truth, asserted by `checks()`); shapes in
 ## 1. Concept
 
 **Four wheels, on the frame, on screw jacks.** Each one winds straight
-down for the road and straight up into a box in the hull bottom for the
-water — high enough that the retracted tyre sits **above the
+down for the road and straight up into a box in the **T-wing** for the
+water — high enough that the retracted tyre sits **310 mm above the
 waterline**, dry, out of the flow. Nothing folds, nothing swings, and
 nothing that carries the boat is on a hinge.
 
@@ -50,10 +50,10 @@ retracted wheel has to clear the waterline by its own radius.
 | | 205/70 R15 | **155/70 R12C** | |
 |---|---|---|---|
 | Tyre | 668 × 205 | **522 × 155** | |
-| Box, at equal duty | 940 × 250 × 1310 | **800 × 200 × 1160** | **−40 % of volume** |
-| Four boxes | 1 232 L | **742 L** | out of the hull |
-| Proud of the sole | 690 mm | **540 mm** | −150 mm of furniture |
-| Lift needed | 733 mm | **660 mm** | radius + 319 draft + 80 |
+| Box, at equal duty | 940 × 250 × 700 | **800 × 200 × 580** | **−44 % of volume** |
+| Four boxes | 658 L | **371 L** | out of the interior |
+| Proud of the sole | 707 mm | **560 mm** | −147 mm of furniture |
+| Lift needed | 954 mm | **890 mm** | 600 wing + 20 + radius |
 | Wheel set | 88 kg | **60 kg** | −28 kg |
 | Rated | 950 kg | 900 kg | vs 753 carried |
 | Drive torque | 812 Nm | **635 Nm** | −22 %, torque = force × radius |
@@ -76,23 +76,30 @@ or down. That is the whole mechanism.
 
 | | |
 |---|---|
-| Outer tube | ⌀170 × 10, 6082-T6, bolted to the girder web, z 240 → 1160 |
+| Outer tube | ⌀170 × 10, 6082-T6, bolted to the girder web, z 40 → 1180 |
 | Inner tube | ⌀130 × 12, sliding — the slender member, and the one that governs |
 | Screw | Tr45, self-locking — it holds at any height with no power and no pin |
-| Stroke | **660 mm** |
+| Stroke | **890 mm** |
 | Down | axle at z 0, ground at **−261**, keel 261 mm clear |
-| Up | axle at z 660 — tyre bottom at **z 399, 80 mm above the 319 mm loaded waterline** |
+| Up | axle at z 890 — tyre bottom at **z 629, wholly inside the wing and 310 mm above the 319 mm loaded waterline** |
 | Stress | 59.5 MPa against a 104 MPa allowable, **SF 1.75** |
 
 ### The tube stands beside the wheel, not over it
 
-The stroke is set by one requirement: **the retracted wheel has to be
-out of the water.** 319 mm of loaded draft + 80 mm of clearance + the
-261 mm tyre radius = **660 mm of lift**, and that number breaks a
-coaxial telescope. Coaxial, the outer tube has to begin above the
-retracted tyre (z 921) and still hold 250 mm of the inner when the leg
-is fully out — which puts its top at **z 1570**, a 950 mm column
-standing in the saloon, four times over.
+The stroke is set by **where the hull actually is.** Below z 600 the
+hull is only the T's 1 560 mm stem — at the wheel's y ±910 there is no
+hull at all down there, that band is the float's recess. Cut a
+"pocket" at the keel there and you get four plates hanging in mid air.
+Above z 600 the **wing** runs the full 2 500 mm beam, and that is real
+structure. So the wheel retracts into the wing: 600 + 20 clearance +
+261 radius = 881, rounded to **890 mm of lift**. The tyre lands at
+z 629 — which also puts it 310 mm above the waterline, so the
+dry-wheel requirement comes free.
+
+That stroke breaks a coaxial telescope. Coaxial, the outer tube has to
+begin above the retracted tyre (z 1151) and still hold 250 mm of the
+inner when the leg is fully out — which puts its top well past
+z 1800, a metre-plus column standing in the saloon, four times over.
 
 Offset the tube **380 mm along the boat** and the problem disappears:
 the wheel and the tube pass each other instead of colliding. The axle
@@ -135,15 +142,23 @@ the girder, and the screw does not care about the water.
 
 ## 4. The wheel boxes, and what the track buys
 
-Each box is cut through the hull bottom and **lined** — roof plate and
-four walls — so the shell stays closed. The opening is flush with the
-keel: retracted, nothing stands in the flow and nothing shows.
+Each box is cut through the **wing underside at z 600** — not through
+the keel — and **lined**, roof plate and four walls, so the shell
+stays closed. The keel is left an unbroken bottom, and the opening
+sits **281 mm above the waterline** inside the float recess: nothing
+in the flow, nothing visible, nothing wet.
 
-**The boxes stand 540 mm proud of the sole**, and that is the honest
-cost of a dry wheel. 800 long × 200 wide × 1160 tall from the keel,
-against a sole at z 620. They sit at the hull sides, at seat height:
+That is forced, not chosen. At y ±910 the hull below z 600 does not
+exist — the T narrows to a 1 560 mm stem there and the rest is the
+float's recess. An earlier cut of this was made at the keel and
+produced exactly what it should have: four lining plates floating in
+open air with no hull to join.
+
+**The boxes stand 560 mm proud of the sole**, and that is the honest
+cost. 800 long × 200 wide, from the wing underside at z 600 up to
+z 1180, against a sole at z 620. They sit at the hull sides, at seat height:
 the two aft boxes carry the settee bases, the two forward ones are
-steps at the dome threshold. There is no way to lift a wheel 660 mm
+steps at the dome threshold. There is no way to lift a wheel 890 mm
 and leave the interior untouched — the alternative was to leave the
 tyre 280 mm under water in an open well for the life of the boat.
 
@@ -170,7 +185,9 @@ Docked on the road, the float and the wheel-down tyre want the same
 space: the tyre's inner flank runs through the float's inner-lower
 corner. So the corner is **cut away** at each wheel station — 800 long
 × 230 wide × 320 deep from the float bottom, the top 220 mm of the
-inner half left solid.
+inner half left solid — plus a **260 mm full-height slot** at the aft
+end of each notch, because the leg's outer tube is fixed and stands in
+the recess from z 40 to 1180: the float has to dock past it.
 
 It only has to clear the wheel **down**, which is what keeps the cut
 small. That imposes one rule on the order of operations:
@@ -184,10 +201,10 @@ Get it backwards and the wheel tries to travel up through a solid
 float. The interlock is trivial — the leg controller reads the swing
 position and will not run up below 60° of swing.
 
-Cost: **99 kg of buoyancy** across both floats — 616 kg of reserve a
-side instead of 715 — against 328 kg if the notch had to clear the
-full 660 mm of travel. The lighter float also eases the swing arm,
-which drops from 101 MPa to 68 (SF 1.0 → **1.5**).
+Cost: **144 kg of buoyancy per float** — 564 kg of reserve a side
+instead of 708 — against roughly double that if the notch had to clear
+the whole 890 mm of travel. The lighter float also eases the swing
+arm, which drops from 101 MPa to 68 (SF 1.0 → **1.5**).
 
 ## 5. Drive
 

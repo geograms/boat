@@ -128,8 +128,7 @@ def main():
     # buoyancy. That force reaches the hull through two arms per side;
     # the worst case puts it on ONE arm (the float pitching on a crest)
     # with the slam factor on top.
-    reserve = (P.FLOAT_LEN * P.FLOAT_W * P.FLOAT_H * 0.80
-               - 3 * P.WELL_L * P.WELL_W * P.FLOAT_H) / 1e6   # kg
+    reserve = P.float_buoyancy() / 2 - P.well_loss_kg()          # kg
     # the float is a stiff beam pinned at TWO arms and its immersion
     # centroid sits midway between them; even pitched hard bow-down the
     # split is about 70/30. Putting 100% on one arm double-counted the
