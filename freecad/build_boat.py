@@ -163,6 +163,22 @@ def build_hull():
          (P.CABIN_X0 + 50, P.CABIN_W / 2 - 70)],
         DECK_Z - 60, DECK_Z + 60))
     # the float notches are built into the T sections themselves
+    # ---- THE DRIVE, all of it inside the boat. One 6 kW motor and its
+    # reduction sit dry in the stem above the keel channel; a transverse
+    # shaft runs in the channel to a dog clutch at each stem face, which
+    # engages the float's stub shaft when it docks. No electrics in the
+    # float, no motor near the water.
+    dvx = P.FLOAT_X_DOCKED + P.WHEEL_XS[0]
+    shell = shell.fuse(box(520, 300, 300, (dvx - 260, -150, 210)))
+    shell = shell.fuse(Part.makeCylinder(
+        150, 420, Vector(dvx - 40, -210, 360), Vector(0, 1, 0)))
+    for sy in (-1, 1):
+        shell = shell.fuse(Part.makeCylinder(
+            55, P.STEM_HW - 60, Vector(dvx, 0, 300), Vector(0, sy, 0)))
+        shell = shell.fuse(Part.makeCylinder(     # dog clutch at the face
+            95, 120, Vector(dvx, sy * (P.STEM_HW - 60), 300),
+            Vector(0, sy, 0)))
+
     # ---- KEEL CHANNEL for the hangar's cross tie. The tie has to
     # travel the whole length of the hull bottom to dock, so instead of
     # hanging in the flow it runs in a shallow channel cut into the
@@ -456,12 +472,15 @@ def build_float(pod, roll, flip=0.0, fx=None):
     # face seal to the wheel. Nothing rotating is submerged except that
     # shaft, and its seal can be changed without opening the float.
     hyd = []
-    for dxw in P.WHEEL_XS[:P.DRIVE_WHEELS // 2]:
+    for dxw in P.WHEEL_XS[:1]:                   # the driven station only
         wx = P.FLOAT_X + dxw
-        hyd.append(Part.makeCylinder(72, 250, Vector(wx - 300, 0, 0),
-                                     Vector(1, 0, 0)))          # motor
-        hyd.append(Part.makeCylinder(88, 180, Vector(wx - 50, 0, 0),
-                                     Vector(1, 0, 0)))          # planetary
+        # no motor in the float: a stub shaft in from the dog clutch and
+        # a chain case up to the wheel's flip tube
+        hyd.append(Part.makeCylinder(45, P.FLOAT_W + 40,
+                                     Vector(wx, -P.FLOAT_W / 2 - 20, 0),
+                                     Vector(0, 1, 0)))
+        hyd.append(box(120, P.FLOAT_W - 80, 300,
+                       (wx - 60, -(P.FLOAT_W - 80) / 2, 0)))     # chain case
         # seal housing on the shell, and the stub shaft through it
         hyd.append(Part.makeCylinder(
             P.SEAL_DIA / 2, 60, Vector(wx, -P.FLOAT_W / 2 - 30, 0),

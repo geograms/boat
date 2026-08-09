@@ -60,8 +60,7 @@ centimetres, not a duct.
 
 | Item | Spec | Where |
 |---|---|---|
-| Wheels | 3 × **155/80 R13 C trailer** tyres, 555 mm, 13.5 kg, rated 600 kg against a 549 kg wheel load. The old 205/70 R15 was a car tyre: 668 mm, 22 kg, 73 % over-rated, and its bigger radius asked 17 % more torque | bays at x 1 900 / 3 600 / 5 300 |
-| Drive | **2 per float driven** (four in all): 1.2 kW motor + 100:1 planetary **dry inside the float**, one stub shaft out through a marine face seal. ≈ 306 Nm at each wheel = 1 224 Nm, good for ramps to ~11 %; winch assist beyond | aft two stations |
+| Wheels | **2 per float, four in all** — 185 R14 C 8PR, 636 mm, 16.5 kg, rated 850 kg against the 823 kg a wheel carries. Six 13-inch wheels became four 14-inch ones: fewer bays, fewer flip arms, one tyre size to carry | bays at x 2 000 and 5 100, a 3.1 m wheelbase straddling the 3 300 CG |
 | Bays | **wells, not trenches**: open below, deck bridge on top with a 680 × 230 slot for the wheel to stand through — the profile stays closed. Roughly half the wheel is inside the bay on the road | 730 × 300 below, slot above |
 | Flip arm | curved, bulging **outboard**; 180° about a tube spanning the bay | tube on the bay centreline, z +230 |
 | Pins | spring pin at each end of the swing — **manual, no electrics** | tube ends |
@@ -112,15 +111,16 @@ floor is **609 kg**:
 | Item | kg | What was done |
 |---|---|---|
 | Float shells | 129 | PVC80 18 mm → **PET60 15 mm, 800/600 skins** |
-| Flip tubes + arms | 81 | as calculated, ⌀120 × 12 |
-| 6 wheels | 78 | **hub motors deleted** — plain trailer wheels |
+| Flip tubes + arms | 54 | four stations instead of six |
+| 4 wheels | 66 | 185 R14 C trailer tyres, two per float |
 | U-girder | 56 | **110 × 160 × 6**, SF 4.1 |
 | Swing arms | **48** | **300 mm deep trusses**, 60 × 60 × 4 chords — not boxes |
+| Drive | 86 | **one** 6 kW motor in the hull, cross shaft, 2 driven wheels |
 | Bight | 25 | |
 | Dock locks | 30 | |
-| Hydraulic drive | **0** | **deleted** |
+
 | Cross tie, knees, dinghy fit-out | **0** | **deleted** |
-| **Total** | **448** | was 1 003 |
+| **Total** | **495** | was 1 003 |
 
 **The arms were the honest mistake.** 127 kg for four beams came from
 two errors compounding: putting **100 % of a float's buoyancy on one
@@ -142,18 +142,54 @@ roughly 1 800 kg loaded it needs four wheels instead of six and
 proportionally lighter beams, which lands near the target. The lever is
 in [weight.md](weight.md), not here.
 
-**Self-launching is back, electrically, for 74 kg.** The hydraulic hub
-layout cost 312 kg and was deleted; the electric equivalent —
-architecture A below — costs 71 kg of motors, gearboxes and controllers
-plus 3 kg of wheel, and drives four wheels at ~306 Nm each.
+## 7c. The drive — one motor, and where it lives
 
-**Why the motor is not in the wheel.** IP68 is a *static* test: the unit
+**One 6 kW motor drives the whole machine**, and it never gets wet.
+
+```
+SECTION AT THE DRIVE STATION (x 2000, the pair nearest the coupling)
+
+        motor + 100:1 reduction, DRY in the stem
+                    ┌────────┐
+                    │  6 kW  │
+        ════════════╧═══╤════╧════════════   cross shaft, in the
+    dog clutch ══╗      │      ╔══ dog clutch   keel channel
+                 ║  hull stem  ║
+      ┌──────────╨──┐       ┌──╨──────────┐
+      │ stub shaft  │       │ stub shaft  │   one face seal each
+      │   chain ↓   │       │   ↓ chain   │
+      │  [ WHEEL ]  │       │  [ WHEEL ]  │
+      └── float ────┘       └──── float ──┘
+```
+
+| | |
+|---|---|
+| Motor | **one**, 6 kW, 48 V, mounted **dry in the hull's stem** above the keel channel — the driest, most accessible place on the boat |
+| Transmission | 100:1 reduction → a **transverse shaft in the keel channel** → a **dog clutch at each stem face** |
+| Coupling | the clutches engage the floats' stub shafts **as the floats dock**; undocked, the floats are purely mechanical |
+| In the float | a stub shaft through **one marine face seal** and a chain case up to the driven wheel. **No electrics in the float at all** |
+| Driven | the pair **nearest the coupling** (x 2 000). The forward pair free-wheels |
+| Output | **1 623 Nm** at the two driven wheels — a **15 %** ramp at 3 km/h |
+| Mass | 86 kg: motor and reduction 38, cross shaft and clutches 18, two chain drives 18, controls 12 |
+
+**Why the motor is not in the wheel.** IP68 is a *static* test — the unit
 is dipped, not run. A rotating seal under load can fail within minutes
 on an IP68-rated motor, which is the standard warning from marine motor
-suppliers. So the motor and gearbox live **dry inside the float** and a
-single stub shaft crosses the shell through **one marine face seal** per
-driven wheel — the saildrive pattern. One seal, serviceable from
-outside, nothing rotating submerged but the shaft itself.
+suppliers. Putting the motor in the hull leaves **one rotating seal per
+driven wheel**, on a stub shaft, serviceable from outside without
+opening anything. It is the saildrive pattern, and it is why one motor
+is possible at all: a motor per wheel has to live where the wheel is.
+
+**Why only two wheels are driven.** Traction is needed on a ramp, and on
+a ramp the pull is at the coupling. The pair nearest it does the work;
+the other pair rolls. That halves the transmission and costs nothing —
+1 623 Nm on two wheels still climbs 15 %.
+
+**What does not work: lifting a pair on the road.** A coupling carries
+about 100 kg of nose load, so if the front pair lifted, each remaining
+wheel would carry **1 596 kg** — above the heaviest 15-inch commercial
+tyre (≈1 250 kg). **All four stay down on the road.** The flip arms can
+still lift a pair for manoeuvring or maintenance, just not under tow.
 
 ## 8. Scantlings — calculated, not guessed
 

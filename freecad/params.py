@@ -216,13 +216,22 @@ POD_ROAD = POD_DOCKED
 # marine face seal to the wheel. IP68 on a motor is a STATIC test - a
 # rotating seal under load can fail in minutes - so the design has one
 # serviceable seal per wheel instead of trusting a submerged hub.
-DRIVE_WHEELS = 4                   # the two aft stations each side
-DRIVE_KW = 1.2                     # per wheel
-DRIVE_RATIO = 100                  # planetary, into the stub shaft
-DRIVE_NM = 306                     # at the wheel, per driven station
-DRIVE_KG = 14                      # motor + gearbox + seal housing
-DRIVE_CTRL_KG = 15                 # controllers, cabling, contactors
-SEAL_DIA = 90                      # face seal on the stub shaft
+# ONE motor for the whole machine. It sits DRY in the hull's stem,
+# above the keel channel, and drives a transverse shaft that runs in
+# that channel to a dog clutch at each stem face. When the floats dock,
+# the clutches engage stub shafts in the floats that turn the wheels
+# NEAREST THE COUPLING - the pair that has to pull on a ramp. The other
+# pair free-wheels. Nothing electric is in the float, and the only
+# rotating seal is on each stub shaft.
+DRIVE_WHEELS = 2                   # the pair nearest the coupling
+DRIVE_KW = 6.0                     # ONE motor, in the hull
+DRIVE_RATIO = 100                  # reduction to the wheels
+DRIVE_NM = 1623                    # at the two wheels together
+DRIVE_MOTOR_KG = 38                # motor + reduction gearbox
+DRIVE_SHAFT_KG = 18                # cross shaft, bearings, 2 dog clutches
+DRIVE_INFLOAT_KG = 9               # chain drive to the wheel, per float
+DRIVE_CTRL_KG = 12                 # controller, cabling, contactors
+SEAL_DIA = 90                      # face seal on each stub shaft
 
 # ---- wheels: manual 180-deg flip arms in open bays ----
 # 205/70 R15 ALL-TERRAIN as before; three per float. Each wheel hangs
@@ -230,13 +239,16 @@ SEAL_DIA = 90                      # face seal on the stub shaft
 # float. Flip up = wheel stands through the bay above the deck (sea);
 # flip down = wheel nests inside the bay and protrudes just enough to
 # roll (road). The bays cost buoyancy and it is accounted for.
-WHEEL_DIA = 555          # 155/80 R13 C trailer tyre
-WHEEL_W = 155
-HUB_DIA = 330            # 13 in rim
-WHEEL_XS = (-1800, -100, 1600)     # along the float, from its centre:
-                                   # docked world 1900/3600/5300 -
-                                   # a 3.4 m wheelbase straddling the
-                                   # 3300 CG, +109 kg on the coupling
+WHEEL_DIA = 636          # 185 R14 C 8PR: rated 850 kg against the
+                         # 823 kg a wheel carries when only four
+                         # share the boat
+WHEEL_W = 185
+HUB_DIA = 356            # 14 in rim
+WHEEL_XS = (-1700, 1400)           # TWO per float: docked world 2000
+                                   # and 5100, a 3.1 m wheelbase
+                                   # straddling the 3300 CG. The 2000
+                                   # station is the driven one - it is
+                                   # the pair nearest the coupling
 WELL_L = 730                       # bay along the float: wheel 668 +
                                    # swing clearance, nothing more
 WELL_W = 300                       # bay opening across: the wheel
@@ -976,17 +988,16 @@ BULKHEAD_X = (900, 2400, 3900, 5400, 6200)
 MASS_EXOSKELETON = 260     # S355 tube frame + brackets, galvanised
 MASS_UGIRDER = 56          # girders 110x160x6, SF 4.1. The cross tie
                            # and its knees are gone - see below
-MASS_WHEELS_HUBS = 81      # 6 x 13.5 kg 155/80 R13 C trailer wheels
+MASS_WHEELS_HUBS = 66      # 4 x 16.5 kg 185 R14 C trailer wheels
 MASS_EXTENDERS = 48        # 4 swing arms as 300 mm deep TRUSSES with
                            # 60x60x4 chords, not solid boxes: the
                            # chords take the moment axially at 82 MPa
                            # instead of a box wall taking it in
                            # bending. 155 -> 48 kg
-MASS_FLIPGEAR = 81         # d120x12 tubes and d110 arms, as built
-MASS_HYDRAULICS = 71       # ELECTRIC drive, architecture A: 4 dry
-                           # in-float motor/gearbox units at 14 kg
-                           # plus controllers and cabling. The old
-                           # hydraulic layout cost 312 kg for this
+MASS_FLIPGEAR = 54         # 4 stations instead of 6
+MASS_HYDRAULICS = 86       # ONE 6 kW motor in the hull (38) + cross
+                           # shaft and clutches (18) + 2 in-float
+                           # chain drives (18) + controls (12)
 MASS_JETS = 75             # 3 x 2 kW waterjet cartridges incl. ducting
 MASS_ELECTRICS = 120       # inverter/charger, MPPTs, busbars, cabling
 MASS_SOLAR = 0             # roof panels are in deck_mass(), side
