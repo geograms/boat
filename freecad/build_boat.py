@@ -412,6 +412,19 @@ def build_float(pod, roll, flip=0.0, fx=None):
     # envelope in either pose (local frame: x along, y across, z up)
     hull_f.Placement = place.multiply(hull_f.Placement)
 
+    # THE WHEEL NOTCH. Docked on the road, the float and the wheel-down
+    # tyre want the same space: the tyre's inner flank runs through the
+    # float's inner-lower corner. So the corner is cut away at each
+    # wheel station - the "eats half the floater" of the road stance,
+    # cut for real. Only the DOWN position has to clear, because the
+    # floats swing OUT before the wheels come up; that costs 118 kg of
+    # buoyancy across both floats instead of 328 for the full travel.
+    for _wx in P.WHEEL_XS:
+        _n = box(P.WELL_L, P.WELL_W + 30, P.WELL_H,
+                 (_wx - P.WELL_L / 2, ty - P.FLOAT_W / 2 - 30,
+                  tz - P.FLOAT_H / 2 - 10))
+        hull_f = hull_f.cut(_n)
+
     # solar strips on the deck, in the gaps between the wheels
     strips = []
     for x0 in (P.FLOAT_X - 1900, P.FLOAT_X + 700):
@@ -420,9 +433,12 @@ def build_float(pod, roll, flip=0.0, fx=None):
         s.Placement = place.multiply(s.Placement)
         strips.append(s)
 
-    # the float has NO running gear at all now: no legs, no wheels,
-    # no slots. It is a closed buoyancy body that swings for stability
+    # the float has NO running gear: no legs, no wheels, no motors for
+    # the road. It is a buoyancy body that swings for stability, notched
+    # at two stations to let the wheels down past it
     forks, tires, rims = [], [], []
+
+
 
     # in-float hydraulic drive (docs/wheels.md): gasketed deck hatch
     # over the machinery bay, pump unit inside, hoses to each hub,
@@ -580,27 +596,40 @@ def build_hangar(phi, coupled=True, tow="sea"):
                              (lx, ry - (gb + 70) / 2,
                               P.POD_DOCKED[1] - (gh + 60) / 2)))
 
-    # ---- SCREW LEGS AND WHEELS, on the FRAME. Each leg is a vertical
-    # tube with a trapezoidal leadscrew inside, bolted to the girder;
-    # the screw turns, the inner tube slides, and the wheel goes down to
-    # the road or up wholly inside its pocket in the hull. Self-locking
-    # at any height, workable while afloat, and nothing rides on a
-    # moving part.
+    # ---- SCREW LEGS AND WHEELS, on the FRAME. A fixed outer tube
+    # bolted to the girder web, a trapezoidal leadscrew inside it, and a
+    # sliding inner tube that carries the wheel on a short bracket 100 mm
+    # up from its foot and 380 mm forward of the tube axis. The offset is
+    # the whole trick: the wheel travels the full 660 mm past the tube
+    # instead of into it, so the retracted tyre ends up ABOVE the
+    # waterline with no 950 mm column standing in the saloon.
+    # Self-locking at any height, workable afloat, nothing on a hinge.
     for wx in P.WHEEL_XS:
         for sy in (-1, 1):
             head, axle = P.leg_points(sy, down=(phi <= 5))
+            lx = wx + P.LEG_OFFSET_X          # tube axis, aft of the wheel
+            foot = axle[1] - P.LEG_BRACKET_Z  # inner tube's bottom end
+            # fixed outer tube, bolted to the girder web
             parts.append(Part.makeCylinder(
-                P.LEG_TUBE_D / 2, P.LEG_STROKE + 300,
-                Vector(wx, head[0], head[1] - P.LEG_STROKE - 150),
+                P.LEG_TUBE_D / 2, P.LEG_OUTER_LEN,
+                Vector(lx, head[0], P.POCKET_TOP - P.LEG_OUTER_LEN),
                 Vector(0, 0, 1)))
+            # sliding inner tube: retracted it is swallowed whole, out it
+            # stands 660 mm lower and its foot stops at z -100
             parts.append(Part.makeCylinder(
-                P.LEG_INNER_D / 2, head[1] - axle[1] + 130,
-                Vector(wx, head[0], axle[1] - 65), Vector(0, 0, 1)))
-            parts.append(Part.makeCylinder(     # leadscrew and its drive
-                P.LEG_SCREW_D / 2, 200,
-                Vector(wx, head[0], head[1] + 30), Vector(0, 0, 1)))
+                P.LEG_INNER_D / 2, P.LEG_INNER_LEN,
+                Vector(lx, head[0], foot), Vector(0, 0, 1)))
+            parts.append(Part.makeCylinder(     # leadscrew drive on top
+                P.LEG_SCREW_D / 2, 160,
+                Vector(lx, head[0], P.POCKET_TOP + 10), Vector(0, 0, 1)))
             parts.append(Part.makeCylinder(
-                70, 120, Vector(wx, head[0], head[1] + 200), Vector(0, 0, 1)))
+                70, 120, Vector(lx, head[0], P.POCKET_TOP + 150),
+                Vector(0, 0, 1)))
+            # the bracket: a short beam from the inner tube's foot out
+            # to the axle, 380 mm forward. This offset is what lets the
+            # wheel and the tube pass each other through 660 mm of travel
+            parts.append(box(P.LEG_OFFSET_X + 160, 150, 150,
+                             (wx - 75, axle[0] - 75, foot)))
             # stub axle, tyre and rim
             parts.append(Part.makeCylinder(
                 46, P.WHEEL_W + 90,
@@ -619,16 +648,18 @@ def build_hangar(phi, coupled=True, tow="sea"):
             if wx == min(P.WHEEL_XS):
                 parts.append(box(420, 240, 240,
                                  (wx - 210, head[0] + sy * 60 - 120,
-                                  head[1] + 40)))
+                                  P.POCKET_TOP + 40)))
                 parts.append(Part.makeCylinder(
                     P.SEAL_DIA / 2, 60,
                     Vector(wx, axle[0] - sy * (P.WHEEL_W / 2 + 60), axle[1]),
                     Vector(0, sy, 0)))
-            # tie the leg head into the girder web
+            # tie the leg tube into the girder web. The tube runs from
+            # z 250 to 1160, so it passes straight through the girder's
+            # depth band and lands its load there, not on the hull.
             parts.append(box(220, abs(sy * (P.STEM_HW + 55) - head[0]) + 60,
-                             160, (wx - 110,
+                             200, (lx - 110,
                                    min(head[0], sy * (P.STEM_HW + 55)) - 30,
-                                   head[1] - 80)))
+                                   P.POD_DOCKED[1] - 100)))
 
     # ---- SWING WING (the Dragonfly pattern): two arms per side on
     # VERTICAL pins at the stem face, ends pinned to the float. The two

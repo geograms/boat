@@ -64,8 +64,9 @@ is a closed buoyancy body whose only job is to swing out for stability.
 
 That is worth stating because it undoes three earlier problems at once:
 
-- **No slots.** The float's buoyancy is whole again — **715 kg** each,
-  against 559 when the wheels cut through it.
+- **Almost no slots.** The float keeps a notch at each wheel station
+  so the wheel can go DOWN past it, but nothing passes through any
+  more: **616 kg** each, against 559 when the wheels lived inside it.
 - **The load path is direct.** Hull → girder → leg → wheel, instead of
   hull → girder → swing arm → float → wheel. The boat's weight no
   longer passes through the part that moves.
@@ -78,8 +79,8 @@ That is worth stating because it undoes three earlier problems at once:
 | Wheel | **155/70 R12C** trailer tyre, 522 × 155, rated 900 kg against 753 carried |
 | Stations | x 1 900 and 5 200 — wheelbase **3 300**, CG 3 300 inside it, 91 kg on the coupling |
 | Track | **1 820 mm**: each pocket eats the float's **inner half** (y 810 → 1 010) and the wheel centres on y ±910 |
-| Leg | vertical tube, ⌀150 × 10, trapezoidal leadscrew inside, self-locking, ~300 mm of stroke |
-| Retracted | the wheel sits **wholly inside a 620 × 200 × 560 pocket** in the hull, flush at the keel — nothing in the flow, nothing visible |
+| Leg | fixed ⌀170 outer on the girder, sliding ⌀130 inner, Tr45 leadscrew, self-locking, **660 mm of stroke**, tube offset 380 mm so the wheel passes it |
+| Retracted | tyre bottom at **z 399 — 80 mm above the 319 mm loaded waterline**, wholly inside an 800 × 200 × 1160 box, flush at the keel. Out of the water, out of the flow, out of sight |
 
 **Why the pocket takes half the float.** Keeping the wheels wholly
 inboard of the girders would give a 1 300 mm track — 24.9° of tip and a
@@ -232,8 +233,8 @@ shock on a trailer axle, ×3.0 wave slam on an outrigger.
 | Member | Case | Moment | Stress | SF | Section |
 |---|---|---|---|---|---|
 | U-girder | 3 292 kg × 2.5 over a 3.1 m simple span | 11.0 kNm | 47 MPa | **2.2** (deflection 8.1 of 12.4 mm governs) | 110 × 240 × 6 box |
-| Swing arm | 70 % of one float's **715 kg** × 3.0, 1 918 mm lever | 36.1 kNm | 101 MPa | **1.0** | 340 deep truss, 70 × 70 × 4 chords |
-| Screw leg | a quarter of the boat × 2.5, 125 mm out from the tube axis | 2.4 kNm | 17 MPa | **6.3** | ⌀150 × 10 tube |
+| Swing arm | 70 % of one float's **616 kg** × 3.0, 1 918 mm lever | 24.3 kNm | 68 MPa | **1.5** | 340 deep truss, 70 × 70 × 4 chords |
+| Screw leg | a quarter of the boat × 2.5, 380 mm forward of the tube axis | 7.2 kNm | 60 MPa | **1.8** | ⌀130 × 12 sliding inner tube |
 
 Two results changed the design:
 

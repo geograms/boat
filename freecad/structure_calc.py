@@ -5,7 +5,7 @@ Three members were drawn by judgement and have to be proved:
 
   1. the U-girder      - carries the whole boat on the road
   2. the swing arm     - carries the float's buoyancy at sea
-  3. the flip-arm tube - carries one wheel's share on the road
+  3. the screw leg     - carries one wheel's share on the road
 
 Everything below is first-principles beam theory with stated load
 cases and stated allowables. Run: python3 freecad/structure_calc.py
@@ -167,20 +167,22 @@ def main():
     # 3. THE SCREW LEG
     # =================================================================
     # Each leg carries a quarter of the boat in compression, plus the
-    # bending from the axle's offset out to the wheel centreline.
+    # bending from the wheel standing 380 mm forward of the tube axis -
+    # the offset that lets the wheel pass the tube through 660 mm of
+    # travel. The SLIDING INNER tube is the slender member and governs.
     per_wheel = on_wheels / 4 * G * DYN_ROAD
-    offset = 125.0
+    offset = float(P.LEG_OFFSET_X)
     M3 = per_wheel * offset
-    A4, I4, Z4 = tube_section(P.LEG_TUBE_D, 10)
+    A4, I4, Z4 = tube_section(P.LEG_INNER_D, 12)
     print("\n" + "=" * 68)
     print("3. THE SCREW LEG  (road: a quarter of the boat, on one tube)")
     print("=" * 68)
-    print(f"  {per_wheel / 1e3:.1f} kN per wheel, {offset:.0f} mm out from the "
-          f"tube axis")
+    print(f"  {per_wheel / 1e3:.1f} kN per wheel, {offset:.0f} mm forward of "
+          f"the tube axis (the offset that lets the wheel pass the tube)")
     print(f"  direct compression {per_wheel / A4:.0f} MPa on top of the bending")
-    ok3 = report(f"  tube d{P.LEG_TUBE_D} x 10", M3, per_wheel, Z4, A4, I4, 0)
+    ok3 = report(f"  inner tube d{P.LEG_INNER_D} x 12 (outer d{P.LEG_TUBE_D})", M3, per_wheel, Z4, A4, I4, 0)
     if not ok3:
-        for d, t in ((150, 12), (170, 12), (190, 14)):
+        for d, t in ((150, 14), (170, 14), (190, 16)):
             A5, I5, Z5 = tube_section(d, t)
             if M3 / Z5 <= ALU_FY * WELD_KNOCKDOWN / SF_STATIC:
                 print(f"  -> tube d{d} x {t} passes ({M3 / Z5:.0f} MPa)")

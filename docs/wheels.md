@@ -7,9 +7,10 @@ source of truth, asserted by `checks()`); shapes in
 ## 1. Concept
 
 **Four wheels, on the frame, on screw jacks.** Each one winds straight
-down for the road and straight up into a pocket in the hull bottom for
-the water. Nothing folds, nothing swings, and nothing that carries the
-boat is on a hinge.
+down for the road and straight up into a box in the hull bottom for the
+water — high enough that the retracted tyre sits **above the
+waterline**, dry, out of the flow. Nothing folds, nothing swings, and
+nothing that carries the boat is on a hinge.
 
 The wheels belong to the **hangar** — the frame, the two floats, the
 drawbar and the running gear, which unbolt from the boat as one unit.
@@ -36,34 +37,36 @@ SECTION AT AN AXLE                      PLAN
 | Tyre | **155/70 R12C** (⌀522 × 155 mm) | A *trailer* tyre, not a car tyre. C-type casing, built for a load that never comes off it. LI 104 = **900 kg** against the **753 kg** each one carries. Speed rating N = 140 km/h |
 | Rim | 12 × 4J, 4 × 100 or 5 × 112 | The commonest braked-trailer fitment in Europe; every trailer dealer stocks it |
 | Count | **4**, at x 1 900 and 5 200 | Wheelbase **3 300**, the CG at 3 300 inside it, **91 kg** on the coupling |
-| Track | **1 820 mm** | Each pocket eats the float's inner half; see §4 |
+| Track | **1 820 mm** | Each box eats the float's inner half; see §4 |
 | Mass | 15 kg a wheel, 60 kg the set | Against 88 kg for four 15" car wheels |
 
 ### Why it shrank from a 205/70 R15
 
-The car tyre worked, but the **pocket** it needed did not. A 668 × 205
-wheel wants a 760 × 250 × 700 hole cut through the hull bottom, four
-times over. The trailer tyre needs 620 × 200 × 560:
+The car tyre worked, but the **hole** it needed did not. Every
+millimetre of tyre diameter is a millimetre of hull cut away twice
+over — once to swallow the tyre, once again in lift, because the
+retracted wheel has to clear the waterline by its own radius.
 
 | | 205/70 R15 | **155/70 R12C** | |
 |---|---|---|---|
 | Tyre | 668 × 205 | **522 × 155** | |
-| Pocket | 760 × 250 × 700 | **620 × 200 × 560** | **−48 % of volume** |
-| Four pockets | 532 L | **278 L** | out of the hull |
+| Box, at equal duty | 940 × 250 × 1310 | **800 × 200 × 1160** | **−40 % of volume** |
+| Four boxes | 1 232 L | **742 L** | out of the hull |
+| Proud of the sole | 690 mm | **540 mm** | −150 mm of furniture |
+| Lift needed | 733 mm | **660 mm** | radius + 319 draft + 80 |
 | Wheel set | 88 kg | **60 kg** | −28 kg |
 | Rated | 950 kg | 900 kg | vs 753 carried |
 | Drive torque | 812 Nm | **635 Nm** | −22 %, torque = force × radius |
 
-Less hole, less lining, less structure to work round, less weight, and
-a smaller motor for the same pull. The one thing given up is load
-margin — 1.20 against 1.26 — still comfortable, and a C-casing is
-designed for exactly this duty where a passenger casing is not.
+Less hole, less lining, less structure to work round, less lift, less
+weight, and a smaller motor for the same pull. The one thing given up
+is load margin — 1.20 against 1.26 — still comfortable, and a C-casing
+is designed for exactly this duty where a passenger casing is not.
 
 **It costs ground clearance unless you pay for it, and the design
-pays.** The axle now winds 74 mm further down (`AXLE_DOWN_Z` 74 → 0),
-which keeps the keel **261 mm** off the road, as before. The leg has
-the stroke for it and the extra 74 mm of cantilever is nothing to a
-tube running at SF 6.4.
+pays.** The axle winds 74 mm further down than the 15" wheel needed
+(`AXLE_DOWN_Z` 74 → 0), which keeps the keel **261 mm** off the road,
+as before.
 
 ## 3. The screw leg
 
@@ -73,12 +76,53 @@ or down. That is the whole mechanism.
 
 | | |
 |---|---|
-| Tube | ⌀150 × 10, 6082-T6 |
-| Screw | Tr40, self-locking — it holds at any height with no power and no pin |
-| Stroke | **300 mm** |
+| Outer tube | ⌀170 × 10, 6082-T6, bolted to the girder web, z 240 → 1160 |
+| Inner tube | ⌀130 × 12, sliding — the slender member, and the one that governs |
+| Screw | Tr45, self-locking — it holds at any height with no power and no pin |
+| Stroke | **660 mm** |
 | Down | axle at z 0, ground at **−261**, keel 261 mm clear |
-| Up | axle at z 300 — the wheel is **wholly inside its 560 mm pocket**, top at 561, bottom at 39 |
-| Stress | 16.3 MPa against a 104 MPa allowable, **SF 6.4** |
+| Up | axle at z 660 — tyre bottom at **z 399, 80 mm above the 319 mm loaded waterline** |
+| Stress | 59.5 MPa against a 104 MPa allowable, **SF 1.75** |
+
+### The tube stands beside the wheel, not over it
+
+The stroke is set by one requirement: **the retracted wheel has to be
+out of the water.** 319 mm of loaded draft + 80 mm of clearance + the
+261 mm tyre radius = **660 mm of lift**, and that number breaks a
+coaxial telescope. Coaxial, the outer tube has to begin above the
+retracted tyre (z 921) and still hold 250 mm of the inner when the leg
+is fully out — which puts its top at **z 1570**, a 950 mm column
+standing in the saloon, four times over.
+
+Offset the tube **380 mm along the boat** and the problem disappears:
+the wheel and the tube pass each other instead of colliding. The axle
+rides on a short bracket **100 mm** up from the inner tube's foot —
+short on purpose. Carry the axle high on a long bracket and the tube's
+foot reaches below the tyre's contact patch and drags on the tarmac; at
+100 mm the foot stops at z −100, still **161 mm clear of the road**.
+
+```
+        ROAD (down)                 WATER (up)
+
+ z1160 ┌───┐                       ┌───┐  inner swallowed whole
+       │ ▓ │ outer, fixed          │ ▓▓│
+       │ ▓ │                       │ ▓▓│
+       │ ▓ │                  z660 │ ▓▓│      ● axle
+  z500 │ ▓ │ inner top             │ ▓▓│  ┌───────┐
+       │ ▓ │                  z560 └─┬─┘  │ (  o  )│ tyre bottom 399
+  z240 └─┬─┘                    ~~~~~~~~~~~~~~~~~~~~~ WL 319
+         │ inner
+    z0 ──●───(  o  )──  axle           80 mm of air under the tyre
+  z-100  └── foot, 161 clear
+  -261 ══════════════ road
+       ├── 380 ──┤
+```
+
+The price is paid in bending, not height: the wheel sits 380 mm out
+from the tube axis, so the inner tube carries 7.17 kNm instead of
+2.36. ⌀130 × 12 takes it at 59.5 MPa — **SF 1.75**, down from 6.4 but
+still ample, and the outer tube lands the load straight into the
+girder web it passes through.
 
 Self-locking matters more than it sounds. A leadscrew at this lead
 angle cannot be back-driven, so the boat's weight cannot wind the
@@ -89,13 +133,21 @@ It can be worked **afloat**, which the old flip arm never comfortably
 could: the leg is happy submerged, there is nothing electrical below
 the girder, and the screw does not care about the water.
 
-## 4. The pockets, and what the track buys
+## 4. The wheel boxes, and what the track buys
 
-Each pocket is cut through the hull bottom and **lined** — roof plate
-and four walls — so the shell stays closed. The opening is flush with
-the keel: retracted, nothing stands in the flow and nothing shows.
+Each box is cut through the hull bottom and **lined** — roof plate and
+four walls — so the shell stays closed. The opening is flush with the
+keel: retracted, nothing stands in the flow and nothing shows.
 
-Each pocket straddles the stem face and eats the float's **inner
+**The boxes stand 540 mm proud of the sole**, and that is the honest
+cost of a dry wheel. 800 long × 200 wide × 1160 tall from the keel,
+against a sole at z 620. They sit at the hull sides, at seat height:
+the two aft boxes carry the settee bases, the two forward ones are
+steps at the dome threshold. There is no way to lift a wheel 660 mm
+and leave the interior untouched — the alternative was to leave the
+tyre 280 mm under water in an open well for the life of the boat.
+
+Each box straddles the stem face and eats the float's **inner
 half** (y 810 → 1 010, stopping exactly at the float's midline). That
 is what puts the wheel centreline at y ±910:
 
@@ -109,8 +161,33 @@ is what puts the wheel centreline at y ±910:
 ≈0.5 g and a loaded truck 0.35–0.40 g, so this sits in normal trailer
 territory under a boat 2.8 m tall. The float keeps its **outboard**
 half solid — the skin that meets the water is untouched — and the
-narrow 200 mm pocket is what allowed the extra 25 mm a side without
+narrow 200 mm box is what allowed the extra 25 mm a side without
 crossing the midline.
+
+## 4b. The notch in the float, and the launch sequence
+
+Docked on the road, the float and the wheel-down tyre want the same
+space: the tyre's inner flank runs through the float's inner-lower
+corner. So the corner is **cut away** at each wheel station — 800 long
+× 230 wide × 320 deep from the float bottom, the top 220 mm of the
+inner half left solid.
+
+It only has to clear the wheel **down**, which is what keeps the cut
+small. That imposes one rule on the order of operations:
+
+| | |
+|---|---|
+| **Launching** | drive in on the wheels with the floats **docked** (road width), float free, **swing the floats out**, *then* wind the wheels up |
+| **Recovering** | wheels down first, *then* swing the floats in, then drive out |
+
+Get it backwards and the wheel tries to travel up through a solid
+float. The interlock is trivial — the leg controller reads the swing
+position and will not run up below 60° of swing.
+
+Cost: **99 kg of buoyancy** across both floats — 616 kg of reserve a
+side instead of 715 — against 328 kg if the notch had to clear the
+full 660 mm of travel. The lighter float also eases the swing arm,
+which drops from 101 MPa to 68 (SF 1.0 → **1.5**).
 
 ## 5. Drive
 

@@ -240,13 +240,35 @@ SEAL_DIA = 90
 # water afloat. One linear motion, self-locking at any height, and it
 # can be worked while the thing is floating - which the flip never
 # comfortably could.
-LEG_STROKE = 300                   # axle travel: down for the road, up
-                                   # until the wheel is wholly inside
-                                   # its pocket
-LEG_TUBE_D = 150                   # outer tube on the float side
-LEG_INNER_D = 118                  # sliding inner tube
-LEG_SCREW_D = 40                   # trapezoidal leadscrew, self-locking
-LEG_KG = 16                        # tube, screw, nut, drive, per station
+LEG_STROKE = 660                   # axle travel. Sized by ONE number: the
+                                   # retracted wheel has to sit clear of
+                                   # the 319 mm loaded waterline, or it
+                                   # spends its life submerged in an open
+                                   # well - rusting, and dragging a
+                                   # 522 mm bluff body under the bottom.
+                                   # 319 + 80 clear + 261 radius = 660.
+LEG_TUBE_D = 170                   # fixed outer tube, bolted to the girder
+LEG_INNER_D = 130                  # sliding inner tube, 12 wall
+LEG_SCREW_D = 45                   # trapezoidal leadscrew, self-locking
+LEG_KG = 26                        # tube, screw, nut, drive, per station
+# The tube stands BESIDE the wheel, not over it. A coaxial telescope
+# cannot work at this stroke: the outer tube would have to begin above
+# the retracted tyre (z 921) and still hold 250 mm of the inner when the
+# leg is fully out, which puts its top at z 1570 - a 950 mm column
+# standing in the saloon, four times over. Offset 380 mm along the boat
+# and the wheel and the tube pass each other; the axle rides on a short
+# bracket 100 mm up from the inner tube's foot.
+LEG_OFFSET_X = 380                 # tube axis, aft of the wheel centre
+LEG_BRACKET_Z = 100                # axle above the inner tube's foot. Kept
+                                   # SHORT on purpose: any more and the
+                                   # tube's foot reaches below the tyre's
+                                   # contact patch and drags on the road.
+                                   # At 100 the foot sits z -100, still
+                                   # 161 mm clear of the tarmac.
+LEG_OUTER_LEN = 920                # z 240 -> 1160: holds 260 mm of the
+                                   # inner at full extension and swallows
+                                   # it whole when the leg is up
+LEG_INNER_LEN = 600
 
 # ---- the wheels themselves ----
 # A proper TRAILER tyre, not a car tyre. 155/70 R12C, load index 104 =
@@ -275,12 +297,28 @@ WHEEL_Y = 910                      # wheel centreline: the pocket eats
                                    # narrower tyre bought the extra 25
                                    # mm a side without going past the
                                    # float's midline.
-POCKET_L = 620                     # hull pocket the wheel jacks into
+# ---- the wheel boxes ----
+# One box per wheel holds the tyre AND its leg. 1160 tall, so it stands
+# 540 mm proud of the sole at the hull side - seat height. That is not
+# an accident: the two aft boxes carry the settee bases, and the two
+# forward ones are steps at the dome threshold. A wheel that stays dry
+# has to be lifted 660 mm, and 660 mm of lift has to go somewhere.
+POCKET_L = 800                     # tyre 522 + the leg beside it
 POCKET_W = 200
-POCKET_TOP = 560                   # from the keel up
-WELL_L = 620                       # bay along the float: wheel 522 +
-                                   # swing clearance, nothing more
-WELL_W = 0
+POCKET_TOP = 1160                  # from the keel up; sole is at 620
+# ---- the notch in the float ----
+# On the ROAD the float is docked and the wheel is DOWN, and the two
+# want the same space: the tyre's inner flank runs through the float's
+# inner-lower corner. So the float is notched there - the "eats half
+# the floater" of the road stance, cut for real instead of asserted.
+# It only has to clear the wheel DOWN, not the whole 660 mm of travel,
+# because the launch sequence is: drive in on the wheels with the
+# floats docked, float free, swing the floats OUT, then wind the wheels
+# up into their boxes with nothing beside them.
+WELL_L = 800                       # along the float, matching the box
+WELL_W = 230                       # the float's inner half of 460
+WELL_H = 320                       # from the float's bottom up; the top
+                                   # 220 mm of the inner half stays solid
 FLIP_TUBE_D = 120                  # the tube the arm swings on: d70
                                    # came out at 324 MPa against a
                                    # 104 MPa allowable - see
@@ -1753,7 +1791,7 @@ def checks(verbose=True, strict=True):
     _hu, up = leg_points(1, down=False)
     dg_beam, dg_mass, dg_free = dinghy_stats()
     hangar_kg2 = hangar_mass()
-    well_kg = 2 * 3 * WELL_L * WELL_W * FLOAT_H / 1e9 * 1000
+    well_kg = 2 * 2 * WELL_L * WELL_W * WELL_H / 1e9 * 1000
     float_buoy_net = float_buoyancy() - well_kg
     # docked float nests: outer face inside the hull line
     assert POD_DOCKED[0] + FLOAT_W / 2 <= HULL_BEAM / 2 + 5, \
@@ -1776,6 +1814,21 @@ def checks(verbose=True, strict=True):
     import math as _m
     tip = _m.degrees(_m.atan2(WHEEL_Y, 1400))
     assert tip >= 30, f"only {tip:.0f} deg of tip angle on the road"
+    # THE WHEELS MUST BE OUT OF THE WATER WHEN THEY ARE PUT AWAY.
+    # An open well below the waterline leaves the tyre, rim, hub and
+    # bearings standing in salt water whenever the boat floats, and puts
+    # a 522 mm bluff body in the flow under the bottom. Neither is
+    # maintainable.
+    _wheel_up_bottom = AXLE_DOWN_Z + LEG_STROKE - WHEEL_DIA / 2
+    assert _wheel_up_bottom >= wl_loaded + 50, \
+        f"retracted wheel bottom z {_wheel_up_bottom:.0f} against a " \
+        f"{wl_loaded:.0f} mm loaded waterline - it would sit in the water"
+    # and the box has to be tall enough to swallow the tyre and the leg
+    assert POCKET_TOP >= _wheel_up_bottom + WHEEL_DIA + 20, \
+        "wheel box too short for the retracted tyre"
+    # the notch in the float only has to clear the wheel DOWN
+    assert WELL_H >= WHEEL_DIA / 2 - (POD_DOCKED[1] - FLOAT_H / 2) + 40, \
+        f"float notch {WELL_H} mm deep does not clear the wheel down"
     # sea stance: real clear water and a surface-piercing float
     sea_gap = POD_SEA[0] - FLOAT_W / 2 - STEM_HW
     assert sea_gap >= 1300, f"only {sea_gap:.0f} mm of clear water extended"
@@ -1813,8 +1866,9 @@ def checks(verbose=True, strict=True):
         print(f"screw legs      {2 * len(WHEEL_XS)} x vertical tube d{LEG_TUBE_D}, "
               f"stroke {LEG_STROKE} mm: axle down z {down[1]:.0f} "
               f"(ground {GROUND_Z:.0f}), up z {up[1]:.0f} "
-              f"(wheel clear of the {WL_Z} waterline by "
-              f"{up[1] - WHEEL_DIA / 2 - WL_Z:.0f} mm)")
+              f"(wheel bottom z {up[1] - WHEEL_DIA / 2:.0f}, "
+              f"{up[1] - WHEEL_DIA / 2 - wl_loaded:.0f} mm clear of the "
+              f"{wl_loaded:.0f} mm loaded waterline)")
         print(f"drive           1 x {DRIVE_KW} kW per SIDE, dry in a box on "
               f"the girder, {DRIVE_NM} Nm at the forward wheel - the hangar "
               f"keeps its own drive when it detaches")
