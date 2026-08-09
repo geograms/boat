@@ -141,7 +141,7 @@ certification: the hangar is the trailer, **the boat is cargo**.
 **Running gear** — one rigid welded arm per station, a single
 shoulder pin, 90° swing. Road: float on its side flush under the hull,
 wheels vertical. Water: float flat, wheels dry above the waterline. Six
-205/70 R15 all-terrain wheels, electric-over-hydraulic drive with the
+155/70 R12C trailer wheels on screw legs, electric-over-hydraulic drive with the
 machinery sealed inside the floats. → [docs/wheels.md](docs/wheels.md)
 
 **Jack-up stance** — the floats hold 3.1 t of buoyancy against a 2.0 t

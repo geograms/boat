@@ -1,7 +1,7 @@
 # The T-Hull and the Nesting Floats
 
 Status: design study. Geometry in `freecad/params.py` (`STEM_HW`,
-`T_STEP_Z`, `POD_DOCKED`, `POD_SEA`, `flip_points()`), shapes in
+`T_STEP_Z`, `POD_DOCKED`, `POD_SEA`, `leg_points()`), shapes in
 `build_boat.py`, limits asserted in `checks()`.
 
 ## 1. The T
@@ -47,29 +47,21 @@ leadscrew, self-locking anywhere in the **0 → 1 800 mm** stroke. Purely
 horizontal: the float's draft never changes. Docked, they fold into the
 notch.
 
-## 4. Wheels — manual 180° flip in open bays
+## 4. Wheels — four, on the frame, on screw jacks
 
-Three per float. Each wheel hangs on a curved arm from a **tube that
-spans an open bay cut through the float**. A spring pin at each end of
-the swing:
-
-| Pose | What |
-|---|---|
-| **Sea** | wheel points **straight up** through the bay, clear of the water; rides out with the float |
-| **Road** | pull the pin, flip 180° by hand, re-pin: the wheel hangs **through the bay**, nested in the float envelope, protruding 250 mm to roll |
-
-**Manual — a pin and a tube, no electrics.** The bays cost 353 kg of
-buoyancy across both floats and it is accounted for in `checks()`.
-
-Road stance: ground at **−250**, keel 250 mm over the road — the rig
-sits lower than every previous iteration, and the centre of gravity
-with it. Road width 2 535 mm unchanged.
+Superseded twice over: they are no longer on the floats and they no
+longer flip. See **[wheels.md](wheels.md)** for the current mechanism.
+In short: four **155/70 R12C** trailer wheels hang off the frame
+girders on vertical screw legs and wind straight up into lined pockets
+in the hull bottom. Track 1 820, ground clearance 261, self-locking at
+any height, workable afloat.
 
 ## 5. What it does to certification
 
-Unchanged in principle from the detachable hangar: the float pair with
-its wheels, bight and drawbar is **the trailer**; the boat is cargo on
-it. The wheels never touch the boat.
+The frame, the floats, the running gear and the drawbar unbolt as one
+unit: that unit is **the trailer**, the boat is cargo on it. The
+wheels never carry through the boat's structure - the load path stops
+at the girder.
 
 ## 6. Open points
 

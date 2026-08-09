@@ -256,7 +256,7 @@ witness(ax, 6300, 0, 7500, 0)
 witness(ax, 6300, g, 7500, g)
 
 ax.text(P.LOA / 2, g - 2150,
-        f"6 × 205/70 R15 all-terrain  ·  track {D['track']:.0f}  ·  "
+        f"4 × 155/70 R12C trailer  ·  track {D['track']:.0f}  ·  "
         f"tongue load +{D['tongue']:.0f} kg  ·  "
         f"road width {P.HULL_BEAM + 35}  (limit 2 550)",
         ha="center", va="top", fontsize=10, style="italic", color=INK)
@@ -351,7 +351,7 @@ rows = [
     ("", "panels", f"5 laminates + 6 std modules (≈ 3.1 kWp)"
      .replace(",", " ")),
     ("H", "ROAD GEAR", ""),
-    ("", "wheels", "6 × 205/70 R15 all-terrain"),
+    ("", "wheels", "4 × 155/70 R12C trailer"),
     ("", "track / wheelbase",
      f"{D['track']:,.0f} / {D['wheelbase']:,.0f} mm".replace(",", " ")),
     ("", "ground clearance", f"{-P.GROUND_Z:.0f} mm"),

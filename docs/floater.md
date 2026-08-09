@@ -75,24 +75,24 @@ That is worth stating because it undoes three earlier problems at once:
 
 | | |
 |---|---|
-| Wheel | 205/70 R15, 668 × 205, rated 950 kg against 823 carried |
+| Wheel | **155/70 R12C** trailer tyre, 522 × 155, rated 900 kg against 753 carried |
 | Stations | x 1 900 and 5 200 — wheelbase **3 300**, CG 3 300 inside it, 91 kg on the coupling |
-| Track | **1 770 mm**: each pocket eats the float's **inner half** (y 780 → 1 010) and the wheel centres on y ±885 |
+| Track | **1 820 mm**: each pocket eats the float's **inner half** (y 810 → 1 010) and the wheel centres on y ±910 |
 | Leg | vertical tube, ⌀150 × 10, trapezoidal leadscrew inside, self-locking, ~300 mm of stroke |
-| Retracted | the wheel sits **wholly inside a 760 × 250 × 700 pocket** in the hull, flush at the keel — nothing in the flow, nothing visible |
+| Retracted | the wheel sits **wholly inside a 620 × 200 × 560 pocket** in the hull, flush at the keel — nothing in the flow, nothing visible |
 
 **Why the pocket takes half the float.** Keeping the wheels wholly
 inboard of the girders would give a 1 300 mm track — 24.9° of tip and a
 **0.46 g** rollover threshold, marginal under a boat 2.8 m tall. Moving
-them out to y ±885 gives:
+them out to y ±910 gives:
 
 | Wheel at | Track | Tip | Rollover |
 |---|---|---|---|
 | inboard of the girders | 1 300 | 24.9° | 0.46 g |
-| **half into the float** | **1 770** | **32.3°** | **0.63 g** |
+| **half into the float** | **1 820** | **33.0°** | **0.65 g** |
 | full float depth | 2 280 | 39.2° | 0.81 g |
 
-**+7.4° and +37 % of rollover margin** for half a float's width — a tall
+**+8.1° and +41 % of rollover margin** for half a float's width — a tall
 van is ≈0.5 g and a loaded truck 0.35–0.40 g, so this sits in normal
 trailer territory. The float keeps its **outboard** half solid, so the
 skin that meets the water is untouched.
@@ -142,6 +142,7 @@ floor is **609 kg**:
 |---|---|---|
 | Float shells | 129 | PVC80 18 mm → **PET60 15 mm, 800/600 skins** |
 | Screw legs | 76 | four, on the frame |
+| Wheels + hubs | 60 | 4 x 155/70 R12C on steel |
 | 4 wheels | 66 | 185 R14 C trailer tyres, two per float |
 | U-girder | 73 | **110 × 240 × 6** — with only two wheel stations the 3.1 m span makes **stiffness** the governing case, not stress |
 | Swing arms | 57 | 340 mm deep trusses, 70 × 70 × 4 chords |
@@ -150,7 +151,7 @@ floor is **609 kg**:
 | Dock locks | 30 | |
 
 | Cross tie, knees, dinghy fit-out | **0** | **deleted** |
-| **Total** | **559** | was 1 003 |
+| **Total** | **531** | was 1 003 |
 
 **The arms were the honest mistake.** 127 kg for four beams came from
 two errors compounding: putting **100 % of a float's buoyancy on one

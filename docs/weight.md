@@ -98,7 +98,7 @@ it. It is a parameter change, not a redesign.
 - **The sun deck.** Kept in full — and it now costs 155 kg instead of
   460, because the panels became the guardrail.
   → [roof.md](roof.md)
-- **Wheels and running gear** (270 kg). Six 205/70 R15 on a slipway is
+- **Wheels and running gear** (270 kg). Six 15-inch car wheels on a slipway was
   the reason the boat can launch itself; smaller wheels dig in.
 - **Interior comfort.** The 70 kg in lever 2 comes from *how* the
   joinery is built, not from having less of it.

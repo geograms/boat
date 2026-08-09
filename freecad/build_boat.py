@@ -433,30 +433,15 @@ def build_float(pod, roll, flip=0.0, fx=None):
                  P.FLOAT_H / 2 + 12))
     hatch.Placement = place.multiply(hatch.Placement)
 
-    # ARCHITECTURE A: the drive lives DRY inside the float. At each of
-    # the two aft stations a 1.2 kW motor and its 100:1 planetary sit in
-    # the hull, and ONE stub shaft crosses the shell through a marine
-    # face seal to the wheel. Nothing rotating is submerged except that
-    # shaft, and its seal can be changed without opening the float.
+    # The wheel drive is NOT here any more - it moved to the girder
+    # with the wheels. What is left in the float is the waterjet's own
+    # pump and motor, dry in the same bay, under the hatch.
     hyd = []
-    for dxw in (P.MOTOR_BAY_DX,):                # the drive bay
-        wx = P.FLOAT_X + dxw
-        # the float's OWN motor and reduction, dry inside it, and one
-        # stub shaft out through a face seal to the leg's chain case
-        hyd.append(Part.makeCylinder(78, 260, Vector(wx - 320, 0, 0),
-                                     Vector(1, 0, 0)))
-        hyd.append(Part.makeCylinder(92, 190, Vector(wx - 60, 0, 0),
-                                     Vector(1, 0, 0)))
-        hyd.append(Part.makeCylinder(
-            P.SEAL_DIA / 2, 70, Vector(wx, -P.FLOAT_W / 2 - 35, 0),
-            Vector(0, 1, 0)))
-        # seal housing on the shell, and the stub shaft through it
-        hyd.append(Part.makeCylinder(
-            P.SEAL_DIA / 2, 60, Vector(wx, -P.FLOAT_W / 2 - 30, 0),
-            Vector(0, 1, 0)))
-        hyd.append(Part.makeCylinder(
-            26, P.FLOAT_W + 120, Vector(wx, -P.FLOAT_W / 2 - 60, 0),
-            Vector(0, 1, 0)))
+    bx0 = P.FLOAT_X + P.MOTOR_BAY_DX
+    hyd.append(Part.makeCylinder(78, 260, Vector(bx0 - 320, 0, 0),
+                                 Vector(1, 0, 0)))
+    hyd.append(Part.makeCylinder(92, 190, Vector(bx0 - 60, 0, 0),
+                                 Vector(1, 0, 0)))
     hydraulics = Part.makeCompound(hyd)
     hydraulics.Placement = place.multiply(hydraulics.Placement)
 
@@ -556,8 +541,8 @@ def build_hangar(phi, coupled=True, tow="sea"):
     """The docking gear: spike rails in the hull recesses, the electric
     extenders, and the bight + drawbar joining the float tails.
     phi 0 = docked, 90 = extended to the sea stance.
-    Returns (frame, locks)."""
-    parts, locks = [], []
+    Returns (frame, locks, rubber)."""
+    parts, locks, rubber = [], [], []
     pod = P.pod_at(phi)
 
     # ---- THE U: a SOLID box girder each side, tied by the bight.
@@ -618,14 +603,27 @@ def build_hangar(phi, coupled=True, tow="sea"):
                 70, 120, Vector(wx, head[0], head[1] + 200), Vector(0, 0, 1)))
             # stub axle, tyre and rim
             parts.append(Part.makeCylinder(
-                46, 250, Vector(wx, axle[0] - 125, axle[1]), Vector(0, 1, 0)))
-            locks.append(Part.makeTorus(
+                46, P.WHEEL_W + 90,
+                Vector(wx, axle[0] - (P.WHEEL_W + 90) / 2, axle[1]),
+                Vector(0, 1, 0)))
+            rubber.append(Part.makeTorus(
                 (P.WHEEL_DIA - P.WHEEL_W) / 2, P.WHEEL_W / 2,
                 Vector(wx, axle[0], axle[1]), Vector(0, 1, 0)))
-            locks.append(Part.makeCylinder(
+            rubber.append(Part.makeCylinder(
                 P.HUB_DIA / 2, P.WHEEL_W - 40,
                 Vector(wx, axle[0] - (P.WHEEL_W - 40) / 2, axle[1]),
                 Vector(0, 1, 0)))
+            # ONE driven wheel per side: motor and 100:1 reduction dry
+            # in a box on the girder web, one short shaft out through a
+            # marine face seal to the forward wheel.
+            if wx == min(P.WHEEL_XS):
+                parts.append(box(420, 240, 240,
+                                 (wx - 210, head[0] + sy * 60 - 120,
+                                  head[1] + 40)))
+                parts.append(Part.makeCylinder(
+                    P.SEAL_DIA / 2, 60,
+                    Vector(wx, axle[0] - sy * (P.WHEEL_W / 2 + 60), axle[1]),
+                    Vector(0, sy, 0)))
             # tie the leg head into the girder web
             parts.append(box(220, abs(sy * (P.STEM_HW + 55) - head[0]) + 60,
                              160, (wx - 110,
@@ -750,7 +748,8 @@ def build_hangar(phi, coupled=True, tow="sea"):
         for grp in (parts, locks):
             for shp in grp:
                 shp.Placement = off.multiply(shp.Placement)
-    return Part.makeCompound(parts), Part.makeCompound(locks)
+    return (Part.makeCompound(parts), Part.makeCompound(locks),
+            Part.makeCompound(rubber))
 
 
 def build_frame():
@@ -1345,10 +1344,11 @@ def build_mode(mode):
     (fl, strips, forks, tires, rims, wboxes,
      hatch, hydraulics, thruster) = build_float(pod, 0, cfg.get("flip", 0),
                                                 fx_now)
-    hframe, hlocks = build_hangar(cfg["phi"], cfg.get("coupled", True),
+    hframe, hlocks, htyres = build_hangar(cfg["phi"], cfg.get("coupled", True),
                                   cfg["tow"])
     add("HangarFrame", hframe, (0.55, 0.57, 0.60), group=g_gear)
     add("HangarLocks", hlocks, (0.80, 0.65, 0.20), group=g_gear)
+    add("HangarTyres", htyres, (0.12, 0.12, 0.13), group=g_gear)
     cframe, cpanels, chinges = build_curtains(cfg["curt"])
     add("CurtainFrames", cframe, (0.62, 0.64, 0.67), group=g_gear)
     add("CurtainPanels", cpanels, PANEL, group=g_gear)

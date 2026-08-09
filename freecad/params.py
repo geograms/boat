@@ -208,32 +208,29 @@ PHI_SPLAY = PHI_WATER              # detached floats sit at the sea stance
 POD_WATER = pod_at(PHI_WATER)
 POD_ROAD = POD_DOCKED
 
-# ---- wheels: 13-inch TRAILER wheels, four of them driven ----
-# 205/70 R15 was a car tyre: 668 mm, 22 kg, rated 950 kg against a
-# 549 kg wheel load. A 155/80 R13 C trailer tyre is the right part -
-# 555 mm, 13.5 kg, rated 600 kg - and the smaller radius asks 17 % less
-# torque for the same pull, because torque = force x radius.
+# ---- wheels: 12-inch TRAILER wheels, two of them driven ----
+# 205/70 R15 was a CAR tyre: 668 x 205, 22 kg, and it needed a
+# 760 x 250 x 700 pocket cut into the hull for each one. A 155/70 R12C
+# is the right part - a C-type trailer casing, 522 x 155, 15 kg, load
+# index 104 = 900 kg against the 753 each wheel carries, speed rated N
+# (140 km/h). The smaller radius also asks 22 % less torque for the
+# same pull, because torque = force x radius.
 #
-# DRIVE (architecture A): the motor and its planetary gearbox live DRY
-# INSIDE the float; a single stub shaft crosses the hull through one
-# marine face seal to the wheel. IP68 on a motor is a STATIC test - a
-# rotating seal under load can fail in minutes - so the design has one
-# serviceable seal per wheel instead of trusting a submerged hub.
-# DRIVE: one motor PER FLOAT, and it stays in the float. The hangar
-# detaches and runs as a dinghy, so nothing essential to it may live in
-# the boat - a motor in the hull would leave the detached unit dead.
-# Each float carries its own 3 kW motor and reduction, DRY inside the
-# hull, driving the wheel nearest the coupling through one stub shaft
-# and one marine face seal. IP68 on a motor is a static test - a
-# rotating seal under load can fail in minutes - so nothing rotating is
-# submerged but that shaft, and its seal is serviceable from outside.
-DRIVE_PER_FLOAT = 1                # driven wheels, per float
+# DRIVE: one motor per SIDE, on the GIRDER, beside the forward leg.
+# The hangar detaches and runs as a dinghy, so nothing essential to it
+# may live in the boat - a motor in the hull would leave the detached
+# unit dead. It sits in a dry box bolted to the girder web and drives
+# the forward wheel through one short shaft and one marine face seal.
+# IP68 on a motor is a STATIC test - a rotating seal under load can
+# fail in minutes - so nothing rotating is submerged but that shaft,
+# and the seal is serviceable from outside without opening the box.
+DRIVE_PER_SIDE = 1                 # driven wheels, per side
 DRIVE_KW = 3.0                     # each
 DRIVE_RATIO = 100
-DRIVE_NM = 812                     # at each driven wheel
-DRIVE_MOTOR_KG = 30                # motor + reduction, per float
+DRIVE_NM = 635                     # at each driven wheel
+DRIVE_MOTOR_KG = 30                # motor + reduction, per side
 DRIVE_SEAL_KG = 4
-DRIVE_CTRL_KG = 12                 # controllers, cabling, both floats
+DRIVE_CTRL_KG = 12                 # controllers, cabling, both sides
 SEAL_DIA = 90
 
 # ---- wheels on SCREW LEGS ----
@@ -252,26 +249,36 @@ LEG_SCREW_D = 40                   # trapezoidal leadscrew, self-locking
 LEG_KG = 16                        # tube, screw, nut, drive, per station
 
 # ---- the wheels themselves ----
-# Back to a 205/70 R15: with only four wheels each carries 823 kg, and
-# this size is rated 950. It is also the cheapest tyre in the world to
-# replace anywhere.
-WHEEL_DIA = 668          # 205/70 R15, rated 950 kg vs 823 carried
-WHEEL_W = 205
-HUB_DIA = 390            # 15 in rim
+# A proper TRAILER tyre, not a car tyre. 155/70 R12C, load index 104 =
+# 900 kg a wheel against the 753 each one actually carries - the size
+# fitted to braked boat and plant trailers, speed rated N (140 km/h),
+# stiff C-type casing built for a load that never comes off it.
+#
+# The point of the swap is the POCKET. A 205/70 R15 is 668 x 205 and
+# needs a 760 x 250 x 700 hole in the hull; this is 522 x 155 and needs
+# 620 x 200 x 560 - 48% of the volume cut out of the boat, and 200 mm
+# narrow enough that the pocket stops exactly at the float's midline
+# even with the track pushed out to 1820.
+WHEEL_DIA = 522          # 155/70 R12C, rated 900 kg vs 753 carried
+WHEEL_W = 155
+HUB_DIA = 305            # 12 in rim
 # WHEEL STATIONS, world x - the wheels are on the FRAME now, not on
 # the floats. Two axles, wheelbase 3300, centroid 3550 so the CG at
 # 3300 sits inside it and the coupling gets 91 kg down.
 WHEEL_XS = (1900, 5200)
-WHEEL_Y = 885                      # wheel centreline: the pocket eats
-                                   # the float's INNER half (780..1010)
+WHEEL_Y = 910                      # wheel centreline: the pocket eats
+                                   # the float's INNER half (810..1010)
                                    # and straddles the stem face. Track
-                                   # 1790 -> 32.6 deg of tip, a 0.64 g
+                                   # 1820 -> 33.0 deg of tip, a 0.65 g
                                    # rollover threshold against 0.46 g
-                                   # if the wheels stayed inboard
-POCKET_L = 760                     # hull pocket the wheel jacks into
-POCKET_W = 250
-POCKET_TOP = 700                   # from the keel up
-WELL_L = 730                       # bay along the float: wheel 668 +
+                                   # if the wheels stayed inboard. The
+                                   # narrower tyre bought the extra 25
+                                   # mm a side without going past the
+                                   # float's midline.
+POCKET_L = 620                     # hull pocket the wheel jacks into
+POCKET_W = 200
+POCKET_TOP = 560                   # from the keel up
+WELL_L = 620                       # bay along the float: wheel 522 +
                                    # swing clearance, nothing more
 WELL_W = 0
 FLIP_TUBE_D = 120                  # the tube the arm swings on: d70
@@ -282,8 +289,11 @@ FLIP_ARM_D = 110
 FLIP_ARM_LEN = 520                 # tube centre to axle: set so the
                                    # smaller wheel still gives 268 mm
                                    # of clearance under the keel
-AXLE_DOWN_Z = 74                                   # leg fully down
-GROUND_Z = AXLE_DOWN_Z - WHEEL_DIA / 2             # -260 under the keel
+AXLE_DOWN_Z = 0                                    # leg fully down: the
+                                   # smaller wheel has to reach 74 mm
+                                   # further to keep the keel clear of
+                                   # the road
+GROUND_Z = AXLE_DOWN_Z - WHEEL_DIA / 2             # -261 under the keel
 WHEEL_DROP = 60                    # legacy name, still read by ga_drawing
 
 
@@ -1013,7 +1023,7 @@ MASS_UGIRDER = 73          # girders 110x240x6. Four wheels put the
                            # span at 3.1 m and the 160-deep section
                            # deflected 22.6 mm against a 12.4 limit -
                            # stiffness, not stress, set this size
-MASS_WHEELS_HUBS = 88      # 4 x 22 kg 205/70 R15
+MASS_WHEELS_HUBS = 60      # 4 x 15 kg 155/70 R12C on steel
 MASS_EXTENDERS = 57        # 4 swing arms as 340 mm deep TRUSSES with
                            # 70x70x4 chords - the chords take the
                            # moment axially instead of a box wall
@@ -1805,8 +1815,8 @@ def checks(verbose=True, strict=True):
               f"(ground {GROUND_Z:.0f}), up z {up[1]:.0f} "
               f"(wheel clear of the {WL_Z} waterline by "
               f"{up[1] - WHEEL_DIA / 2 - WL_Z:.0f} mm)")
-        print(f"drive           1 x {DRIVE_KW} kW per FLOAT, dry inside it, "
-              f"{DRIVE_NM} Nm at the wheel nearest the coupling - the hangar "
+        print(f"drive           1 x {DRIVE_KW} kW per SIDE, dry in a box on "
+              f"the girder, {DRIVE_NM} Nm at the forward wheel - the hangar "
               f"keeps its own drive when it detaches")
         print(f"dinghy          {dg_beam:.2f} m beam, {dg_mass:.0f} kg with "
               f"two aboard, {dg_free:.0f} mm freeboard, {DINGHY_BATT_WH} Wh "
