@@ -142,7 +142,8 @@ def main():
     V2 = F
     # a TRUSS carries bending in its chords, axially - far lighter than
     # a box wall doing it in bending
-    chord = 70 * 70 - 62 * 62
+    _c, _t = P.SWING_CHORD
+    chord = _c * _c - (_c - 2 * _t) ** 2
     Z2 = chord * P.SWING_ARM_DEEP        # couple: chord force x depth
     A2 = 2 * chord
     I2 = 2 * chord * (P.SWING_ARM_DEEP / 2) ** 2
@@ -152,7 +153,7 @@ def main():
     print(f"  float reserve buoyancy {reserve:.0f} kg x slam {DYN_SLAM} "
           f"x {ARM_SHARE:.0%} share -> {F / 1e3:.1f} kN on the worse arm")
     print(f"  cantilever {lever:.0f} mm from the pin")
-    ok2 = report(f"  truss {P.SWING_ARM_DEEP} deep, 70x70x4 chords",
+    ok2 = report(f"  truss {P.SWING_ARM_DEEP} deep, {_c}x{_c}x{_t} chords",
                  M2, V2, Z2, A2, I2, 0,
                  note=f"{ARM_SHARE:.0%} of the float on the worse arm")
     if not ok2:

@@ -193,6 +193,26 @@ def build_hull():
                     (cx + dx * (P.POCKET_L / 2) - (20 if dx > 0 else 0),
                      py - (P.POCKET_W + 40) / 2, z0)))
 
+    # ---- GIRDER CHANNELS. The frame's two girders used to hang under
+    # the hull at z 140..380, with the loaded waterline at 319 - half
+    # submerged whenever the boat floated. They now run in a lined
+    # channel in the WING, z 600..800: out of the water, tucked against
+    # the hull, and clear over the docked float instead of fighting it
+    # for the same band. Open at the bottom and at the stern so the
+    # hangar still slides on from astern.
+    gb, gh = P.GIRDER_SECTION[0], P.GIRDER_SECTION[1]
+    cw, cz = gb + 40, P.GIRDER_Z0
+    for sy in (-1, 1):
+        ry = sy * P.GIRDER_Y
+        shell = shell.cut(box(P.GIRDER_X1 + 200, cw, gh + 40,
+                              (-100, ry - cw / 2, cz - 20)))
+        shell = shell.fuse(box(P.GIRDER_X1 + 200, cw + 40, 20,
+                               (-100, ry - (cw + 40) / 2, cz + gh)))
+        for dy in (-1, 1):
+            shell = shell.fuse(box(
+                P.GIRDER_X1 + 200, 20, gh + 20,
+                (-100, ry + dy * (cw / 2) - (20 if dy > 0 else 0), cz)))
+
     # ---- KEEL CHANNEL for the hangar's cross tie. The tie has to
     # travel the whole length of the hull bottom to dock, so instead of
     # hanging in the flow it runs in a shallow channel cut into the
@@ -577,35 +597,36 @@ def build_hangar(phi, coupled=True, tow="sea"):
     # tubes. The girders run the length of the notch inside the stem
     # face; the float's fork grooves ride their outer web, and the
     # tapered nose closes the fit as the float slides in from astern.
-    gb, gh = 110, 240            # sized in structure_calc.py: the 3.1 m
-                                 # span makes stiffness the governing
-                                 # case, not stress
+    gb, gh = P.GIRDER_SECTION[0], P.GIRDER_SECTION[1]
+    gz = P.GIRDER_Z              # z 600..800: in the wing channel,
+                                 # 281 mm clear of the waterline and
+                                 # above the docked float
     for sy in (-1, 1):
-        ry = sy * (P.STEM_HW + gb / 2 - 20)
+        ry = sy * P.GIRDER_Y
         # the girder runs from the BIGHT to the cross tie, so the O is
         # closed at both ends - it used to stop 220 mm short of the
         # bight and the frame was open there
         g0 = P.GIRDER_X0
         glen = P.GIRDER_LEN
         gir = box(glen, gb, gh,
-                  (g0, ry - gb / 2, P.POD_DOCKED[1] - gh / 2))
+                  (g0, ry - gb / 2, gz - gh / 2))
         gir = gir.cut(box(glen - 240, gb - 16, gh - 16,
                           (g0 + 120, ry - (gb - 16) / 2,
-                           P.POD_DOCKED[1] - (gh - 16) / 2)))
+                           gz - (gh - 16) / 2)))
         parts.append(gir)
         # the docking nose: a tapered lead-in at the aft end
         locks.append(Part.makeCone(
             gh / 2 - 20, 30, P.SPIKE_TAPER,
-            Vector(g0, ry, P.POD_DOCKED[1]), Vector(-1, 0, 0)))
+            Vector(g0, ry, gz), Vector(-1, 0, 0)))
         # bayonet lock gearmotor on the girder web
         locks.append(Part.makeCylinder(
-            45, 110, Vector(700, ry + sy * (gb / 2), P.POD_DOCKED[1]),
+            45, 110, Vector(700, ry + sy * (gb / 2), gz),
             Vector(0, sy, 0)))
         # web stiffeners every 1.2 m - the girder is the load path
         for lx in range(500, int(P.GIRDER_X1) - 300, 1200):
             parts.append(box(90, gb + 70, gh + 60,
                              (lx, ry - (gb + 70) / 2,
-                              P.POD_DOCKED[1] - (gh + 60) / 2)))
+                              gz - (gh + 60) / 2)))
 
     # ---- SWING ARMS AND WHEELS, on the FRAME. The wheel sits on the
     # END of a 445 mm arm pivoted at z 445 off the girder. Hanging
@@ -632,12 +653,13 @@ def build_hangar(phi, coupled=True, tow="sea"):
             parts.append(Part.makeCylinder(
                 95, P.POCKET_W + 60, Vector(wx, py - (P.POCKET_W + 60) / 2,
                                             pivot[1]), Vector(0, 1, 0)))
-            parts.append(box(200, 170, pivot[1] - P.POD_DOCKED[1] + 120,
-                             (wx - 100, py - 85, P.POD_DOCKED[1] - 120)))
+            # bracket dropping from the girder down to the pivot
+            parts.append(box(200, 170, P.GIRDER_Z - pivot[1] + 100,
+                             (wx - 100, py - 85, pivot[1] - 100)))
             # the leadscrew actuator: frame lug to a lug at 0.6 R along
             # the arm. Self-locking, so the arm parks anywhere.
             lug = (wx, py, pivot[1] + (axle[1] - pivot[1]) * 0.6)
-            anc = (wx + 330, py, P.POD_DOCKED[1] + 40)
+            anc = (wx + 330, py, P.GIRDER_Z + 40)
             d = Vector(lug[0] - anc[0], 0, lug[2] - anc[2])
             parts.append(Part.makeCylinder(
                 P.ACT_D / 2, d.Length, Vector(*anc), d))
@@ -661,7 +683,7 @@ def build_hangar(phi, coupled=True, tow="sea"):
             if wx == min(P.WHEEL_XS):
                 parts.append(box(380, 220, 220,
                                  (wx - 480, py + sy * 60 - 110,
-                                  P.POD_DOCKED[1] - 110)))
+                                  P.GIRDER_Z - 110)))
                 parts.append(Part.makeCylinder(
                     P.SEAL_DIA / 2, 60,
                     Vector(wx, axle[0] - sy * (P.WHEEL_W / 2 + 60), axle[1]),
@@ -685,11 +707,14 @@ def build_hangar(phi, coupled=True, tow="sea"):
             ty = py + sy * P.SWING_ARM_R * _m.sin(ang)
             L = _m.hypot(tx - px, ty - py)
             yaw = _m.degrees(_m.atan2(ty - py, tx - px))
-            # a TRUSS, not a solid box: two chords 300 apart in the
-            # vertical plane with diagonals between them
+            # a TRUSS, not a solid box: two chords SWING_ARM_DEEP apart
+            # in the vertical plane with diagonals between them. Shallow
+            # and fat rather than deep and thin, so the whole arm fits
+            # between the waterline and the wing.
+            cw = P.SWING_CHORD[0]
             mem = []
             for cz in (-P.SWING_ARM_DEEP / 2, P.SWING_ARM_DEEP / 2):
-                mem.append(box(L, 60, 60, (0, -30, cz - 30)))
+                mem.append(box(L, cw, cw, (0, -cw / 2, cz - cw / 2)))
             n_bay = 4
             for i in range(n_bay):
                 x0 = L * i / n_bay
@@ -707,24 +732,24 @@ def build_hangar(phi, coupled=True, tow="sea"):
                 mem.append(dia)
             for m_ in mem:
                 m_.Placement = Placement(
-                    Vector(px, py, P.POD_DOCKED[1]),
+                    Vector(px, py, P.SWING_ARM_Z),
                     Rotation(Vector(0, 0, 1), yaw)).multiply(m_.Placement)
                 parts.append(m_)
             # vertical pivot pin at the hull, and the pin at the float
             for (cx, cy) in ((px, py), (tx, ty)):
                 parts.append(Part.makeCylinder(
                     52, arm_h + 130,
-                    Vector(cx, cy, P.POD_DOCKED[1] - (arm_h + 130) / 2),
+                    Vector(cx, cy, P.SWING_ARM_Z - (arm_h + 130) / 2),
                     Vector(0, 0, 1)))
             # tapered lug pads into the stem and the float face
             parts.append(box(210, 90, arm_h + 90,
                              (px - 105, py - (90 if sy > 0 else 0),
-                              P.POD_DOCKED[1] - (arm_h + 90) / 2)))
+                              P.SWING_ARM_Z - (arm_h + 90) / 2)))
         # 24 V slew drive on the aft pivot swings the pair
         parts.append(Part.makeCylinder(
             95, 130, Vector(P.SWING_PIVOT_X - P.SWING_ARM_GAP,
                             sy * P.SWING_PIVOT_Y,
-                            P.POD_DOCKED[1] + arm_h / 2 + 10),
+                            P.SWING_ARM_Z + arm_h / 2 + 10),
             Vector(0, 0, 1)))
 
     # no extra struts: the parallelogram IS the structure, exactly as
@@ -737,14 +762,14 @@ def build_hangar(phi, coupled=True, tow="sea"):
     bb, bh = P.HANGAR_BIGHT
     by = P.POD_DOCKED[0] + P.FLOAT_W / 2
     parts.append(box(bb, 2 * by, bh,
-                     (P.HANGAR_BIGHT_X - bb, -by, P.POD_DOCKED[1] - bh / 2)))
+                     (P.HANGAR_BIGHT_X - bb, -by, P.SWING_ARM_Z - bh / 2)))
     # ties run from the bight to the DOCKED float's transom, which sits
     # 1400 mm forward of the boat's - they used to stop in mid air
     tail_x = P.FLOAT_X_DOCKED - P.FLOAT_LEN / 2
     for sy in (-1, 1):
         parts.append(rod((P.HANGAR_BIGHT_X - bb / 2, sy * P.POD_DOCKED[0],
-                          P.POD_DOCKED[1]),
-                         (tail_x, sy * P.POD_DOCKED[0], P.POD_DOCKED[1]), 90))
+                          P.SWING_ARM_Z),
+                         (tail_x, sy * P.POD_DOCKED[0], P.SWING_ARM_Z), 90))
     # THE A-FRAME IS DEMOUNTABLE. On the road it pins into two sockets
     # on the bight and meets the car ball 445 mm over the tarmac; at sea
     # it comes off and stows flat on a float deck - nothing stands in
@@ -754,7 +779,7 @@ def build_hangar(phi, coupled=True, tow="sea"):
         nose_z = P.GROUND_Z + P.COUPLING_H
         for s_ in (-1, 1):                       # small A-frame, fixed
             parts.append(rod((P.HANGAR_BIGHT_X - bb / 2, s_ * (by - 120),
-                              P.POD_DOCKED[1]),
+                              P.SWING_ARM_Z),
                              (nose_x + 260, 0, nose_z + 40), P.DRAWBAR_TUBE))
         parts.append(rod((nose_x + 300, 0, nose_z + 40),
                          (nose_x, 0, nose_z), P.DRAWBAR_TUBE))
@@ -777,7 +802,7 @@ def build_hangar(phi, coupled=True, tow="sea"):
             parts.append(box(90, 150, 150,
                              (P.HANGAR_BIGHT_X - bb - 90,
                               s_ * (by - 120) - 75,
-                              P.POD_DOCKED[1] - 75)))
+                              P.SWING_ARM_Z - 75)))
 
     if not coupled:
         off = Placement(Vector(P.HANGAR_STANDOFF, 0,

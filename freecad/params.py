@@ -135,7 +135,21 @@ SWING_PIVOT_X = 641                # aft vertical pin, both sides.
                                    # float needs support
 SWING_PIVOT_Y = 810                # on the stem face
 SWING_ARM_R = 1918                 # pin to float, both arms
-SWING_ARM_DEEP = 340               # truss depth; chords 70x70x4. The
+# The swing arm used to run at z 260 - the float's mid-height, and the
+# loaded waterline - so the gear that holds the boat's stability sat in
+# the sea every hour it floated. It moves up into the band between the
+# waterline and the wing underside, which is only 280 mm tall. So the
+# truss gets SHALLOWER and its chords get FATTER: a shallow truss loses
+# section modulus with depth, and the only way back is chord area.
+SWING_ARM_DEEP = 180       # 340 was better for stress; this fits, and
+                           # leaves 101 mm of air under the bottom chord
+SWING_ARM_Z = 510          # centre: chords at z 420 and 600, so the top
+                           # is flush under the wing and the bottom is
+                           # clear of the water. The tip pins into the
+                           # float's upper 200 mm instead of its waist
+SWING_CHORD = (90, 6)      # 90x90x6 against the old 70x70x4 - nearly
+                           # twice the chord area, which is what buys
+                           # the strength back at half the depth
                                    # float lost its wheel slots, so its
                                    # buoyancy - and the arm's load -
                                    # went up with it
@@ -299,9 +313,38 @@ WHEEL_Y = 910                      # wheel centreline: the pocket eats
 # an accident: the two aft boxes carry the settee bases, and the two
 # forward ones are steps at the dome threshold. A wheel that stays dry
 # has to be lifted 660 mm, and 660 mm of lift has to go somewhere.
+# ---- where the girders SIT ----
+# They ran at z 140..380 with the loaded waterline at 319: the frame
+# spent every floating hour half in the water. Aluminium in salt, in a
+# structure that cannot be slipped for inspection, is not a detail.
+#
+# There was room above it the whole time. The girders now run in a
+# lined channel in the T-WING, z 600..800 - 281 mm clear of the
+# waterline, tucked against the hull instead of hanging under it, and
+# ABOVE the docked float (top 530) instead of fighting it for the same
+# band. The float loses nothing; it no longer has to be grooved for a
+# rail it was overlapping unmodelled.
+#
+# The wheels do not move. The arm pivot stays at z 445 on a bracket
+# that drops off the girder, so the axle still travels 0 -> 890 and
+# the wing box is unchanged.
+GIRDER_Z0 = T_STEP_Z               # channel floor: the wing underside
+GIRDER_Y = 835                     # just outboard of the stem face,
+                                   # over the float's inner half
 GIRDER_X0 = -120                   # at the bight
 GIRDER_X1 = max(WHEEL_XS) + 420    # past the forward wheel station
 GIRDER_LEN = GIRDER_X1 - GIRDER_X0
+
+
+GIRDER_Z = GIRDER_Z0 + GIRDER_SECTION[1] / 2      # centre
+
+
+def swing_arm_mass():
+    """kg of all FOUR swing arms: two chords the length of the arm plus
+    about 35 % again for diagonals, gussets and the four pins."""
+    c, t = SWING_CHORD
+    a = c * c - (c - 2 * t) ** 2
+    return 4 * 2 * a * SWING_ARM_R * 2.7e-6 * 1.35
 
 
 def girder_mass():
@@ -401,7 +444,7 @@ def hangar_mass():
               L.zone_mass("float_deck", areas.get("float_deck", 0.0)))
     bight_m = 2 * (POD_DOCKED[0] + FLOAT_W / 2) / 1000
     alu = bight_m * HANGAR_BIGHT[0] * HANGAR_BIGHT[1] * 0.15 * 2.7e-3
-    return (floats + MASS_WHEELS_HUBS + MASS_EXTENDERS + MASS_FLIPGEAR +
+    return (floats + MASS_WHEELS_HUBS + swing_arm_mass() + MASS_FLIPGEAR +
             MASS_HYDRAULICS + girder_mass() + alu +
             4 * LOCK_MOTOR_KG + 20)
 
@@ -1095,7 +1138,7 @@ MASS_UGIRDER = 0           # computed: see girder_mass()
                            # deflected 22.6 mm against a 12.4 limit -
                            # stiffness, not stress, set this size
 MASS_WHEELS_HUBS = 60      # 4 x 15 kg 155/70 R12C on steel
-MASS_EXTENDERS = 57        # 4 swing arms as 340 mm deep TRUSSES with
+MASS_EXTENDERS = 0         # computed: see swing_arm_mass()
                            # 70x70x4 chords - the chords take the
                            # moment axially instead of a box wall
                            # taking it in bending
@@ -1887,6 +1930,19 @@ def checks(verbose=True, strict=True):
     # float's INBOARD face, so nothing has to swing past the T wing
     assert ARM_PIVOT_Z == ARM_R, \
         "the arm has to reach z 0 hanging straight down"
+    # AND SO DO THE SWING ARMS
+    assert SWING_ARM_Z - SWING_ARM_DEEP / 2 >= wl_loaded, \
+        f"swing arm bottom chord at z " \
+        f"{SWING_ARM_Z - SWING_ARM_DEEP / 2:.0f} is under the " \
+        f"{wl_loaded:.0f} mm waterline"
+    assert SWING_ARM_Z + SWING_ARM_DEEP / 2 <= T_STEP_Z, \
+        "swing arm top chord runs into the wing"
+    # THE GIRDERS HAVE TO BE OUT OF THE WATER
+    assert GIRDER_Z0 >= wl_loaded + 150, \
+        f"girder channel floor at z {GIRDER_Z0} against a {wl_loaded:.0f} mm " \
+        "waterline - the frame would sit in the sea"
+    assert GIRDER_Z0 >= POD_DOCKED[1] + FLOAT_H / 2, \
+        "girder runs through the docked float"
     # THE GIRDERS HAVE TO REACH THE WHEELS
     for _wx in WHEEL_XS:
         assert GIRDER_X0 + 150 <= _wx <= GIRDER_X1 - 150, \

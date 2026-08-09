@@ -142,7 +142,7 @@ floor is **609 kg**:
 | Item | kg | What was done |
 |---|---|---|
 | Float shells | 129 | PVC80 18 mm → **PET60 15 mm, 800/600 skins** |
-| Swing arms | 88 | four, on the frame, wheel on the end |
+| Swing arms (running gear) | 88 | four, on the frame, wheel on the end |
 | Wheels + hubs | 60 | 4 x 155/70 R12C on steel |
 | 4 wheels | 66 | 185 R14 C trailer tyres, two per float |
 | U-girder | 73 | **110 × 240 × 6** — with only two wheel stations the 3.1 m span makes **stiffness** the governing case, not stress |
@@ -152,7 +152,7 @@ floor is **609 kg**:
 | Dock locks | 30 | |
 
 | Cross tie, knees, dinghy fit-out | **0** | **deleted** |
-| **Total** | **563** | was 1 003 |
+| **Total** | **619** | was 1 003 |
 
 **The arms were the honest mistake.** 127 kg for four beams came from
 two errors compounding: putting **100 % of a float's buoyancy on one
@@ -233,7 +233,7 @@ shock on a trailer axle, ×3.0 wave slam on an outrigger.
 | Member | Case | Moment | Stress | SF | Section |
 |---|---|---|---|---|---|
 | U-girder | 3 292 kg × 2.5 over a 3.1 m simple span | 11.0 kNm | 47 MPa | **2.2** (deflection 8.1 of 12.4 mm governs) | 110 × 240 × 6 box |
-| Swing arm | 70 % of one float's **564 kg** × 3.0, 1 918 mm lever | 22.3 kNm | 62 MPa | **1.7** | 340 deep truss, 70 × 70 × 4 chords |
+| Swing arm | 70 % of one float's **564 kg** × 3.0, 1 918 mm lever | 22.4 kNm | 62 MPa | **1.7** | **180 deep truss, 90 × 90 × 6 chords** — shallow so it clears the water, fat so it still passes |
 | Swing arm (gear) | kerb strike, 0.6 g at the contact patch on the 445 mm arm | 5.1 kNm | 31 MPa | **3.4** | ⌀150 × 12 arm |
 
 Two results changed the design:

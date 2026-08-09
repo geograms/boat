@@ -195,6 +195,39 @@ instead of 708 — against roughly double that if the notch had to clear
 the whole 890 mm of travel. The lighter float also eases the swing
 arm, which drops from 101 MPa to 68 (SF 1.0 → **1.5**).
 
+## 4c. The frame is out of the water
+
+The girders ran at **z 140…380** with the loaded waterline at **319** —
+the structure that carries the whole boat spent every floating hour
+half submerged, in salt, in a weldment that cannot be slipped for
+inspection. There was room above it the whole time.
+
+| | was | **now** |
+|---|---|---|
+| Girders | z 140…380, hanging under the hull | **z 600…800, in a lined channel in the wing** |
+| Clearance | −179 mm (submerged) | **+281 mm above the waterline** |
+| Versus the docked float | overlapped it, unmodelled | **clears it** — float top is 530 |
+| Swing arms | z 90…430, centred on the waterline | **z 420…600** |
+| Clearance | −229 mm (submerged) | **+101 mm** |
+
+The girder channel is cut into the wing underside and lined, open at
+the bottom and at the stern, so the hangar still slides on from
+astern. Nothing about the wheels moved: the arm pivot stays at z 445
+on a bracket dropping off the girder, the axle still travels 0 → 890,
+and the wing box is unchanged.
+
+**The swing arm had to get shallower to fit** — the band between the
+waterline and the wing underside is only 280 mm tall. A shallow truss
+loses section modulus in proportion to its depth, so the chords go up
+instead: **180 deep on 90 × 90 × 6** against 340 deep on 70 × 70 × 4.
+Nearly twice the chord area, 62 MPa, **SF 1.69** — better than the
+1.53 it had when it was deeper and wetter.
+
+It costs weight, and the weight is now honest rather than estimated:
+the arms compute to **113 kg** against a 57 kg constant that had been
+sitting in the budget since they were lighter sections. Hangar 563 →
+**619 kg**.
+
 ## 5. Drive
 
 Requirement: electric, ≤ 6 km/h (the German rule that keeps the rig
