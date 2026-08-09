@@ -952,14 +952,19 @@ BULKHEAD_X = (900, 2400, 3900, 5400, 6200)
 
 # masses that are NOT laminate, kg. Sources in the docs named alongside.
 MASS_EXOSKELETON = 260     # S355 tube frame + brackets, galvanised
-MASS_UGIRDER = 110         # two 140x200x8 alu box girders (89 kg) plus
-                           # the forward cross tie that closes the U
-MASS_WHEELS_HUBS = 270     # 6 x (tire 14 + rim 8 + hub motor 11 + stub axle 12)
-MASS_EXTENDERS = 4 * 30    # swing arms, 165x230x10 alu box + pins
-                           # (structure_calc.py)
-MASS_FLIPGEAR = 6 * 16     # d120x12 tubes, arms, pins - the d70
-                           # tube failed at 324 MPa
-MASS_HYDRAULICS = 120      # 2 x (BLDC + pump + manifold), hoses, oil, reservoir
+MASS_UGIRDER = 87          # girders down to 110x160x6 (56 kg, SF 4.2)
+                           # plus the cross tie and knees (31 kg)
+MASS_WHEELS_HUBS = 78      # 6 x 13 kg PLAIN trailer wheels. The
+                           # hydraulic hub drive is deleted: with the
+                           # hangar as the trailer, self-propulsion on
+                           # land is no longer needed for the
+                           # certification story, and it cost 192 kg
+                           # of hub motors plus 120 kg of hydraulics
+MASS_EXTENDERS = 127       # 4 swing arms, 140x260x8 alu box: deeper
+                           # and thinner-walled carries the same
+                           # moment for 28 kg less (SF 1.4)
+MASS_FLIPGEAR = 81         # d120x12 tubes and d110 arms, as built
+MASS_HYDRAULICS = 0        # deleted with the hub drive
 MASS_JETS = 75             # 3 x 2 kW waterjet cartridges incl. ducting
 MASS_ELECTRICS = 120       # inverter/charger, MPPTs, busbars, cabling
 MASS_SOLAR = 0             # roof panels are in deck_mass(), side

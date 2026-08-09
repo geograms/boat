@@ -29,7 +29,7 @@ ZONES = {
     "hull_bottom":   ("PVC80",  20, 1800,  900),
     "hull_topsides": ("PET60",  20,  900,  600),
     "hull_deck":     ("PET60",  25,  900,  600),
-    "float_shell":   ("PVC80",  18, 1200,  800),
+    "float_shell":   ("PET60",  15,  800,  600),
     "float_deck":    ("PET100", 20, 1200,  800),
     "cabin_walls":   ("PET60",  20,  600,  600),
     "roof_sandwich": ("PET60", 200,  900,  900),   # per roof.md, carries the glass deck

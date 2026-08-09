@@ -28,7 +28,7 @@ height; bottom −230, deck +230).
 
 | Item | Spec | Where |
 |---|---|---|
-| Body | foam-core GRP sandwich, `float_shell` schedule (PVC80 core) | — |
+| Body | foam-core GRP sandwich, `float_shell` schedule (PET60 15 mm, 800/600) | — |
 | Nose | **spoon head**: bottom curves up from x ≈ 4 500 to the tip — no slab face to the water | forward quarter |
 | Tail | flat transom carrying the jet nozzle | x 0 |
 | Bottom | flat, **flush with the hull keel plane** when docked | z −230 |
@@ -103,6 +103,44 @@ centimetres, not a duct.
 - **Detachable**: docks and undocks on the water, fork-and-lock, with
   the crew in the cockpit.
 
+## 7b. Mass — the 300 kg target and why it does not close
+
+Asked for a hangar under 300 kg. Every lever was pulled and the honest
+floor is **609 kg**:
+
+| Item | kg | What was done |
+|---|---|---|
+| Float shells | 129 | PVC80 18 mm → **PET60 15 mm, 800/600 skins** (−51) |
+| 6 wheels | 78 | **hub motors deleted** — plain trailer wheels (−192) |
+| Swing arms | 127 | 165×230×10 → **140×260×8**, deeper and thinner (−28) |
+| Flip tubes + arms | 81 | as calculated, ⌀120 × 12 |
+| U-girder | 56 | 140×200×8 → **110×160×6**, SF 4.1 (−37) |
+| Cross tie, knees, bight | 56 | |
+| Dock locks | 30 | |
+| Dinghy battery, solar, fittings | 51 | |
+| Hydraulic drive | **0** | **deleted** (−120) |
+| **Total** | **609** | was 1 003 |
+
+**300 kg is below the physical floor for this boat.** The reason is that
+almost every item scales with what it carries: a 3 153 kg combination
+needs six wheels, and the beams that spread that load over them are
+what they are. For scale, a **commercial braked boat trailer for 3 t
+weighs 400–600 kg empty** — and it has no floats, no swing gear and no
+dinghy fit-out.
+
+The hangar reaches 300 kg only if the **boat** does its share: at
+roughly 1 800 kg loaded it needs four wheels instead of six and
+proportionally lighter beams, which lands near the target. The lever is
+in [weight.md](weight.md), not here.
+
+**One feature was traded, and it should be a conscious choice:**
+deleting the hydraulic hub drive (−312 kg with its wheels) means the
+boat **no longer drives itself up a slipway**. That is affordable now
+only because the hangar became the trailer — self-propulsion on land
+was originally there for the certification argument, which no longer
+needs it, and the winch plus the waterjets cover ramp work. Restoring
+it costs 312 kg.
+
 ## 8. Scantlings — calculated, not guessed
 
 `freecad/structure_calc.py` proves the three members that carry the
@@ -112,8 +150,8 @@ shock on a trailer axle, ×3.0 wave slam on an outrigger.
 
 | Member | Case | Moment | Stress | SF | Section |
 |---|---|---|---|---|---|
-| U-girder | 3 599 kg × 2.5 over 3 wheel stations, 1.7 m bay | 2.0 kNm | 7 MPa | **14.8** | 140 × 200 × 8 box |
-| Swing arm | one float's full 559 kg buoyancy × 3.0 on **one** arm, 1 918 mm lever | 31.6 kNm | 66 MPa | **1.6** | 165 × 230 × 10 box |
+| U-girder | 3 153 kg × 2.5 over 3 wheel stations, 1.7 m bay | 3.5 kNm | 25 MPa | **4.1** | 110 × 160 × 6 box |
+| Swing arm | one float's full 559 kg buoyancy × 3.0 on **one** arm, 1 918 mm lever | 31.6 kNm | 75 MPa | **1.4** | 140 × 260 × 8 box |
 | Flip-arm tube | one wheel's share × 2.5 on the 516 mm arm | 7.0 kNm | 70 MPa | **1.5** | ⌀120 × 12 tube |
 
 Two results changed the design:

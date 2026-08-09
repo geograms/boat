@@ -101,7 +101,7 @@ def main():
     # continuous beam over equal spans: M ~ w L^2 / 10, V ~ 0.6 w L
     M = w * span ** 2 / 10
     V = 0.6 * w * span
-    A, I, Z = box_section(140, 200, 8)
+    A, I, Z = box_section(110, 160, 6)
     print("\n" + "=" * 68)
     print("1. THE U-GIRDER  (road: the boat's whole weight)")
     print("=" * 68)
@@ -109,11 +109,11 @@ def main():
     print(f"  girder mass {A * P.SPIKE_L * ALU_RHO / 1e9 * 2:.0f} kg the pair")
     print(f"  line load {w:.2f} N/mm per girder "
           f"({on_wheels:.0f} kg x {DYN_ROAD} / 2 girders / {P.SPIKE_L} mm)")
-    ok1 = report("  140 x 200 x 8 alu box", M, V, Z, A, I, span,
+    ok1 = report("  110 x 160 x 6 alu box", M, V, Z, A, I, span,
                  note="continuous over 3 wheel stations: M = wL^2/10")
     if not ok1:
         for t in (12, 14, 16):
-            A2, I2, Z2 = box_section(140, 200, t)
+            A2, I2, Z2 = box_section(110, 160, t)
             if M / Z2 <= ALU_FY * WELD_KNOCKDOWN / SF_STATIC:
                 print(f"  -> {t} mm wall would pass "
                       f"({M / Z2:.0f} MPa)")
@@ -132,17 +132,17 @@ def main():
     lever = P.SWING_ARM_R
     M2 = F * lever
     V2 = F
-    A2, I2, Z2 = box_section(230, 165, 10)
+    A2, I2, Z2 = box_section(140, 260, 8)
     print("\n" + "=" * 68)
     print("2. THE SWING ARM  (sea: a float driven under by a wave)")
     print("=" * 68)
     print(f"  float reserve buoyancy {reserve:.0f} kg, slam factor "
           f"{DYN_SLAM} -> {F / 1e3:.1f} kN on ONE arm")
     print(f"  cantilever {lever:.0f} mm from the pin")
-    ok2 = report("  230 x 165 x 10 alu box (bending about 230)",
-                 M2, V2, box_section(165, 230, 10)[2],
-                 box_section(165, 230, 10)[0],
-                 box_section(165, 230, 10)[1], 0,
+    ok2 = report("  140 x 260 x 8 alu box (deep in the vertical plane)",
+                 M2, V2, box_section(140, 260, 8)[2],
+                 box_section(140, 260, 8)[0],
+                 box_section(140, 260, 8)[1], 0,
                  note="worst case: all of one float on a single arm")
     if not ok2:
         print("  -> the arm must be deeper in the vertical plane:")
@@ -175,6 +175,13 @@ def main():
                 break
 
     print("\n" + "=" * 68)
+    print("HANGAR MASS")
+    print("=" * 68)
+    print(f"  the hangar as drawn now: {hangar:.0f} kg")
+    print("  floor with every lever pulled: ~600 kg. A commercial braked")
+    print("  boat trailer for 3 t weighs 400-600 kg empty and has no")
+    print("  floats, no swing gear and no dinghy fit-out.")
+    print("=" * 68)
     print("VERDICT")
     print("=" * 68)
     for nm, ok in (("U-girder", ok1), ("swing arm", ok2),
