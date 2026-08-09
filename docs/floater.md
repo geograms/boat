@@ -110,23 +110,31 @@ floor is **609 kg**:
 
 | Item | kg | What was done |
 |---|---|---|
-| Float shells | 129 | PVC80 18 mm → **PET60 15 mm, 800/600 skins** (−51) |
-| 6 wheels | 78 | **hub motors deleted** — plain trailer wheels (−192) |
-| Swing arms | 127 | 165×230×10 → **140×260×8**, deeper and thinner (−28) |
+| Float shells | 129 | PVC80 18 mm → **PET60 15 mm, 800/600 skins** |
 | Flip tubes + arms | 81 | as calculated, ⌀120 × 12 |
-| U-girder | 56 | 140×200×8 → **110×160×6**, SF 4.1 (−37) |
-| Cross tie, knees, bight | 56 | |
+| 6 wheels | 78 | **hub motors deleted** — plain trailer wheels |
+| U-girder | 56 | **110 × 160 × 6**, SF 4.1 |
+| Swing arms | **48** | **300 mm deep trusses**, 60 × 60 × 4 chords — not boxes |
+| Bight | 25 | |
 | Dock locks | 30 | |
-| Dinghy battery, solar, fittings | 51 | |
-| Hydraulic drive | **0** | **deleted** (−120) |
-| **Total** | **609** | was 1 003 |
+| Hydraulic drive | **0** | **deleted** |
+| Cross tie, knees, dinghy fit-out | **0** | **deleted** |
+| **Total** | **448** | was 1 003 |
+
+**The arms were the honest mistake.** 127 kg for four beams came from
+two errors compounding: putting **100 % of a float's buoyancy on one
+arm** when the float is a stiff beam pinned at two of them (immersion
+centroid midway; 70/30 even pitched hard bow-down), and then carrying
+that moment in a **box wall in bending**. A truss carries the same
+moment **axially in its chords**: 22.1 kNm over a 300 mm depth is
+73.6 kN per chord, 82 MPa in a 60 × 60 × 4 — **155 kg → 48 kg**.
 
 **300 kg is below the physical floor for this boat.** The reason is that
 almost every item scales with what it carries: a 3 153 kg combination
 needs six wheels, and the beams that spread that load over them are
 what they are. For scale, a **commercial braked boat trailer for 3 t
-weighs 400–600 kg empty** — and it has no floats, no swing gear and no
-dinghy fit-out.
+weighs 400–600 kg empty** — and it has no floats and no swing gear.
+At 448 kg this one is already inside that band while doing more.
 
 The hangar reaches 300 kg only if the **boat** does its share: at
 roughly 1 800 kg loaded it needs four wheels instead of six and
@@ -150,8 +158,8 @@ shock on a trailer axle, ×3.0 wave slam on an outrigger.
 
 | Member | Case | Moment | Stress | SF | Section |
 |---|---|---|---|---|---|
-| U-girder | 3 153 kg × 2.5 over 3 wheel stations, 1.7 m bay | 3.5 kNm | 25 MPa | **4.1** | 110 × 160 × 6 box |
-| Swing arm | one float's full 559 kg buoyancy × 3.0 on **one** arm, 1 918 mm lever | 31.6 kNm | 75 MPa | **1.4** | 140 × 260 × 8 box |
+| U-girder | 2 992 kg × 2.5 over 3 wheel stations, 1.7 m bay | 3.3 kNm | 24 MPa | **4.3** | 110 × 160 × 6 box |
+| Swing arm | 70 % of one float's 559 kg × 3.0, 1 918 mm lever | 22.1 kNm | 82 MPa | **1.3** | 300 deep truss, 60 × 60 × 4 chords |
 | Flip-arm tube | one wheel's share × 2.5 on the 516 mm arm | 7.0 kNm | 70 MPa | **1.5** | ⌀120 × 12 tube |
 
 Two results changed the design:

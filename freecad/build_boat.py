@@ -607,10 +607,31 @@ def build_hangar(phi, coupled=True, tow="sea"):
             ty = py + sy * P.SWING_ARM_R * _m.sin(ang)
             L = _m.hypot(tx - px, ty - py)
             yaw = _m.degrees(_m.atan2(ty - py, tx - px))
-            arm = box(L, arm_b, arm_h, (0, -arm_b / 2, -arm_h / 2))
-            arm.Placement = Placement(Vector(px, py, P.POD_DOCKED[1]),
-                                      Rotation(Vector(0, 0, 1), yaw))
-            parts.append(arm)
+            # a TRUSS, not a solid box: two chords 300 apart in the
+            # vertical plane with diagonals between them
+            mem = []
+            for cz in (-P.SWING_ARM_DEEP / 2, P.SWING_ARM_DEEP / 2):
+                mem.append(box(L, 60, 60, (0, -30, cz - 30)))
+            n_bay = 4
+            for i in range(n_bay):
+                x0 = L * i / n_bay
+                x1 = L * (i + 1) / n_bay
+                dx_, dz_ = x1 - x0, P.SWING_ARM_DEEP
+                ln = math.hypot(dx_, dz_)
+                dia = box(ln, 45, 45, (0, -22, -22))
+                dia.Placement = Placement(
+                    Vector(x0, 0, -P.SWING_ARM_DEEP / 2 if i % 2 == 0
+                           else P.SWING_ARM_DEEP / 2),
+                    Rotation(Vector(0, 1, 0),
+                             -math.degrees(math.atan2(dz_, dx_))
+                             if i % 2 == 0
+                             else math.degrees(math.atan2(dz_, dx_))))
+                mem.append(dia)
+            for m_ in mem:
+                m_.Placement = Placement(
+                    Vector(px, py, P.POD_DOCKED[1]),
+                    Rotation(Vector(0, 0, 1), yaw)).multiply(m_.Placement)
+                parts.append(m_)
             # vertical pivot pin at the hull, and the pin at the float
             for (cx, cy) in ((px, py), (tx, ty)):
                 parts.append(Part.makeCylinder(
@@ -631,22 +652,6 @@ def build_hangar(phi, coupled=True, tow="sea"):
     # no extra struts: the parallelogram IS the structure, exactly as
     # on the boats this pattern comes from. Each arm is a deep box beam
     # and the four pins are the only moving parts.
-
-    # ---- the forward CROSS TIE: the open end of the U is closed by a
-    # beam under the keel, so the two girders work as a frame and each
-    # swing arm sheds part of its moment into the other side instead of
-    # taking it all in its own pins. It hangs 120 mm below the keel -
-    # still 200 mm of ground clearance under it.
-    tie_x = 100 + P.SPIKE_L - 300
-    tie_y = P.STEM_HW + gb / 2 - 20
-    tie_z = 12                               # sits IN the keel channel
-    parts.append(box(P.TIE_W, 2 * tie_y + gb, P.TIE_H,
-                     (tie_x - P.TIE_W / 2, -tie_y - gb / 2, tie_z)))
-    # a knee each side, up from the bar to the girder web
-    for sy in (-1, 1):
-        parts.append(box(P.TIE_W, gb + 20, P.POD_DOCKED[1] - tie_z,
-                         (tie_x - P.TIE_W / 2, sy * tie_y - (gb + 20) / 2,
-                          tie_z)))
 
     # ---- bight + drawbar: a FIXED, small triangle at docked width.
     # It belongs to the ROAD function; the extended floats leave it

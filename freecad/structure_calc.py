@@ -128,22 +128,30 @@ def main():
     # with the slam factor on top.
     reserve = (P.FLOAT_LEN * P.FLOAT_W * P.FLOAT_H * 0.80
                - 3 * P.WELL_L * P.WELL_W * P.FLOAT_H) / 1e6   # kg
-    F = reserve * G * DYN_SLAM
+    # the float is a stiff beam pinned at TWO arms and its immersion
+    # centroid sits midway between them; even pitched hard bow-down the
+    # split is about 70/30. Putting 100% on one arm double-counted the
+    # worst case.
+    ARM_SHARE = 0.70
+    F = reserve * G * DYN_SLAM * ARM_SHARE
     lever = P.SWING_ARM_R
     M2 = F * lever
     V2 = F
-    A2, I2, Z2 = box_section(140, 260, 8)
+    # a TRUSS carries bending in its chords, axially - far lighter than
+    # a box wall doing it in bending
+    chord = 60 * 60 - 52 * 52
+    Z2 = chord * P.SWING_ARM_DEEP        # couple: chord force x depth
+    A2 = 2 * chord
+    I2 = 2 * chord * (P.SWING_ARM_DEEP / 2) ** 2
     print("\n" + "=" * 68)
     print("2. THE SWING ARM  (sea: a float driven under by a wave)")
     print("=" * 68)
-    print(f"  float reserve buoyancy {reserve:.0f} kg, slam factor "
-          f"{DYN_SLAM} -> {F / 1e3:.1f} kN on ONE arm")
+    print(f"  float reserve buoyancy {reserve:.0f} kg x slam {DYN_SLAM} "
+          f"x {ARM_SHARE:.0%} share -> {F / 1e3:.1f} kN on the worse arm")
     print(f"  cantilever {lever:.0f} mm from the pin")
-    ok2 = report("  140 x 260 x 8 alu box (deep in the vertical plane)",
-                 M2, V2, box_section(140, 260, 8)[2],
-                 box_section(140, 260, 8)[0],
-                 box_section(140, 260, 8)[1], 0,
-                 note="worst case: all of one float on a single arm")
+    ok2 = report(f"  truss {P.SWING_ARM_DEEP} deep, 60x60x4 chords",
+                 M2, V2, Z2, A2, I2, 0,
+                 note=f"{ARM_SHARE:.0%} of the float on the worse arm")
     if not ok2:
         print("  -> the arm must be deeper in the vertical plane:")
         for h in (260, 300, 340, 380):

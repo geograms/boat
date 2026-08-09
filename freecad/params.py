@@ -135,6 +135,7 @@ SWING_PIVOT_X = 641                # aft vertical pin, both sides.
                                    # float needs support
 SWING_PIVOT_Y = 810                # on the stem face
 SWING_ARM_R = 1918                 # pin to float, both arms
+SWING_ARM_DEEP = 300               # truss depth; chords 60x60x4
 SWING_ARM_GAP = -2300              # fore/aft pin spacing: the arms land
                                    # at float x 1150 and 3450 deployed,
                                    # so nothing is cantilevered
@@ -274,7 +275,7 @@ def hangar_mass():
     alu = bight_m * HANGAR_BIGHT[0] * HANGAR_BIGHT[1] * 0.15 * 2.7e-3
     return (floats + MASS_WHEELS_HUBS + MASS_EXTENDERS + MASS_FLIPGEAR +
             MASS_HYDRAULICS + MASS_UGIRDER + alu +
-            4 * LOCK_MOTOR_KG + 20 + DINGHY_BATT_KG + 25)
+            4 * LOCK_MOTOR_KG + 20)
 
 
 def float_buoyancy():
@@ -952,17 +953,19 @@ BULKHEAD_X = (900, 2400, 3900, 5400, 6200)
 
 # masses that are NOT laminate, kg. Sources in the docs named alongside.
 MASS_EXOSKELETON = 260     # S355 tube frame + brackets, galvanised
-MASS_UGIRDER = 87          # girders down to 110x160x6 (56 kg, SF 4.2)
-                           # plus the cross tie and knees (31 kg)
+MASS_UGIRDER = 56          # girders 110x160x6, SF 4.1. The cross tie
+                           # and its knees are gone - see below
 MASS_WHEELS_HUBS = 78      # 6 x 13 kg PLAIN trailer wheels. The
                            # hydraulic hub drive is deleted: with the
                            # hangar as the trailer, self-propulsion on
                            # land is no longer needed for the
                            # certification story, and it cost 192 kg
                            # of hub motors plus 120 kg of hydraulics
-MASS_EXTENDERS = 127       # 4 swing arms, 140x260x8 alu box: deeper
-                           # and thinner-walled carries the same
-                           # moment for 28 kg less (SF 1.4)
+MASS_EXTENDERS = 48        # 4 swing arms as 300 mm deep TRUSSES with
+                           # 60x60x4 chords, not solid boxes: the
+                           # chords take the moment axially at 82 MPa
+                           # instead of a box wall taking it in
+                           # bending. 155 -> 48 kg
 MASS_FLIPGEAR = 81         # d120x12 tubes and d110 arms, as built
 MASS_HYDRAULICS = 0        # deleted with the hub drive
 MASS_JETS = 75             # 3 x 2 kW waterjet cartridges incl. ducting
