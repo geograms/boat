@@ -124,35 +124,33 @@ def main():
                 break
 
     # =================================================================
-    # 2. THE EXTENDER BEAM
+    # 2. THE V ARM
     # =================================================================
-    # At sea each float can be pressed down by a wave to its full
-    # buoyancy. That force reaches the hull through two SLIDERS
-    # per side; the worst case puts 70 % of it on one beam with
-    # the slam factor on top. The fixed stage, at the stem face,
-    # carries the whole moment.
+    # Two arms a side on vertical pins, parallel and equal - so the
+    # float translates and never yaws. A wave driving the float under
+    # puts 70 % of its buoyancy on the worse arm, on the arm's own
+    # length as the lever. That is why the arm is SHORT: mass climbs
+    # with length twice over, in section and in span.
     reserve = P.float_buoyancy() / 2 - P.well_loss_kg()          # kg
     ARM_SHARE = 0.70
     F = reserve * G * DYN_SLAM * ARM_SHARE
-    lever = P.POD_SEA[0] - P.STEM_HW           # socket to float centre
-    M2 = F * lever
+    M2 = F * P.ARM_L
     V2 = F
-    _b, _h, _t = P.BEAM_SECTION
+    _b, _h, _t = P.ARM_SECTION
     A2, I2, Z2 = box_section(_b, _h, _t)
     print("\n" + "=" * 68)
-    print("2. THE EXTENDER SLIDER  (sea: a float driven under by a wave)")
+    print("2. THE V ARM  (sea: a float driven under by a wave)")
     print("=" * 68)
-    print(f"  float reserve buoyancy {reserve:.0f} kg x slam {DYN_SLAM} "
-          f"x {ARM_SHARE:.0%} share -> {F / 1e3:.1f} kN on the worse beam")
-    print(f"  cantilever {lever:.0f} mm from the socket at the stem face")
-    print(f"  {P.beam_mass() / 4:.1f} kg the slider, {P.beam_mass():.0f} kg all "
-          f"four - single stage, {P.BEAM_LEN:.0f} long, {P.BEAM_STROKE} of stroke")
-    ok2 = report(f"  slider {_b}x{_h}x{_t} box", M2, V2, Z2, A2, I2, 0,
-                 note=f"{ARM_SHARE:.0%} of the float on the worse beam")
-    if not ok2:
-        for t2 in (8, 10, 12):
-            A3, I3, Z3 = box_section(_b, _h, t2)
-            print(f"     {_b} x {_h} x {t2} -> {M2 / Z3:5.0f} MPa")
+    print(f"  float reserve {reserve:.0f} kg x slam {DYN_SLAM} x "
+          f"{ARM_SHARE:.0%} -> {F / 1e3:.1f} kN on the worse arm")
+    print(f"  lever is the arm itself: {P.ARM_L} mm")
+    print(f"  opens {P.ARM_OPEN_DEG:.0f} deg -> float "
+          f"{P.ARM_L * math.sin(math.radians(P.ARM_OPEN_DEG)):.0f} mm out, "
+          f"parallel throughout")
+    ok2 = report(f"  arm {_b}x{_h}x{_t} box", M2, V2, Z2, A2, I2, 0,
+                 note="water opens it, a rope shuts it, a stop holds it")
+    print(f"  {P.arm_mass() / 4:.1f} kg the arm, {P.swing_gear_mass():.0f} kg "
+          f"the whole system both sides")
 
     # =================================================================
     # 3. THE SWING ARM (running gear)
@@ -190,7 +188,7 @@ def main():
     print("=" * 68)
     print("VERDICT")
     print("=" * 68)
-    for nm, ok in (("U-girder", ok1), ("extender beam", ok2),
+    for nm, ok in (("U-girder", ok1), ("V arm", ok2),
                    ("swing arm (gear)", ok3)):
         print(f"  {nm:16s} {'PASS' if ok else 'FAILS AS DRAWN'}")
 

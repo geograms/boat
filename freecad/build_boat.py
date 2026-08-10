@@ -7,6 +7,7 @@
 import os
 import sys
 import math
+import math as _math
 
 try:
     SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -408,8 +409,12 @@ def build_float(pod, roll, flip=0.0, fx=None):
     Starboard, posed."""
     ty, tz = pod
     dx = 0.0 if fx is None else fx - P.FLOAT_X
-    # -roll about x maps the local deck normal (+z) outboard (+y)
-    place = Placement(Vector(dx, ty, tz), Rotation(Vector(1, 0, 0), -roll))
+    # -roll about x maps the local deck normal (+z) outboard (+y).
+    # YAW: the float pivots on its bow pin, so it is not just moved
+    # outboard, it is turned. flip carries the yaw in from the caller.
+    place = Placement(Vector(dx, ty, tz),
+                      Rotation(Vector(0, 0, 1), -flip).multiply(
+                          Rotation(Vector(1, 0, 0), -roll)))
 
     secs = []
     ky = P.FLOAT_W / 400.0            # loft table is 400 wide, 900 tall
@@ -449,12 +454,14 @@ def build_float(pod, roll, flip=0.0, fx=None):
             P.WELL_L, P.WELL_W + 30, P.WELL_H,
             (_wx - P.WELL_L / 2, ty - P.FLOAT_W / 2 - 30,
              tz - P.FLOAT_H / 2 - 10)))
-        # and a full-height slot for the ARM and its pivot, which live
-        # in the recess up to z 445 - the float has to dock past them
+        # groove for the docked V arm to lie in - the float's inner
+        # face is against the stem, so the arm needs somewhere to go
+        pass
+    for _ax in P.ARM_XS:
         hull_f = hull_f.cut(box(
-            P.WELL_TUBE_L, P.WELL_W + 30, P.FLOAT_H + 20,
-            (_wx - P.WELL_TUBE_L / 2,
-             ty - P.FLOAT_W / 2 - 30, tz - P.FLOAT_H / 2 - 10)))
+            P.ARM_L + 120, P.ARM_GROOVE_D, P.ARM_GROOVE_W,
+            (_ax - P.ARM_L - 60, ty - P.FLOAT_W / 2 - 10,
+             P.BEAM_Z0 - P.ARM_GROOVE_W / 2 + 30)))
 
     # solar strips on the deck, in the gaps between the wheels
     strips = []
@@ -693,47 +700,48 @@ def build_hangar(phi, coupled=True, tow="sea"):
                     Vector(wx, axle[0] - sy * (P.WHEEL_W / 2 + 60), axle[1]),
                     Vector(0, sy, 0)))
 
-    # ---- EXTENDER SLIDERS. One tube per station sliding in one
-    # socket - no stages, no nesting. The extension is what a 10 kg
-    # arm buys, not the other way round: both the load and the slider
-    # length grow with reach, so mass grows faster than linearly and
-    # 870 mm is where a 110 x 230 x 4 box lands at 9.8 kg.
-    #
-    # The swing wing that used to be here could not be built at all: a
-    # horizontal swing needs a plane clear of the float at every angle,
-    # and between the float top (530) and the wing underside (600)
-    # there are 70 mm.
-    reach = P.beam_reach(phi)
-    bw, bh, bt = P.BEAM_SECTION
+    # ---- THE V ARMS. Two per side on vertical pins, equal length and
+    # parallel: a parallelogram, so the float TRANSLATES and never
+    # yaws. Seen from above the two sides mirror and the four arms read
+    # as a V. They sweep AFT as they open, so the water's push on the
+    # float drives them further open against the stop; a rope pulls the
+    # float forward to shut the V and a latch holds it for the road.
+    ang = _math.radians(P.arm_angle(phi))
+    ab, ah, at_ = P.ARM_SECTION
+    fcx, fcy, _yaw = P.float_pose(phi)
     for sy in (-1, 1):
-        for bx in P.BEAM_XS:
-            x0 = bx + (P.BEAM_DX_PORT if sy < 0 else 0)
-            y1 = reach                       # outer end
-            y0 = y1 - P.BEAM_LEN             # tail, inside the stem
-            parts.append(box(bw, P.BEAM_LEN, bh,
-                             (x0 - bw / 2, min(sy * y0, sy * y1), P.BEAM_Z0)))
-            # the socket at the stem face: guide and slide pads. No
-            # nut, no motor - the slider is pushed by hand and pinned.
-            parts.append(box(bw + 90, 120, bh + 60,
-                             (x0 - (bw + 90) / 2,
-                              sy * P.STEM_HW - 60, P.BEAM_Z0 - 30)))
-            # the pin through the socket, and the spare hole in the
-            # slider for the other end of the travel
-            locks.append(Part.makeCylinder(
-                P.EXT_PIN_D / 2, bh + 140,
-                Vector(x0, sy * P.STEM_HW, P.BEAM_Z0 - 60), Vector(0, 0, 1)))
-            # the OTHER hole: 700 mm along the slider from the one the
-            # pin is in, so it lands on the slider in both poses
-            _spare = P.STEM_HW + (-P.BEAM_STROKE if phi <= 0
-                                  else P.BEAM_STROKE)
-            locks.append(Part.makeCylinder(
-                P.EXT_PIN_D / 2, bh + 20,
-                Vector(x0, sy * _spare, P.BEAM_Z0 - 10), Vector(0, 0, 1)))
-            # landing on the float's inner face
-            parts.append(box(bw + 70, 70, bh + 40,
-                             (x0 - (bw + 70) / 2,
-                              (sy * reach - 35) if sy > 0 else (sy * reach - 35),
-                              P.BEAM_Z0 - 20)))
+        for ax in P.ARM_XS:
+            # hull pin on the girder, float pin on the float's inner face
+            px, py = ax, sy * P.STEM_HW
+            tx = ax - P.ARM_L * _math.cos(ang) * 0 - P.ARM_L * (1 - _math.cos(ang))
+            ty = sy * (P.STEM_HW + P.ARM_L * _math.sin(ang))
+            L = _math.hypot(tx - px, abs(ty) - abs(py))
+            yawd = _math.degrees(_math.atan2(abs(ty) - abs(py), tx - px))
+            arm = box(max(L, 1.0), ab, ah, (0, -ab / 2, P.BEAM_Z0))
+            arm.Placement = Placement(
+                Vector(px, py, 0), Rotation(Vector(0, 0, 1), sy * yawd))
+            parts.append(arm)
+            for (qx, qy) in ((px, py), (tx, ty)):     # the two pins
+                parts.append(Part.makeCylinder(
+                    P.HINGE_PIN_D / 2, P.BEAM_H + 200,
+                    Vector(qx, qy, P.BEAM_Z0 - 100), Vector(0, 0, 1)))
+                parts.append(box(200, 220, 90,
+                                 (qx - 100, qy - 110, P.BEAM_Z0 - 100)))
+            # the open stop: a hard lug on the girder the arm lands on
+            parts.append(box(140, 110, P.BEAM_H,
+                             (px - 70 - 190, py - sy * 55, P.BEAM_Z0)))
+        # haul-in line: float's forward end back to a block on the frame
+        locks.append(rod((fcx + P.FLOAT_LEN / 2 - 300, sy * (fcy - P.FLOAT_W / 2),
+                          P.BEAM_Z0 + P.BEAM_H / 2),
+                         (P.GIRDER_X1 - 300, sy * P.GIRDER_Y,
+                          P.BEAM_Z0 + P.BEAM_H / 2), 12))
+        parts.append(Part.makeCylinder(
+            55, 90, Vector(P.GIRDER_X1 - 300, sy * P.GIRDER_Y, P.BEAM_Z0),
+            Vector(0, 0, 1)))
+        # road latch, holding the V shut against the stem face
+        parts.append(box(160, 120, 140,
+                         (P.FLOAT_X_DOCKED - P.FLOAT_LEN / 2 + 500,
+                          sy * P.STEM_HW - 60, P.BEAM_Z0 + 40)))
 
     # ---- THE BIGHT AND THE FORWARD TIE. Two girders on their own are
     # two rails; what makes them a frame is a transverse tie at each
@@ -1381,7 +1389,8 @@ def build_mode(mode):
     # the float NEVER rotates: it rides upright in every pose. The only
     # rotation anywhere is each wheel's 180-deg flip arm.
     (fl, strips, forks, tires, rims, wboxes,
-     hatch, hydraulics, thruster) = build_float(pod, 0, cfg.get("flip", 0),
+     hatch, hydraulics, thruster) = build_float(pod, 0,
+                                                P.float_yaw(cfg["phi"]),
                                                 fx_now)
     hframe, hlocks, htyres = build_hangar(cfg["phi"], cfg.get("coupled", True),
                                   cfg["tow"])

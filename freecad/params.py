@@ -176,82 +176,92 @@ FLOAT_X = FLOAT_X_DOCKED           # legacy default
 
 
 def float_x(phi_deg):
-    """Float centre x: the swing carries it forward as it goes out."""
-    t = 0.0 if phi_deg <= 0 else min(1.0, phi_deg / 90.0)
-    return FLOAT_X_DOCKED + t * (FLOAT_X_SEA - FLOAT_X_DOCKED)
+    """Float centre x - it moves a little as the float pivots on its
+    bow pin, which is geometry, not a design choice."""
+    return float_pose(phi_deg)[0]
 
 
 def swing_angle(phi_deg):
     t = 0.0 if phi_deg <= 0 else min(1.0, phi_deg / 90.0)
     return SWING_DEG_DOCK + t * (SWING_DEG_SEA - SWING_DEG_DOCK)
 
-# ---- THE EXTENDER SLIDERS ----
-# A three-stage telescope reaching 1650 mm weighed 52 kg an arm, 209 kg
-# the set. That is not a stabiliser mount, it is a crane boom, and it
-# came from picking the extension first and paying for it afterwards.
+# ---- THE V ARMS ----
+# Two arms per side, each on a VERTICAL pin at the frame and a vertical
+# pin at the float, equal length and parallel to each other: a
+# parallelogram. So the float TRANSLATES - it never yaws, it stays
+# parallel to the hull at every angle, which is the whole point,
+# because a float that toes in or out fights the boat.
 #
-# Sized the other way round, from a 10 kg budget an arm, the answer is
-# a PLAIN SINGLE-STAGE SLIDER and the extension falls out of it:
+# Seen from above the port and starboard sets mirror each other and
+# the four arms read as a V. That is not decoration: the arms sweep
+# AFT as they open, so the water's push on the float drives them
+# further open and holds them there against the stop. A rope pulls the
+# float forward to shut the V again and it latches under the hull.
 #
-#   the beam carries 70 % of the float's 566 kg reserve x 3.0 slam on a
-#   lever of (230 + extension); the slider has to be extension + 320 of
-#   overlap long; mass = section area x that length. Both the load AND
-#   the length grow with extension, so mass grows faster than linearly.
-#
-#      extension   section        beam SF   kg/arm
-#         700     160 x 220 x 4     1.53       9.4   <- chosen
-#         800     180 x 220 x 4     1.50      10.9
-#        1000     210 x 220 x 4     1.50      14.1
-#        1650     three stages      1.81      52.0
-#
-# But 700 mm of extension does not right the boat on its own, and that
-# is the second half of the answer. Righting = float reserve x lever.
-# Lever is expensive: the arm pays for it TWICE, once in load and once
-# in length. Reserve is cheap: the float just gets longer, in a hull
-# that has the room. So FLOAT_LEN goes 4600 -> 5400 and the extension
-# comes DOWN to 700. Righting SF 2.08 against the 1.9 required, on a
-# 9.3 kg arm instead of a 52 kg telescope.
-#
-# One tube sliding in one socket. No stages, no nesting, and the whole
-# slider is swallowed by the 1560 mm stem when docked.
-BEAM_STROKE = 700                  # what 10 kg an arm actually buys
-BEAM_Z0 = 380                      # 57 mm over the loaded waterline
-BEAM_H = 220                       # top flush under the wing at 600
-BEAM_SECTION = (160, 220, 4)       # 6082-T6 box - nothing here is steel
-BEAM_OVERLAP = 320                 # retained in the socket, fully out
-BEAM_LEN = BEAM_STROKE + BEAM_OVERLAP
-BEAM_XS = (2700, 4600)             # stations, clear of the wheel notches
-BEAM_DX_PORT = 180                 # port sliders offset along the boat so
-                                   # the two sides' tails pass each other
-BEAM_PAD_MARGIN = 1.15             # slide pads, local doublers, end fittings
-EXT_PIN_D = 24                     # the lock. Two holes in the slider,
-                                   # one bore through the socket: docked
-                                   # or extended, nothing in between.
-# NO MOTOR ON THE EXTENDERS. It is a slider, not a jack. It only ever
-# moves with the boat afloat, and afloat the float carries its own
-# weight - the slider is left holding friction on its pads, which is a
-# push, not a lift. A leadscrew here would add a motor, a controller,
-# a cable across a sliding joint and its own weight, to do a job two
-# hands and a pin already do. The wheels keep their screws, because a
-# wheel really does have to lift 3 t of boat.
+# Nothing screws, nothing jacks, nothing telescopes.
+ARM_L = 900                        # pin to pin. Short on purpose: the
+                                   # arm carries the float's slam load
+                                   # on this lever, so mass goes up with
+                                   # length, and 900 is what a 10 kg arm
+                                   # buys. See structure_calc case 2.
+ARM_OPEN_DEG = 59.0                # open angle: 900 x sin59 = 771 mm
+                                   # outboard, which is the extension,
+                                   # and 437 mm aft, which is free
+ARM_XS = (2700, 4600)              # the two pin stations a side
+ARM_SECTION = (120, 220, 5)        # box, 6082-T6, in the z 380..600 band
+ARM_PAD = 1.15                     # pins, bushes, stop, lugs
+ARM_GROOVE_W = 120                 # the groove in the float's inner face
+ARM_GROOVE_D = 160                 # that the arm lies in when docked
 
 
-def beam_reach(phi_deg):
-    """Outer end of the slider, world y (starboard)."""
+def arm_angle(phi_deg):
+    """Arm angle from fore-and-aft, degrees."""
     t = 0.0 if phi_deg <= 0 else min(1.0, phi_deg / 90.0)
-    return STEM_HW + t * BEAM_STROKE
+    return t * ARM_OPEN_DEG
 
 
-def beam_mass():
-    """kg of all FOUR sliders, computed from the section."""
-    b, h, t = BEAM_SECTION
+def float_pose(phi_deg):
+    """(centre x, centre y, yaw) of the STARBOARD float. The yaw is
+    always ZERO - that is what the parallelogram guarantees."""
+    import math as _m
+    a = _m.radians(arm_angle(phi_deg))
+    return (FLOAT_X_DOCKED - ARM_L * (1 - _m.cos(a)),
+            STEM_HW + FLOAT_W / 2 + ARM_L * _m.sin(a),
+            0.0)
+
+
+def float_yaw(phi_deg):
+    return 0.0
+
+
+def float_stern_y(phi_deg):
+    """Outboard face of the float - parallel, so it is just the offset."""
+    return float_pose(phi_deg)[1] + FLOAT_W / 2
+
+
+def arm_mass():
+    """kg of all FOUR arms, computed from the section."""
+    b, h, t = ARM_SECTION
     a = b * h - (b - 2 * t) * (h - 2 * t)
-    return 4 * a * BEAM_LEN * 2.7e-6 * BEAM_PAD_MARGIN
+    return 4 * a * ARM_L * 2.7e-6 * ARM_PAD
+
+
+def swing_gear_mass():
+    """kg of the whole system, both sides: arms, pins, stops, ropes."""
+    return arm_mass() + 2 * (HAUL_KG + STAY_KG)
+
+
+HINGE_PIN_D = 80                   # vertical pin at each end of each arm
+STAY_KG = 3                        # the open stop and its lug, per side
+HAUL_KG = 4                        # haul-in line, block, cleat, per side
+BEAM_Z0 = 380                      # the band the arms swing in: 57 mm
+BEAM_H = 220                       # over the waterline, top flush under
+                                   # the wing at 600
 
 
 DOCK_CLEAR = 10                    # float top to the wing underside
 POD_DOCKED = (STEM_HW + FLOAT_W / 2, FLOAT_H / 2 - DOCK_CLEAR)
-POD_SEA = (POD_DOCKED[0] + BEAM_STROKE, POD_DOCKED[1])  # extended -
+POD_SEA = (float_pose(90)[1], POD_DOCKED[1])            # extended -
                                                     # compact stance by
                                                     # choice (2/3 of 2.5)
 EXT_VEC = (POD_SEA[0] - POD_DOCKED[0], 0.0)
@@ -286,8 +296,7 @@ def pod_at(phi_deg, _unused=0.0):
     """Float centre. Kept phi-shaped for the mode table: 0 = docked in
     the recess, anything else = extended to the sea stance. The motion
     is a straight inclined slide on the extenders."""
-    t = 0.0 if phi_deg <= 0 else min(1.0, phi_deg / 90.0)
-    return (POD_DOCKED[0] + t * EXT_VEC[0], POD_DOCKED[1] + t * EXT_VEC[1])
+    return (float_pose(phi_deg)[1], POD_DOCKED[1])
 
 
 PHI_WATER = 90.0                   # mode-table value for "extended"
@@ -522,7 +531,7 @@ def hangar_mass():
     tie_m = 2 * 2 * (GIRDER_Y + GIRDER_SECTION[0] / 2) / 1000
     alu = tie_m * HANGAR_BIGHT[0] * HANGAR_BIGHT[1] * 0.15 * 2.7e-3
     alu += DRAWBAR_KG
-    return (floats + MASS_WHEELS_HUBS + beam_mass() + MASS_FLIPGEAR +
+    return (floats + MASS_WHEELS_HUBS + swing_gear_mass() + MASS_FLIPGEAR +
             MASS_HYDRAULICS + girder_mass() + alu +
             4 * LOCK_MOTOR_KG + 20)
 
@@ -1555,7 +1564,7 @@ def checks(verbose=True, strict=True):
     road_height = CABIN_ROOF_Z + DECK_BUILDUP - GROUND_Z
     track = 2 * abs(wdown[0])
     # water: floats extended on the inclined slide, wheels flipped up
-    water_beam = 2 * (POD_WATER[0] + FLOAT_W / 2)
+    water_beam = 2 * float_stern_y(PHI_WATER)   # the stern is widest
     float_bot = POD_WATER[1] - FLOAT_H / 2
     immersion = (WL_Z - float_bot) / FLOAT_H
     _h2, wup = arm_points(1, down=False)
@@ -2032,7 +2041,7 @@ def checks(verbose=True, strict=True):
     assert WELL_H >= WHEEL_DIA / 2 - (POD_DOCKED[1] - FLOAT_H / 2) + 40, \
         f"float notch {WELL_H} mm deep does not clear the wheel down"
     # sea stance: real clear water and a surface-piercing float
-    sea_gap = POD_SEA[0] - FLOAT_W / 2 - STEM_HW
+    sea_gap = float_stern_y(PHI_WATER) - FLOAT_W - STEM_HW   # at the stern
     # likewise: 1300 belonged to the 1650 mm extension
     assert sea_gap >= 650, f"only {sea_gap:.0f} mm of clear water extended"
     assert POD_SEA[1] + FLOAT_H / 2 > WL_Z + 100, \
@@ -2047,23 +2056,17 @@ def checks(verbose=True, strict=True):
     # float's INBOARD face, so nothing has to swing past the T wing
     assert ARM_PIVOT_Z == ARM_R, \
         "the arm has to reach z 0 hanging straight down"
-    # THE EXTENDER BEAMS
-    assert BEAM_Z0 >= wl_loaded + 50, \
-        f"beam bottom at z {BEAM_Z0} against a {wl_loaded:.0f} mm waterline"
-    assert BEAM_Z0 + BEAM_H <= T_STEP_Z, "beam top runs into the wing"
-    # retracted, the WHOLE slider must fit inside the stem or its tail
-    # spears the other side's float. This is what caps the extension at
-    # a single stage - and a single stage is what keeps it at 10 kg.
-    _tail = STEM_HW - BEAM_LEN
-    assert _tail >= -STEM_HW, \
-        f"retracted slider tail reaches y {_tail:.0f}, outside the " \
-        f"{-STEM_HW:.0f} stem - it would run through the port float"
-    assert BEAM_OVERLAP >= 0.25 * BEAM_STROKE, "slider overlap too short"
-    # the beams must not sit where the wheels swing
-    for _bx in BEAM_XS:
-        for _wx in WHEEL_XS:
-            assert abs(_bx - _wx) > (WELL_L + BEAM_SECTION[0]) / 2, \
-                f"beam at x {_bx} lands in the wheel notch at x {_wx}"
+    # THE V ARMS
+    assert abs(float_pose(PHI_WATER)[2]) < 1e-9, \
+        "the float must stay PARALLEL - the parallelogram is the point"
+    assert float_stern_y(0) <= HULL_BEAM / 2 + 5, \
+        "docked float outside the hull line"
+    assert 30 <= ARM_OPEN_DEG <= 75, \
+        f"arm opens {ARM_OPEN_DEG} deg: below 30 the V barely opens, " \
+        "above 75 the arm is nearly athwartships and the water stops " \
+        "helping"
+    assert ARM_L * math.sin(math.radians(ARM_OPEN_DEG)) >= 700, \
+        "arms do not reach the stance"
     # THE GIRDERS HAVE TO BE OUT OF THE WATER
     assert GIRDER_Z0 >= wl_loaded + 150, \
         f"girder channel floor at z {GIRDER_Z0} against a {wl_loaded:.0f} mm " \
@@ -2090,11 +2093,12 @@ def checks(verbose=True, strict=True):
         print(f"nesting         floats 0..{FLOAT_LEN} in a {RECESS_DEPTH} mm "
               f"bilge recess; bow solid {LOA - FLOAT_LEN - 200} mm ahead; "
               f"2 spike rails/side, taper {SPIKE_TAPER}")
-        print(f"extenders       2/side, HAND-SLID and pinned at both ends "
-              f"of travel, no motor; stroke {EXT_STROKE:.0f} mm inclined "
-              f"{math.degrees(math.atan2(EXT_VEC[1], EXT_VEC[0])):.0f} deg; "
-              f"sea gap {sea_gap:.0f} mm, water beam "
-              f"{2 * (POD_SEA[0] + 450):.0f}")
+        print(f"V arms          2/side, {ARM_L} mm on vertical pins, "
+              f"opening {ARM_OPEN_DEG:.0f} deg: float goes "
+              f"{ARM_L * math.sin(math.radians(ARM_OPEN_DEG)):.0f} mm out "
+              f"and {ARM_L * (1 - math.cos(math.radians(ARM_OPEN_DEG))):.0f} "
+              f"aft, PARALLEL throughout. Water opens them, a rope shuts "
+              f"them. {swing_gear_mass():.0f} kg the lot")
         print(f"swing arms      {2 * len(WHEEL_XS)} x d{ARM_D} arm, {ARM_R} mm "
               f"long on a pivot at z {ARM_PIVOT_Z}, 180 deg = {ARM_LIFT} mm "
               f"of lift: axle down z {down[1]:.0f} "

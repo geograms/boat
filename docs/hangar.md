@@ -42,11 +42,10 @@ first; the float noses never see slam.
 
 ## 3. Extenders
 
-**Single-stage sliders**, two per side at x 2 700 and 4 600. **Pushed
-by hand and pinned** — no motor and no screw — through **0 → 700 mm**.
-Purely horizontal: the float's draft never changes, and docked the
-whole slider is inside the stem. See
-[floater.md](floater.md) §5 for why the swing wing was abandoned.
+**Two V arms per side** on vertical pins, 900 mm long, opening 59° to
+put the float **771 mm out and parallel**. The water opens them; a
+rope shuts them. No motor, no screw, no telescope. See
+[floater.md](floater.md) §5.
 
 ## 4. Wheels — four, on the frame, on swing arms
 

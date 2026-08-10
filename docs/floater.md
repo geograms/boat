@@ -98,90 +98,44 @@ van is ≈0.5 g and a loaded truck 0.35–0.40 g, so this sits in normal
 trailer territory. The float keeps its **outboard** half solid, so the
 skin that meets the water is untouched.
 
-## 5. Docking and extension — one slider, sized from a weight budget
+## 5. Extension — the V arms
 
-The float goes **straight out** on a plain single-stage slider. No
-stages, no nesting, no rotation, and its draft never changes.
+**Two arms per side**, each on a vertical pin at the frame and a
+vertical pin at the float, **equal length and parallel to each other**:
+a parallelogram. So the float **translates** — it never yaws, it stays
+parallel to the hull at every angle. That is the whole point. A float
+that toes in or out fights the boat.
+
+Seen from above, the port and starboard sets mirror and the four arms
+read as a **V**. That is not decoration — the arms sweep **aft** as
+they open, so the water's push on the float drives them **further
+open** and holds them against the stop. A rope pulls the float forward
+to shut the V, and a latch holds it under the hull for the road.
+
+**Nothing screws, nothing jacks, nothing telescopes.**
 
 | Item | Spec |
 |---|---|
-| Sliders | **2 per side**, x 2 700 and 4 600 (port offset 180 mm so the retracted tails pass) |
-| Section | **160 × 220 × 4** box, 6082-T6 — nothing in the hangar is steel |
-| Band | z **380 … 600** — 57 mm above the loaded waterline, top flush under the wing |
-| Stroke | **700 mm**, **pushed by hand and pinned** — no motor, no screw |
-| Lock | one ⌀24 pin through the socket into one of two holes in the slider: docked or extended, nothing in between |
-| Length | 1 020 mm, 320 of it retained in the socket — swallowed whole by the 1 560 mm stem |
-| Root | 13.2 kNm at the socket, 69 MPa, **SF 1.53** |
-| Mass | **9.4 kg the arm, 38 kg all four** |
+| Arms | **2 per side**, pins at x 2 700 and 4 600 |
+| Length | **900 mm** pin to pin |
+| Section | **120 × 220 × 5** box, 6082-T6 |
+| Open | **59°** → float **771 mm out**, 436 mm aft, parallel |
+| Band | z **380 … 600** — 57 mm over the loaded waterline, top flush under the wing |
+| Docked | each arm lies in a **120 × 160 groove** in the float's inner face |
+| Opening | the water does it |
+| Closing | a rope to a block on the frame's forward tie |
+| Holding | a hard stop on the girder, and a latch for the road |
+| Load | 70 % of the float's 690 kg reserve × 3.0 slam on the arm's own length → 12.8 kNm, 65 MPa, **SF 1.60** |
+| Mass | **9.2 kg the arm, 51 kg the whole system** both sides |
 
-### The frame is a closed rectangle, and it has a tongue
+### Why the arm is short
 
-Two girders on their own are two rails. What makes them a frame is a
-**transverse tie at each end**:
+The arm's own length is the lever, so mass climbs with length twice
+over — once in the section it needs, once in the span it spans. 900 mm
+is what a 10 kg arm buys; the open angle then does the rest of the
+work, because 900 × sin 59° = 771 mm of stance out of a 900 mm part.
 
-| | |
-|---|---|
-| **Bight** | aft, at x −120, across both girder ends |
-| **Forward tie** | at x 5 480, the other end of the same rectangle |
-| Both | 140 × 180 box at girder level (z 600 … 800) — out of the water, clear over the docked float whose top is 530 |
-| Gussets | into the girder webs at each corner |
-
-The **drawbar** is a demountable A-frame off the bight: two legs from
-the bight corners down and forward 1 900 mm to a coupling head **445 mm
-over the tarmac**, with a 50 mm ball, two safety-chain eyes and a
-jockey wheel. On the road it pins into two lugs on the bight's face;
-at sea it comes off and stows flat on a float deck, so nothing stands
-in the water or rears over the transom. **26 kg.**
-
-### No motor on the extenders
-
-It is a **slider, not a jack.** The extenders only ever move with the
-boat afloat, and afloat the float carries its own weight — what the
-slider is left holding is friction on its pads, which is a *push*, not
-a lift. Roughly 15 kg of shove on UHMW pads.
-
-A leadscrew here would add a motor, a controller, a cable crossing a
-sliding joint, and its own weight, to do a job two hands and a pin
-already do. **The wheels keep their screws**, because a wheel really
-does have to lift three tonnes of boat.
-
-### How 700 mm was arrived at
-
-Backwards from the weight, not forwards from a wish. A three-stage
-telescope reaching 1 650 mm weighed **52 kg an arm, 209 kg the set** —
-a crane boom, not a stabiliser mount. It came from choosing the
-extension first and paying for it afterwards.
-
-**The arm pays for reach twice**: the load grows with the lever *and*
-the slider grows with the stroke, so mass climbs faster than linearly.
-
-| Extension | Section | Beam SF | kg/arm |
-|---|---|---|---|
-| **700** | **160 × 220 × 4** | **1.53** | **9.4** |
-| 800 | 180 × 220 × 4 | 1.50 | 10.9 |
-| 1 000 | 210 × 220 × 4 | 1.50 | 14.1 |
-| 1 650 | three stages | 1.81 | 52.0 |
-
-Past about 1 200 mm a single stage no longer fits inside the stem at
-all, and the moment it becomes a telescope the weight triples.
-
-### And the float got longer instead
-
-700 mm of lever does not right the boat on its own. Righting is
-**reserve × lever**, and the two are priced completely differently:
-
-- **Lever is expensive** — the arm pays for it twice, as above.
-- **Reserve is cheap** — the float just gets longer, in a hull that
-  has the room for it.
-
-So **FLOAT_LEN 4 600 → 5 400** and the extension came *down* to 700.
-Righting **SF 2.08** against the 1.9 required, on a **9.4 kg** arm
-instead of a 52 kg telescope. The docked float now sits x 600 … 6 000,
-still with 1 200 mm of solid full-width bow ahead of its nose.
-
-What it costs: **700 mm of clear water** between hull and float
-instead of 1 650, and a **3.88 m** water beam instead of 6.22. The
-righting moment — the thing that actually matters — went **up**.
+Righting **SF 2.2** against the 1.9 required.
 
 ## 6. Energy and deck
 
@@ -209,7 +163,7 @@ righting moment — the thing that actually matters — went **up**.
 - **Detachable**: docks and undocks on the water, fork-and-lock, with
   the crew in the cockpit.
 
-## 7b. Mass — the 300 kg target, and where the 581 actually goes
+## 7b. Mass — the 300 kg target, and where the 594 actually goes
 
 Asked for a hangar under 300 kg. Every line below is **computed** —
 from measured areas times a laminate schedule, or from a section times
@@ -222,15 +176,15 @@ a length — not estimated:
 | Wheel swing arms | 88 | four ⌀150 × 12 arms, pivots, actuators |
 | Drive + seals | 80 | 2 × 3 kW, 100:1, one face seal a side |
 | Wheels + hubs | 60 | 4 × 155/70 R12C on steel |
-| **Extender sliders** | **38** | **was 209 as a telescope** |
+| **V arms + ropes** | **51** | **was 209 as a telescope** |
 | Bight, forward tie, drawbar | 63 | two transverse ties + the demountable A-frame |
 | Locks and sundry | 30 | |
-| **Total** | **581** | was 1 003 |
+| **Total** | **594** | was 1 003 |
 
 **300 kg is below the floor, and it is worth being precise about why.**
 A braked commercial boat trailer for 3 t weighs 400–600 kg empty, and
 it has no floats, no extenders, no retracting wheels and no dinghy
-duty. Of the 581 here, **129 kg is the two float hulls** — those are
+duty. Of the 594 here, **129 kg is the two float hulls** — those are
 boat, not trailer. The metalwork is 281 kg and the drive 80.
 
 The remaining levers, in order of size: the girders (93 kg) are sized
@@ -297,7 +251,7 @@ shock on a trailer axle, ×3.0 wave slam on an outrigger.
 | Member | Case | Moment | Stress | SF | Section |
 |---|---|---|---|---|---|
 | U-girder | 3 292 kg × 2.5 over a 3.1 m simple span | 11.0 kNm | 47 MPa | **2.2** (deflection 8.1 of 12.4 mm governs) | 110 × 240 × 6 box |
-| Extender slider | 70 % of one float's **687 kg** × 3.0, 930 mm lever | 13.2 kNm | 69 MPa | **1.5** | **160 × 220 × 4 box**, single stage |
+| V arm | 70 % of one float's **690 kg** × 3.0, on the arm's own 900 mm | 12.8 kNm | 65 MPa | **1.6** | 120 × 220 × 5 box, two a side |
 | Swing arm (gear) | kerb strike, 0.6 g at the contact patch on the 445 mm arm | 5.1 kNm | 31 MPa | **3.4** | ⌀150 × 12 arm |
 
 Two results changed the design:
