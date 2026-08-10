@@ -112,3 +112,60 @@ So:
   gravel and the odd rock. **81 kg**, and it belongs to the *boat*, not
   the hangar, which is the point — the hangar comes off and the
   protection stays.
+
+
+## 8. Six wheels, a bow ramp, and what it can actually carry
+
+**Six wheels.** A middle pair on the axle centroid at x 3 510. It halves
+the girder spans — the longest bay goes 3 300 → 1 650 — and bending
+goes as the span *squared*, so the girder that was right for two axles
+came out at SF 8 with three. It drops to **90 × 140 × 4, 55 kg the
+pair against 92**: the middle wheels pay for most of themselves. Each
+wheel now carries **517 kg against a 900 kg tyre**.
+
+It is not free. A third notch pair in each float costs **93 kg of
+buoyancy** (185 → 278 kg a side), and buoyancy is what the hangar
+floats and carries cargo on.
+
+**The bow ramp.** 1 600 mm hinged on the frame's forward end,
+projecting forward, lowering 25° to reach from the deck at z 800 down
+to **z 124**. The forward tie is its hinge beam. *(First drawn hinged
+1 600 mm back from there, which swung the ramp straight through that
+tie — the bar was structural, and visible the moment the hangar was
+rendered on its own.)*
+
+### Could a car go up it?
+
+**No.** Two independent limits, and buoyancy is the decisive one.
+
+| Reserve freeboard | Payload afloat |
+|---|---|
+| 20 % | 508 kg |
+| 30 % | **348 kg** |
+| 40 % | 188 kg |
+
+The float pair displaces **1 600 kg** fully immersed and the hangar is
+**793 kg** of that. A car is 900–1 500 kg: it would put the floats
+under before it was aboard.
+
+And it would not fit anyway. Clear width between the girders is
+**1 580 mm** and the deck overhangs to 1 760 — a Kei car's *track*
+fits, its body does not — and the deck is 3 mm plate on ribs at
+1 200 mm centres: right for people and cargo, not for 300 kg wheel
+loads on a 200 mm contact patch.
+
+**Afloat it will carry a quad, two motorbikes, or about 350 kg of
+cargo** with sensible freeboard.
+
+**On the road** it is a different question — as a trailer on its own
+the O2 limit leaves 2 707 kg and the six tyres are good for 5 400 —
+but the deck would need thicker plate and proper wheel tracks first.
+
+### To actually carry a car
+
+Float displacement would have to roughly double: **1 500 kg a side**
+against 800 now. At 5.4 m long and 460 mm wide that means about
+**1 200 mm of depth** instead of 700, which the wing underside will not
+allow, so the float would have to grow in length and beam — and the
+road width is already 2 500 of a 2 550 limit. It is a different boat,
+not an option on this one.
