@@ -316,6 +316,25 @@ DECK_T = 3                         # mm, 5083-H116 tread plate
 DECK_Z = 800                       # on top of the girders
 DECK_RIB = (60, 40, 3)
 DECK_RIB_PITCH = 1200
+# ---- THE BOW RAMP ----
+# A 1600 mm plate hinged on the FRAME'S FORWARD END, projecting
+# forward, that drops to make a loading ramp. The hinge is the forward
+# tie itself.
+#
+# It was first drawn as the forward 1600 mm OF THE DECK, hinged 1600
+# back from the frame's end - which put the forward tie, a beam right
+# across the frame, in the middle of the ramp's swing. Visible the
+# moment the hangar is rendered on its own.
+#
+# Lowered 25 deg it reaches from the deck at z 800 down to z 124 -
+# enough to drive a quad or a bike aboard off a slipway or a low quay,
+# and to walk gear on and off. It is NOT a car ramp; see the payload
+# note in docs/hangar.md.
+RAMP_L = 1600                      # of the deck's own length
+RAMP_DEG = 25.0                    # lowered
+RAMP_KG = 35                       # 1600 x 1780 of 3 mm plate on
+                                   # edge angle, plus pins, gas
+                                   # struts and the latch
 DECK_STRINGER = (90, 140, 4)       # centreline beam: without it each
                                    # panel cantilevers 890 mm off its
                                    # girder, which 3 mm plate will not do
@@ -354,7 +373,7 @@ def deck_mass_alu():
     sb, sh, st = DECK_STRINGER
     a_s = sb * sh - (sb - 2 * st) * (sh - 2 * st)
     stringer = a_s * l * 2.7e-6
-    return (plate + ribs + stringer) * 1.10
+    return (plate + ribs + stringer) * 1.10 + RAMP_KG
 
 
 # ---- THE KEEL SHOE ----
@@ -460,11 +479,16 @@ SEAL_DIA = 90
 # The girders have to REACH the wheels. They ran bight-to-spike-end at
 # x 3300 while the forward station sits at 5200, so that pair hung on
 # nothing at all - visible the moment the frame is rendered on its own.
-GIRDER_SECTION = (110, 200, 5)     # b, h, wall - see structure_calc.
-                                   # 240x6 was sized when the girder
-                                   # was 3.4 m; at 5.7 m it came out
-                                   # at SF 3.7 and 5.7 mm of sag, so
-                                   # it comes back down a size
+GIRDER_SECTION = (90, 140, 4)      # b, h, wall - see structure_calc.
+                                   # SIX wheels halve the girder spans:
+                                   # the longest bay goes 3300 -> 1650,
+                                   # and bending goes as the span
+                                   # SQUARED, so the section that was
+                                   # right for two axles came out at
+                                   # SF 8 and 0.8 mm of sag with three.
+                                   # This is 51 kg the pair against 92 -
+                                   # the middle wheels pay for most of
+                                   # themselves in girder steel saved.
 ARM_R = 445                        # pivot to axle
 ARM_PIVOT_Z = 445                  # so the axle reaches z 0 hanging down
 ARM_LIFT = 2 * ARM_R               # 890 mm of travel
@@ -495,7 +519,12 @@ HUB_DIA = 305            # 12 in rim
 # WHEEL STATIONS, world x - the wheels are on the FRAME now, not on
 # the floats. Two axles, wheelbase 3300, centroid 3550 so the CG at
 # 3300 sits inside it and the coupling gets 91 kg down.
-WHEEL_XS = (1860, 5160)
+WHEEL_XS = (1860, 3510, 5160)      # SIX wheels: a middle pair on the
+                                   # axle centroid. It halves the girder
+                                   # spans, drops each wheel from 743 to
+                                   # 495 kg against a 900 kg tyre, and
+                                   # gives a spread-out load path for a
+                                   # deck that now carries cargo.
 WHEEL_Y = 910                      # wheel centreline: the pocket eats
                                    # the float's INNER half (810..1010)
                                    # and straddles the stem face. Track
@@ -662,8 +691,8 @@ def well_loss_kg():
     """kg of buoyancy the wheel notches take out of ONE float: the notch
     that lets the wheel down past it, plus the full-height slot where
     the fixed leg tube passes."""
-    return (2 * (WELL_L * WELL_W * WELL_H
-                 + WELL_TUBE_L * WELL_W * (FLOAT_H - WELL_H))
+    return (len(WHEEL_XS) * (WELL_L * WELL_W * WELL_H
+                             + WELL_TUBE_L * WELL_W * (FLOAT_H - WELL_H))
             / 1e9 * 1000)
 
 
@@ -1405,12 +1434,14 @@ MASS_UGIRDER = 0           # computed: see girder_mass()
                            # span at 3.1 m and the 160-deep section
                            # deflected 22.6 mm against a 12.4 limit -
                            # stiffness, not stress, set this size
-MASS_WHEELS_HUBS = 60      # 4 x 15 kg 155/70 R12C on steel
+MASS_WHEELS_HUBS = 15 * 2 * len(WHEEL_XS)   # 15 kg a wheel,
+                           # 155/70 R12C on steel rims
 MASS_EXTENDERS = 0         # computed: see swing_arm_mass()
                            # 70x70x4 chords - the chords take the
                            # moment axially instead of a box wall
                            # taking it in bending
-MASS_FLIPGEAR = 4 * ARM_KG   # swing arms: arm, pivot, bearings, actuator
+MASS_FLIPGEAR = 2 * len(WHEEL_XS) * ARM_KG   # wheel swing arms:
+                           # arm, pivot, bearings, actuator
 MASS_HYDRAULICS = 80       # 2 x (3 kW motor + reduction + seal),
                            # one per float, plus controls
 MASS_JETS = 75             # 3 x 2 kW waterjet cartridges incl. ducting
