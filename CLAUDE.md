@@ -62,8 +62,21 @@ forever. Isolate with a private temp dir:
 export TMPDIR=$CLAUDE_JOB_DIR/tmp/fctmp   # mkdir -p first
 ```
 
-A killed run leaves a stale socket that blocks every later launch:
-`rm -f /tmp/FreeCAD` when no FreeCAD is running.
+**A stale socket is the "the file will not open" symptom.** A FreeCAD
+that exits badly leaves `/tmp/FreeCAD` behind; every later launch then
+tries to hand the document to a process that no longer exists and
+appears to do nothing at all. The document is fine — check it headless
+before suspecting it:
+
+```bash
+ps -eo cmd | grep -E "^[^ ]*bin/FreeCAD"      # is one really running?
+rm -f /tmp/FreeCAD                            # only if not
+```
+
+Do **not** test with `pgrep -f FreeCAD.AppImage`: it matches any shell
+whose command line merely mentions the string — including our own
+polling loops — so it reports "running" when nothing is. `view.sh` had
+this bug and it is why the guard never fired.
 
 `--console` also drops to an interactive prompt and hangs unless stdin
 is redirected: always `< /dev/null`.
