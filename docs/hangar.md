@@ -33,12 +33,41 @@ FRONT VIEW                DOCKED                    EXTENDED (sea)
 | Extended | **771 mm** out on the V arms — GM 1.20 → 4.59 m, peak righting 3.8 → 14.8 kNm |
 | Dinghy | both floats + bight: 6.1 m beam, 216 mm freeboard with two aboard |
 
-## 2. Docking — the fork
+## 2. Docking — slipway only, and why
 
-Two tapered **spike rails** per side on the stem faces: the float
-slides on from astern, the taper closes the fit over the last 300 mm,
-and the electric bayonet lock pins it. The bow fairing takes the water
-first; the float noses never see slam.
+Two tapered **spike rails** per side on the stem faces: the hangar's
+girders slide into their channels from astern, the taper closes the fit
+over the last 300 mm, and the electric bayonet lock pins it.
+
+**It docks on a slipway, not in open water, and that is a real
+limitation rather than a preference.** Afloat:
+
+| | height above its own waterline |
+|---|---|
+| the boat's channel (z 600) | **193 mm** |
+| the hangar's girders (z 600) | **526 mm** |
+
+The hangar floats **334 mm too high** for the two to line up. Drive it
+**2.2 m down a 15 % slipway** (3.3 m down a 10 %) and the channel comes
+to the boat; then the boat floats on from astern along the rails. The
+hangar is on a slope while it does this, so it engages progressively,
+aft end first — which is what the tapered noses are for.
+
+The alternatives were weighed and rejected:
+
+- **Flood ballast** to sink it in open water: 1.70 t of water, 77 % of
+  the float volume, immersion 26 % → 74 %, plus bulkheads, valves, a
+  large pump and the power to run it — on a boat with 7 kg of margin.
+- **Dropping the frame below the keel** so it passes underneath: costs
+  **1.19 m of road height** (3.20 → 4.39 m, over the 4.00 legal limit),
+  puts the whole frame 400 mm underwater whenever the boat floats, and
+  the wheels can then no longer reach their boxes — so they sit in the
+  water, which is the one thing the retracting gear exists to avoid.
+
+**The wheels stay dry in both states**, which is the check that matters:
+retracted, the tyre bottom is at z 629 — **222 mm above the boat's
+waterline** and **555 mm above the hangar's own** when it floats
+detached.
 
 ## 3. Extenders
 

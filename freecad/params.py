@@ -2333,6 +2333,17 @@ def checks(verbose=True, strict=True):
     assert float_buoy_net / 2 >= 300, \
         f"wells leave only {float_buoy_net / 2:.0f} kg of buoyancy per float"
     if verbose:
+        _wlb = draft_for(mass_budget()[1] + CREW_STORES)
+        _sink = (hangar_mass() + 170) / 1.025 / (2 * FLOAT_LEN * FLOAT_W / 1e6)
+        _wlh = (POD_DOCKED[1] - FLOAT_H / 2) + _sink
+        _gap = (T_STEP_Z - _wlh) - (T_STEP_Z - _wlb)
+        print(f"docking         SLIPWAY ONLY. Afloat the boat's channel sits "
+              f"{T_STEP_Z - _wlb:.0f} mm over the water and the hangar's "
+              f"girders {T_STEP_Z - _wlh:.0f} mm over its own, so the hangar "
+              f"floats {_gap:.0f} mm TOO HIGH to slide in. Drive it "
+              f"{_gap / 0.15 / 1000:.1f} m down a 15 % slipway (or "
+              f"{_gap / 0.10 / 1000:.1f} m down a 10 %) and the boat floats "
+              f"on from astern")
         print(f"nesting         floats 0..{FLOAT_LEN} in a {RECESS_DEPTH} mm "
               f"bilge recess; bow solid {LOA - FLOAT_LEN - 200} mm ahead; "
               f"2 spike rails/side, taper {SPIKE_TAPER}")
