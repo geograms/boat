@@ -126,3 +126,34 @@ a feature, it deleted a *part* by making another part do two jobs.
 3. **Foam-core joinery** — decided at panel-ordering time, not at
    fit-out time.
 4. **Float depth**, if the jack-up stance is to be kept as drawn.
+
+
+## The pack travels in the car
+
+The 50 kWh bank is **357 kg** — the single heaviest item on the boat,
+and by a wide margin. It lives in two settee bases that unbolt, so on
+the road it can ride in the **tow car** instead of on the trailer.
+
+| | pack aboard | **pack in the car** |
+|---|---|---|
+| On the road | 2 788 kg | **2 431 kg** |
+| Loaded (crew + stores) | 3 088 | **2 731** |
+| Margin to the 3 500 kg O2 limit | 412 | **769** |
+| Per wheel | 665 kg | **579 kg** (tyre rated 900) |
+| Tongue load | +126 kg | **+117 kg** |
+
+**The balance holds either way, and that is the point.** The battery
+boxes sit at x 2 450 … 4 350, centroid 3 400, against an axle centroid
+of 3 550 — almost exactly over the axles. Taking 357 kg out of a place
+the axles were already carrying moves the LCG **15 mm**, and the
+tongue load by 9 kg. `checks()` asserts the tongue load is in the
+60–130 kg band in **both** states, because a trailer that only
+balances one way is not balanced.
+
+It also puts the mass on an axle that already has brakes and a driver
+over it, instead of behind the coupling.
+
+**One thing this exposed:** the tongue load was being computed on
+`BOAT_MASS`, the 2 000 kg design figure, while the boat weighs 2 788.
+It read 91 kg; the truth is **126 kg** — still in spec, but near the
+top of it rather than mid-band. Fixed to use the computed mass.

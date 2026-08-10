@@ -1372,11 +1372,32 @@ def arch_coupling():
     return (ax - ARCH_EXT * math.cos(r), az + ARCH_EXT * math.sin(r))
 
 
-def tongue_load_kg():
-    """Download on the car's coupling (positive = pressing down)."""
+def road_mass_kg(pack_aboard=True):
+    """kg on the road, and the LCG that goes with it.
+
+    THE BATTERY PACK TRAVELS IN THE CAR. 50 kWh is 357 kg - the single
+    heaviest item on the boat - and it lives in two settee bases that
+    unbolt. Carrying it in the tow car instead of on the trailer takes
+    357 kg off the trailer and puts it on an axle that already has
+    brakes and a driver's seat over it. Returns (kg, LCG mm)."""
+    _items, empty = mass_budget()
+    if pack_aboard:
+        return empty, BOAT_LCG
+    bx = (BATT_BOX_X[0] + BATT_BOX_X[1]) / 2.0
+    m = empty - BATT_MASS
+    return m, (empty * BOAT_LCG - BATT_MASS * bx) / m
+
+
+def tongue_load_kg(pack_aboard=True):
+    """Download on the car's coupling (positive = pressing down).
+
+    Used to be computed on BOAT_MASS, the 2000 kg design figure, while
+    the boat actually weighs 2788 - so it read 91 kg when the truth is
+    126."""
     axle = sum(WHEEL_XS) / len(WHEEL_XS)      # world x now
     cx, _ = arch_coupling()
-    return BOAT_MASS * (BOAT_LCG - axle) / (cx - axle)
+    m, lcg = road_mass_kg(pack_aboard)
+    return m * (lcg - axle) / (cx - axle)
 
 
 def naca_pts(chord, t=0.12, n=20):
@@ -1599,6 +1620,11 @@ def checks(verbose=True, strict=True):
     assert 380 <= cpl_h <= 480, f"coupling height {cpl_h:.0f} mm off-spec"
     assert -cpl_x <= 2100, f"drawbar overhang aft {-cpl_x:.0f} too long"
     assert 60 <= tongue <= 130, f"tongue load {tongue:.0f} kg off-spec"
+    # AND IT HAS TO STAY IN SPEC WITH THE PACK OUT. The boat tows both
+    # ways, so a balance that only works loaded is not a balance.
+    _t_out = tongue_load_kg(pack_aboard=False)
+    assert 60 <= _t_out <= 130, \
+        f"tongue load {_t_out:.0f} kg with the pack in the car - off-spec"
     assert sea_x < -300, "sea gantry not clear aft of the transom"
     # winch + anchor on the keel line: an off-centre pull yaws the boat
     # on a slipway and fights the wheels
@@ -1818,8 +1844,15 @@ def checks(verbose=True, strict=True):
               f"{WL_Z - grid_top:.0f} mm under WL, face v {face_v:.2f} m/s")
         print(f"stern arch      gantry {-sea_x:.0f} mm aft of transom, "
               f"{sea_z - WL_Z:.0f} above WL")
+        _m_in, _l_in = road_mass_kg(True)
+        _m_out, _l_out = road_mass_kg(False)
         print(f"stern tow       coupling {cpl_h:.0f} mm high, overhang aft "
               f"{-cpl_x:.0f} mm, tongue load {tongue:+.0f} kg")
+        print(f"pack in the car {BATT_KWH:.0f} kWh = {BATT_MASS:.0f} kg out of "
+              f"two unbolting settee bases: road {_m_in:.0f} -> {_m_out:.0f} kg, "
+              f"tongue {tongue:+.0f} -> {tongue_load_kg(False):+.0f} kg, "
+              f"per wheel {(_m_in - tongue) / 4:.0f} -> "
+              f"{(_m_out - tongue_load_kg(False)) / 4:.0f} kg")
         print(f"aft entry       {DOOR_Z1 - COCKPIT_FLOOR} mm clear at the door, "
               f"bulwark {CABIN_BASE_Z - COCKPIT_FLOOR}, "
               f"floor {COCKPIT_FLOOR - WL_Z} above WL, ladder {stair_ang:.0f} deg")
