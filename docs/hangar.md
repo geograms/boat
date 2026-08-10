@@ -33,39 +33,43 @@ FRONT VIEW                DOCKED                    EXTENDED (sea)
 | Extended | **771 mm** out on the V arms — GM 1.20 → 4.59 m, peak righting 3.8 → 14.8 kNm |
 | Dinghy | both floats + bight: 6.1 m beam, 216 mm freeboard with two aboard |
 
-## 2. Docking — winched in afloat, no slipway
+## 2. Docking — screw the frame down, afloat
 
-There is no slipway in the plan, so the hangar docks **in the water**.
-It is pulled in from astern, under the hull, on a steel cable to the
-2 t recovery winch already on the stern gantry.
+No slipway, no winching against buoyancy. **A rotating electric screw
+sits in each V arm, between the float and the frame.** The floats stay
+where the water puts them; the screws drive the **frame** up and down
+relative to them.
 
-**What has to be overcome.** Afloat, the boat's channel sits **192 mm**
-above the water and the hangar's girders sit **526 mm** above its own.
-The hangar therefore floats **334 mm too high** to slide in, and that
-gap is buoyancy: **1 703 kg** of it.
+| Setting | Frame drop | What it is for |
+|---|---|---|
+| up | 0 | towing, and carrying the boat |
+| **dock** | **334 mm** | channel and girders line up exactly |
+| under | 700 mm | frame **174 mm below the water** — it passes under a floating boat with nothing to catch |
 
-| | |
-|---|---|
-| Straight pull | 1 703 kg — more than the 2 t winch should be asked for |
-| **Through a 2:1 purchase** | **851 kg** — comfortable, one extra block |
+**Why this and not the two attempts before it.** Afloat the boat's
+channel sits **188 mm** above the water and the hangar's girders
+**526 mm** above its own, so the frame has to come down **334 mm**.
 
-The cable leads from the hangar's bight, forward under the hull to a
-turning block on the keel shoe, and back up to the winch. Wind it in
-and the hangar is drawn forward and down until the girders enter their
-channels; the tapered noses and the last 300 mm of rail do the fine
-alignment, and the bayonet locks pin it. **Slack the cable off and its
-own buoyancy walks it back out** — launching needs no power at all.
+- *Winch it down:* 1 703 kg of buoyancy on a cable, 851 kg even through
+  a 2:1 purchase. Doable, but it fights the boat every time.
+- *Slipway:* needs a slipway. There isn't one in the plan.
+- *Screws:* the same 334 mm, wound in, repeatable, and it stops
+  wherever you leave it.
 
-**No ramp is cut in the hull, and two attempts proved why.** At the
-full 334 mm the channel has to be cut up to z 1 134 at the transom,
-which takes the stern bottom with it. At 120 mm the hull volume came
-out **identical with the cut and without it** — because the channel is
-already an open mouth at the transom. There was never anything to
-flare.
+**4 screws, 700 mm of travel, 887 kg each** with the boat aboard —
+the floats carry it through the arms, so the screws are in that load
+path. Trapezoidal and self-locking, which makes them the **ride-height
+adjustment** as well: set the boat's attitude on the frame and it stays
+there with no power and no pin.
 
-**The wheels stay dry throughout**: retracted, the tyre bottom is at
-z 629, **222 mm above the boat's waterline** and **555 mm above the
-hangar's own** when it floats detached.
+**No ramp is cut in the hull**, and two attempts proved why: at the
+full 334 mm the channel has to be cut up to z 1 134 at the transom and
+takes the stern bottom with it; at 120 mm the hull volume came out
+*identical* with the cut and without it, because the channel is already
+an open mouth at the transom. There was never anything to flare.
+
+**The wheels stay dry throughout** — retracted, the tyre bottom is
+222 mm above the boat's waterline and 555 mm above the hangar's own.
 
 ## 3. Extenders
 

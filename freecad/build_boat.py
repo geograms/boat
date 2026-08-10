@@ -727,6 +727,23 @@ def build_hangar(phi, coupled=True, tow="sea"):
             arm.Placement = Placement(
                 Vector(px, py, 0), Rotation(Vector(0, 0, 1), sy * yawd))
             parts.append(arm)
+            # THE ARM JACK at the float end: a rotating electric screw
+            # between the float and the frame. The floats stay where
+            # the water puts them; winding these drives the FRAME down,
+            # 334 mm to line the channel up for docking and 700 to put
+            # it under the water entirely. Self-locking, so it doubles
+            # as the ride-height setting once the boat is aboard.
+            parts.append(Part.makeCylinder(
+                P.ARM_JACK_TUBE_D / 2, P.ARM_JACK_STROKE * 0.55,
+                Vector(tx, ty, P.BEAM_Z0 + P.BEAM_H / 2),
+                Vector(0, 0, -1)))
+            parts.append(Part.makeCylinder(
+                P.ARM_JACK_SCREW / 2, P.ARM_JACK_STROKE * 0.5,
+                Vector(tx, ty, P.BEAM_Z0 + P.BEAM_H / 2 + 40),
+                Vector(0, 0, 1)))
+            parts.append(box(150, 150, 110,
+                             (tx - 75, ty - 75,
+                              P.BEAM_Z0 + P.BEAM_H / 2 + 40)))
             for (qx, qy) in ((px, py), (tx, ty)):     # the two pins
                 parts.append(Part.makeCylinder(
                     P.HINGE_PIN_D / 2, P.BEAM_H + 200,
