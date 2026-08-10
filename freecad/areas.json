@@ -1,10 +1,10 @@
 {
   "bulkheads": 9.938,
-  "cabin_walls": 17.922,
-  "float_deck": 2.853,
-  "float_shell": 24.18,
-  "hull_bottom": 15.278,
-  "hull_deck": 4.324,
-  "hull_topsides": 15.901,
+  "cabin_walls": 23.44,
+  "float_deck": 4.702,
+  "float_shell": 19.36,
+  "hull_bottom": 13.118,
+  "hull_deck": 5.325,
+  "hull_topsides": 33.732,
   "roof_sandwich": 12.414
 }

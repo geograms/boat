@@ -132,7 +132,19 @@ FLOAT_LEN = 5400           # see the EXTENDER SLIDERS block: righting
                                    # swing wing needs fore-and-aft room
 FLOAT_W = 460                      # the shorter swing-wing float has to
                                    # win its volume back in section
-FLOAT_H = 540                      # bottom flush with the keel plane
+FLOAT_H = 700                      # DEPTH is the cheap stability lever.
+                                   # At 540 the float sat 71 % immersed
+                                   # with 155 mm of freeboard, and that
+                                   # freeboard is what ended the righting
+                                   # curve at 13 deg - the lee float went
+                                   # under at 5. Depth buys reserve
+                                   # without buying beam, without loading
+                                   # the arms harder and without moving
+                                   # the wheels. See docs/stability.md.
+                                   # The bottom is NO LONGER flush with
+                                   # the keel: the wing underside caps
+                                   # the top, so the extra depth goes
+                                   # downward. Float spans z -110..590.
 # SWING WING (the Dragonfly pattern). Two arms per side on VERTICAL
 # pins at the stem face, ends pinned to the float: a parallelogram, so
 # the float stays parallel to the hull through the whole swing. No
@@ -218,7 +230,14 @@ ARM_OPEN_DEG = 59.0                # open angle: 900 x sin59 = 771 mm
                                    # outboard, which is the extension,
                                    # and 437 mm aft, which is free
 ARM_XS = (2700, 4600)              # the two pin stations a side
-ARM_SECTION = (120, 220, 5)        # box, 6082-T6, in the z 380..600 band
+ARM_SECTION = (160, 220, 5)        # box, 6082-T6, in the z 380..600 band.
+                                   # 120 wide gave SF 1.60 against a
+                                   # 540 mm float; the 700 mm float
+                                   # carries 893 kg a side instead of
+                                   # 690, and that lands on these arms.
+                                   # 160 puts it back to 1.50 and costs
+                                   # 1.1 kg an arm - the honest price of
+                                   # the deeper float.
 ARM_PAD = 1.15                     # pins, bushes, stop, lugs
 ARM_GROOVE_W = 120                 # the groove in the float's inner face
 ARM_GROOVE_D = 160                 # that the arm lies in when docked
@@ -270,7 +289,11 @@ BEAM_H = 220                       # over the waterline, top flush under
 
 
 DOCK_CLEAR = 10                    # float top to the wing underside
-POD_DOCKED = (STEM_HW + FLOAT_W / 2, FLOAT_H / 2 - DOCK_CLEAR)
+# The float hangs from the WING, not from the keel plane. Anchoring it
+# to the keel was fine while the float was shallower than the T step;
+# now the top is what is constrained and the depth grows downward.
+POD_DOCKED = (STEM_HW + FLOAT_W / 2,
+              T_STEP_Z - DOCK_CLEAR - FLOAT_H / 2)
 POD_SEA = (float_pose(90)[1], POD_DOCKED[1])            # extended -
                                                     # compact stance by
                                                     # choice (2/3 of 2.5)
@@ -389,7 +412,7 @@ HUB_DIA = 305            # 12 in rim
 # WHEEL STATIONS, world x - the wheels are on the FRAME now, not on
 # the floats. Two axles, wheelbase 3300, centroid 3550 so the CG at
 # 3300 sits inside it and the coupling gets 91 kg down.
-WHEEL_XS = (1900, 5200)
+WHEEL_XS = (1860, 5160)
 WHEEL_Y = 910                      # wheel centreline: the pocket eats
                                    # the float's INNER half (810..1010)
                                    # and straddles the stem face. Track
@@ -472,7 +495,7 @@ POCKET_TOP = 1180                  # sole is at 620, so 560 mm proud
 # up into their boxes with nothing beside them.
 WELL_L = 800                       # along the float, matching the box
 WELL_W = 230                       # the float's inner half of 460
-WELL_H = 320                       # from the float's bottom up; the top
+WELL_H = 420                       # from the float's bottom up; the top
                                    # 220 mm of the inner half stays solid
 WELL_TUBE_L = 240                  # the ARM and its pivot live in the
                                    # recess up to z 445, above the wheel

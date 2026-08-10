@@ -144,13 +144,13 @@ wheels vertical. Water: float flat, wheels dry above the waterline. Six
 155/70 R12C trailer wheels on swing arms, electric-over-hydraulic drive with the
 machinery sealed inside the floats. → [docs/wheels.md](docs/wheels.md)
 
-**Stability** — the stem alone has **GM −0.42 m**: the floats are not a
+**Stability** — the stem alone has **GM −0.43 m**: the floats are not a
 stability aid, they *are* the stability. Extending them takes GM from
-1.26 to **4.76 m**, peak righting from 7.9 to **14.5 kNm**, and beam
-from 2.48 to **4.02 m**. The curve peaks at 13° and saturates, because
-the float has only 155 mm of freeboard. What actually limits the boat
-in a blow is windage, not the floats: stand the solar rails up in a
-Beaufort 6 gust and the margin falls to 1.10.
+1.20 to **4.59 m** and peak righting from 3.8 to **14.8 kNm** — nearly
+**4 ×** — and beam from 2.48 to **4.02 m**. The curve peaks at 16° and
+saturates there: the float has 205 mm of freeboard. What actually
+limits the boat in a blow is windage, not the floats: stand the solar
+rails up in a Beaufort 6 gust and the margin falls to 1.12.
 → [docs/stability.md](docs/stability.md)
 
 **Propulsion** — flush perforated intake grids on the float sides below

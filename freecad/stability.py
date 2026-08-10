@@ -113,7 +113,8 @@ def gz_curve(y_float, steps=91):
         d_win = max(0.0, d0 - y_float * t)
         b = RHO * P.FLOAT_CB * fl * fb * (d_lee - d_win)      # kg of couple
         m = b * G * y_float * c / 1e6                         # kNm
-        m += W * G * gm_hull / 1000 * math.sin(math.radians(deg)) / 1000
+        # W*G is newtons, gm_hull is metres -> N.m, so ONE /1000 to kNm
+        m += W * G * gm_hull * math.sin(math.radians(deg)) / 1000
         out.append((deg, m, m * 1000 / (W * G)))
     return out
 

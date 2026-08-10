@@ -8,7 +8,7 @@ change is checked against — nothing on it may be silently dropped.
 
 ## 1. What the floater is
 
-A slim outrigger hull, **5 400 × 460 × 540 mm**, one per side, that
+A slim outrigger hull, **5 400 × 460 × 700 mm**, one per side, that
 does four jobs:
 
 1. **Stabiliser** — extended 0.7 m out on the sliders, it
@@ -118,15 +118,15 @@ to shut the V, and a latch holds it under the hull for the road.
 |---|---|
 | Arms | **2 per side**, pins at x 2 700 and 4 600 |
 | Length | **900 mm** pin to pin |
-| Section | **120 × 220 × 5** box, 6082-T6 |
+| Section | **160 × 220 × 5** box, 6082-T6 |
 | Open | **59°** → float **771 mm out**, 436 mm aft, parallel |
 | Band | z **380 … 600** — 57 mm over the loaded waterline, top flush under the wing |
 | Docked | each arm lies in a **120 × 160 groove** in the float's inner face |
 | Opening | the water does it |
 | Closing | a rope to a block on the frame's forward tie |
 | Holding | a hard stop on the girder, and a latch for the road |
-| Load | 70 % of the float's 690 kg reserve × 3.0 slam on the arm's own length → 12.8 kNm, 65 MPa, **SF 1.60** |
-| Mass | **9.2 kg the arm, 51 kg the whole system** both sides |
+| Load | 70 % of the float's 893 kg displacement × 3.0 slam on the arm's own length → 16.6 kNm, 70 MPa, **SF 1.50** |
+| Mass | **10.3 kg the arm, 55 kg the whole system** both sides |
 
 ### Why the arm is short
 
@@ -165,7 +165,7 @@ Righting **SF 2.2** against the 1.9 required.
 - **Detachable**: docks and undocks on the water, fork-and-lock, with
   the crew in the cockpit.
 
-## 7b. Mass — the 300 kg target, and where the 594 actually goes
+## 7b. Mass — the 300 kg target, and where the 589 actually goes
 
 Asked for a hangar under 300 kg. Every line below is **computed** —
 from measured areas times a laminate schedule, or from a section times
@@ -173,20 +173,20 @@ a length — not estimated:
 
 | Item | kg | Note |
 |---|---|---|
-| Float shells (GRP) | 129 | 5 400 × 460 × 540 each, PET60 15 mm core, 800/600 skins |
+| Float shells (GRP) | 121 | 5 400 × 460 × 700 each, PET60 15 mm core, 800/600 skins |
 | U-girders | 93 | 110 × 200 × 5 alu, 5 740 long — they have to reach both wheel stations |
 | Wheel swing arms | 88 | four ⌀150 × 12 arms, pivots, actuators |
 | Drive + seals | 80 | 2 × 3 kW, 100:1, one face seal a side |
 | Wheels + hubs | 60 | 4 × 155/70 R12C on steel |
-| **V arms + ropes** | **51** | **was 209 as a telescope** |
+| **V arms + ropes** | **55** | **was 209 as a telescope** |
 | Bight, forward tie, drawbar | 63 | two transverse ties + the demountable A-frame |
 | Locks and sundry | 30 | |
-| **Total** | **594** | was 1 003 |
+| **Total** | **589** | was 1 003 |
 
 **300 kg is below the floor, and it is worth being precise about why.**
 A braked commercial boat trailer for 3 t weighs 400–600 kg empty, and
 it has no floats, no extenders, no retracting wheels and no dinghy
-duty. Of the 594 here, **129 kg is the two float hulls** — those are
+duty. Of the 589 here, **129 kg is the two float hulls** — those are
 boat, not trailer. The metalwork is 281 kg and the drive 80.
 
 The remaining levers, in order of size: the girders (93 kg) are sized
@@ -253,7 +253,7 @@ shock on a trailer axle, ×3.0 wave slam on an outrigger.
 | Member | Case | Moment | Stress | SF | Section |
 |---|---|---|---|---|---|
 | U-girder | 3 292 kg × 2.5 over a 3.1 m simple span | 11.0 kNm | 47 MPa | **2.2** (deflection 8.1 of 12.4 mm governs) | 110 × 240 × 6 box |
-| V arm | 70 % of one float's **690 kg** × 3.0, on the arm's own 900 mm | 12.8 kNm | 65 MPa | **1.6** | 120 × 220 × 5 box, two a side |
+| V arm | 70 % of one float's **893 kg** × 3.0, on the arm's own 900 mm | 16.6 kNm | 70 MPa | **1.5** | 160 × 220 × 5 box, two a side |
 | Swing arm (gear) | kerb strike, 0.6 g at the contact patch on the 445 mm arm | 5.1 kNm | 31 MPa | **3.4** | ⌀150 × 12 arm |
 
 Two results changed the design:
