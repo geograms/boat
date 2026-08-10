@@ -81,12 +81,33 @@ this bug and it is why the guard never fired.
 `--console` also drops to an interactive prompt and hangs unless stdin
 is redirected: always `< /dev/null`.
 
-**A headless-built file opens with no camera.** Hand a `boat_*.FCStd`
-straight to FreeCAD and you get an empty grey window zoomed to a few
-millimetres, with the model off screen — indistinguishable from a file
-that failed to load. The tree is populated; only the view is wrong.
-`view.sh` runs `open_modes.py`, which opens each document and does
-`viewAxonometric` + `ViewFit`. Never pass the filenames directly.
+**A headless-built file has NO GUI DOCUMENT AT ALL.** This is the root
+cause of every "boat_detached will not load" report, and it took three
+rounds to find because the symptom points at the file:
+
+```bash
+python3 -c "import zipfile; print(zipfile.ZipFile('boat_detached.FCStd').namelist())"
+# ['Document.xml']          <- headless build: no GuiDocument.xml
+# ['Document.xml', 'GuiDocument.xml']   <- was saved by a GUI run
+```
+
+`--console` has no GUI, so there are no view providers to save. Open
+such a file afterwards and FreeCAD invents the view state: **every
+object hidden, every colour default grey, no camera**. The tree is
+fully populated the whole time, which is exactly what makes it look
+like a broken file.
+
+The fix is in two halves and both must stay:
+
+1. `build_boat.py` records every object's colour and transparency as
+   it builds and writes `boat_<mode>.look.json` beside the `.FCStd`.
+2. `open_modes.py` opens the document, forces **every** object
+   visible, re-applies that colour map, hides the interior groups so
+   they do not read as a cutaway through the glazing, then
+   `viewAxonometric` + `ViewFit`.
+
+`view.sh` runs `open_modes.py`. **Never hand the filenames to FreeCAD
+directly** — you will get the hidden, grey, unfittable version.
 
 **Never build with the GUI up.** FreeCAD makes a view provider for
 every shape, so a GUI build is roughly ten times slower than

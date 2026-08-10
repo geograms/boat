@@ -6,6 +6,7 @@
 # Output: freecad/boat_<mode>.FCStd
 import os
 import sys
+import json
 import math
 import math as _math
 
@@ -1395,14 +1396,26 @@ def build_mode(mode):
     cfg = P.MODES[mode]
     doc = App.newDocument("boat_" + mode)
 
+    # A HEADLESS build writes no GuiDocument.xml - there is no GUI, so
+    # there are no view providers to save. Open such a file later and
+    # FreeCAD invents defaults: every object hidden, every colour grey,
+    # and nothing for ViewFit to fit. That is why a freshly built model
+    # looked like it "would not load".
+    #
+    # So record the appearance as we go and write it beside the .FCStd.
+    # open_modes.py applies it when the document is opened.
+    look = {}
+
     def add(name, shape, color=None, transparency=0, group=None):
         obj = doc.addObject("Part::Feature", name)
         obj.Shape = shape
         if group:
             group.addObject(obj)
-        if App.GuiUp and color:
-            obj.ViewObject.ShapeColor = color
-            obj.ViewObject.Transparency = transparency
+        if color:
+            look[name] = {"color": list(color), "transparency": transparency}
+            if App.GuiUp:
+                obj.ViewObject.ShapeColor = color
+                obj.ViewObject.Transparency = transparency
         return obj
 
     g_gear = doc.addObject("App::DocumentObjectGroup", "Hangar")
@@ -1502,6 +1515,8 @@ def build_mode(mode):
     doc.recompute()
     out = os.path.join(SCRIPT_DIR, f"boat_{mode}.FCStd")
     doc.saveAs(out)
+    with open(os.path.join(SCRIPT_DIR, f"boat_{mode}.look.json"), "w") as fh:
+        json.dump(look, fh, indent=1, sort_keys=True)
     print("saved", out)
     return doc
 
