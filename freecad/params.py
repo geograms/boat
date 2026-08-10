@@ -321,20 +321,26 @@ DECK_STRINGER = (90, 140, 4)       # centreline beam: without it each
                                    # girder, which 3 mm plate will not do
 
 
-DECK_L = 3200                      # NOT the full 5700 of the frame.
-                                   # Plate is the whole cost of a deck -
-                                   # full length is 134 kg against 75 -
-                                   # and 3.2 x 1.78 m is already more
-                                   # standing room than a tender needs.
-                                   # It sits at the aft end, over the
-                                   # bight, where the drawbar and the
-                                   # boarding are.
+# DECK_L is GIRDER_LEN, resolved in deck_panels() because the
+# girders are defined further down.  THE WHOLE FRAME, bight to forward
+                                   # tie. Detached and lying alongside,
+                                   # the hangar is then a 5.7 x 1.78 m
+                                   # pontoon - 10.1 m2, which roughly
+                                   # doubles the boat's own 12.7 m2 of
+                                   # roof deck. That is the point of it:
+                                   # somewhere to work, swim off, or put
+                                   # a boat's worth of gear while the
+                                   # cabin stays a cabin.
+                                   #
+                                   # Plate is the whole cost of a deck,
+                                   # so this is 134 kg against 76 for
+                                   # the 3.2 m version. Paid knowingly.
 
 
 def deck_panels():
     """(panel width mm, length mm) - two of them, one each side of the
     centreline, so one person and the haul rope can lift each."""
-    return (GIRDER_Y + GIRDER_SECTION[0] / 2, DECK_L)
+    return (GIRDER_Y + GIRDER_SECTION[0] / 2, GIRDER_LEN)
 
 
 def deck_mass_alu():
@@ -2335,6 +2341,13 @@ def checks(verbose=True, strict=True):
             f"{all_up + CREW_STORES - 3500:.0f} kg over the 3500 limit - "
             "the calculated scantlings (structure_calc.py) cost more "
             "than the guessed ones; see docs/weight.md for the levers")
+    if 3500 - (all_up + CREW_STORES) < 150:
+        open_items.append(
+            f"road margin: only {3500 - all_up - CREW_STORES:.0f} kg under "
+            f"the 3500 kg O2 limit loaded. The full-length hangar deck is "
+            f"{deck_mass_alu():.0f} kg of it; the battery pack in the car "
+            f"gives {3500 - road_mass_kg(False)[0] - CREW_STORES:.0f} kg "
+            "back. Weigh the boat before believing any of it")
     if all_up > DESIGN_ALL_UP:
         open_items.append(
             f"mass budget: {all_up:.0f} kg computed vs {DESIGN_ALL_UP} kg "

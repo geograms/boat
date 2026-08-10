@@ -97,14 +97,16 @@ structure. And hanging the plate off the **floats** is out — they move.
 
 So:
 
-- **The deck** — 3.2 × 1.78 m of 3 mm 5083 tread plate in two panels,
-  on the frame between the girders at z 800, with a centreline
-  stringer so neither panel cantilevers off its girder. Undocked it is
-  what people stand on, 760 mm above the dinghy's waterline. Docked it
-  lifts out, because at z 800 between the girders is the inside of the
-  boat. **76 kg.** Full frame length would be 134 — plate is the whole
-  cost of a deck, and 3.2 m is already more standing room than a tender
-  needs.
+- **The deck** — **5.70 × 1.78 m**, the whole frame, in 3 mm 5083 tread
+  plate on two panels with a centreline stringer and bearers, so
+  neither panel cantilevers off its girder. **10.1 m²**, which roughly
+  doubles the boat's own 12.7 m² of roof deck: detached and lying
+  alongside, the hangar is a pontoon to work on, swim off, or park a
+  boat's worth of gear on while the cabin stays a cabin. 760 mm above
+  its own waterline. Docked it lifts out, because at z 800 between the
+  girders is the inside of the boat. **134 kg** — plate is the whole
+  cost of a deck, and this is the biggest single item on the hangar
+  after the float shells.
 - **The keel shoe** — 3 mm 5083 bolted flat on the stem's 1 560 mm
   bottom, transom to x 6 000. Sacrificial: it takes slipway rash,
   gravel and the odd rock. **81 kg**, and it belongs to the *boat*, not

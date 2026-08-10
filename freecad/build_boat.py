@@ -755,6 +755,9 @@ def build_hangar(phi, coupled=True, tow="sea"):
     dw, dl = P.deck_panels()
     sb, sh, _st = P.DECK_STRINGER
     parts.append(box(dl, sb, sh, (P.GIRDER_X0, -sb / 2, P.DECK_Z - sh)))
+    for _k in range(1, int(dl / 1400)):        # deck bearers on the stringer
+        parts.append(box(80, 2 * dw, 60,
+                         (P.GIRDER_X0 + _k * 1400, -dw, P.DECK_Z - 60)))
     if phi > 0:                     # laid only when the boat is off
         for sy in (-1, 1):
             parts.append(box(dl, dw, P.DECK_T,
