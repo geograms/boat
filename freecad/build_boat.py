@@ -743,6 +743,28 @@ def build_hangar(phi, coupled=True, tow="sea"):
                          (P.FLOAT_X_DOCKED - P.FLOAT_LEN / 2 + 500,
                           sy * P.STEM_HW - 60, P.BEAM_Z0 + 40)))
 
+    # ---- THE FLOOR. Aluminium deck panels between the girders, on
+    # the frame and only on the frame: the floats move, so nothing here
+    # touches them. Undocked this is what people stand on; docked it
+    # lifts out, because at z 800 between the girders is the inside of
+    # the boat.
+    #
+    # It is NOT the hull's bottom protection - the frame has nothing
+    # below the keel to hang a plate from. That job belongs to the keel
+    # shoe on the boat. See the note in params.
+    dw, dl = P.deck_panels()
+    sb, sh, _st = P.DECK_STRINGER
+    parts.append(box(dl, sb, sh, (P.GIRDER_X0, -sb / 2, P.DECK_Z - sh)))
+    if phi > 0:                     # laid only when the boat is off
+        for sy in (-1, 1):
+            parts.append(box(dl, dw, P.DECK_T,
+                             (P.GIRDER_X0, 0 if sy > 0 else -dw, P.DECK_Z)))
+            rb, rh, _rt = P.DECK_RIB
+            for k in range(int(dl / P.DECK_RIB_PITCH) + 1):
+                parts.append(box(rb, dw, rh,
+                                 (P.GIRDER_X0 + k * P.DECK_RIB_PITCH,
+                                  0 if sy > 0 else -dw, P.DECK_Z - rh)))
+
     # ---- THE BIGHT AND THE FORWARD TIE. Two girders on their own are
     # two rails; what makes them a frame is a transverse tie at each
     # end. Both sit at girder level in the wing channel, so neither is

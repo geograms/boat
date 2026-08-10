@@ -288,6 +288,83 @@ BEAM_H = 220                       # over the waterline, top flush under
                                    # the wing at 600
 
 
+# ---- THE HANGAR FLOOR ----
+# An aluminium floor on the frame, between the girders. Undocked it is
+# the deck people stand on; it is carried entirely by the frame and
+# never touches the floats, which move.
+#
+# It CANNOT also be the hull's bottom protection, and it is worth
+# writing down why so nobody tries again. The frame has no structure
+# below the keel: the girders sit at y +-835, z 600..800, which is
+# ABOVE the stem and OUTBOARD of it. Every route from there down to the
+# keel is blocked -
+#
+#   below z 600 the stem is 1560 wide, y +-780, and the float's inner
+#   face is at y 780 too: zero gap to thread anything through
+#   at y 835 the docked float fills z -110..590 from x 600 to 6000
+#   forward of x 5600 the bow goes full width (half-width 1081 at
+#   z 300), so there is no clear drop there either
+#
+# which leaves 720 mm of a 5700 mm frame, at the stern, as the only
+# place a leg could reach the water. A 5 m cantilever off that is not
+# structure, it is a wish.
+#
+# So hull protection is a KEEL SHOE bolted to the boat (below), and the
+# floor is a deck on the frame. Two parts, because one part cannot be
+# in two places.
+DECK_T = 3                         # mm, 5083-H116 tread plate
+DECK_Z = 800                       # on top of the girders
+DECK_RIB = (60, 40, 3)
+DECK_RIB_PITCH = 1200
+DECK_STRINGER = (90, 140, 4)       # centreline beam: without it each
+                                   # panel cantilevers 890 mm off its
+                                   # girder, which 3 mm plate will not do
+
+
+DECK_L = 3200                      # NOT the full 5700 of the frame.
+                                   # Plate is the whole cost of a deck -
+                                   # full length is 134 kg against 75 -
+                                   # and 3.2 x 1.78 m is already more
+                                   # standing room than a tender needs.
+                                   # It sits at the aft end, over the
+                                   # bight, where the drawbar and the
+                                   # boarding are.
+
+
+def deck_panels():
+    """(panel width mm, length mm) - two of them, one each side of the
+    centreline, so one person and the haul rope can lift each."""
+    return (GIRDER_Y + GIRDER_SECTION[0] / 2, DECK_L)
+
+
+def deck_mass_alu():
+    """kg of both floor panels, plate plus ribs plus handles."""
+    w, l = deck_panels()
+    plate = 2 * w * l * DECK_T * 2.66e-6
+    b, h, t = DECK_RIB
+    a_rib = b * h - (b - 2 * t) * (h - 2 * t)
+    n = int(l / DECK_RIB_PITCH) + 1
+    ribs = 2 * n * a_rib * w * 2.7e-6
+    sb, sh, st = DECK_STRINGER
+    a_s = sb * sh - (sb - 2 * st) * (sh - 2 * st)
+    stringer = a_s * l * 2.7e-6
+    return (plate + ribs + stringer) * 1.10
+
+
+# ---- THE KEEL SHOE ----
+# Bolted to the BOAT, not to the hangar: a sacrificial 3 mm 5083 plate
+# on the stem's flat bottom. It is what takes slipway rash, gravel and
+# the odd rock, and it is there whether the hangar is fitted or not -
+# which is the point, because the hangar comes off.
+SHOE_T = 3
+SHOE_W = 2 * STEM_HW               # the stem's full flat, 1560
+SHOE_X = (0, 6000)                 # transom to where the bow rises
+
+
+def shoe_mass():
+    return (SHOE_X[1] - SHOE_X[0]) * SHOE_W * SHOE_T * 2.66e-6 * 1.08
+
+
 DOCK_CLEAR = 10                    # float top to the wing underside
 # The float hangs from the WING, not from the keel plane. Anchoring it
 # to the keel was fine while the float was shallower than the T step;
@@ -564,7 +641,8 @@ def hangar_mass():
     tie_m = 2 * 2 * (GIRDER_Y + GIRDER_SECTION[0] / 2) / 1000
     alu = tie_m * HANGAR_BIGHT[0] * HANGAR_BIGHT[1] * 0.15 * 2.7e-3
     alu += DRAWBAR_KG
-    return (floats + MASS_WHEELS_HUBS + swing_gear_mass() + MASS_FLIPGEAR +
+    return (floats + MASS_WHEELS_HUBS + swing_gear_mass() + deck_mass_alu() +
+            MASS_FLIPGEAR +
             MASS_HYDRAULICS + girder_mass() + alu +
             4 * LOCK_MOTOR_KG + 20)
 
@@ -1079,6 +1157,7 @@ VCG = {
     "solar curtains": 2100,                    # roof corner, z 1666..2820
     "front dome glazing": 2000,
     "waterjets": 150,                          # in the float bottoms
+    "keel shoe (alu)": 0,                      # flat on the keel, z 0
 }
 CREW_VCG = 1500               # people stand on the sole at z 620
 
@@ -1641,6 +1720,7 @@ def mass_budget():
     items["exoskeleton (steel)"] = MASS_EXOSKELETON
     items["HANGAR, complete vehicle"] = hangar_mass()
     items["waterjets"] = MASS_JETS
+    items["keel shoe (alu)"] = shoe_mass()
     items["electrics"] = MASS_ELECTRICS
     items["solar curtains"] = curtain_mass()
     items["interior (incl. 50 kWh, water)"] = sum(INT_MASS.values())

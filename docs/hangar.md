@@ -72,3 +72,41 @@ at the girder.
   above z 600, but the heads floor and the tank bays need a layout pass.
 - The stem quarters near the transom want fairing into the jets' inflow.
 - Spike rail wear pads and the bayonet preload need detailing.
+
+
+## 7. The floor, and why it is two parts
+
+Asked for an aluminium bottom on the hangar that would both protect the
+hull underneath and be a platform to walk on when undocked. It has to
+be **two parts**, because one part cannot be in two places — and the
+reason is worth writing down.
+
+**The frame has no structure below the hull.** The girders sit at
+y ±835, z 600 … 800 — *above* the stem and *outboard* of it. Every
+route from there down to the keel is blocked:
+
+| Route | Blocked by |
+|---|---|
+| straight down at y ±835 | the docked float, z −110…590, x 600 … 6 000 |
+| inboard of that | the stem: 1 560 mm wide below z 600, and its face is at y 780 — the same y as the float's inner face, so there is **zero gap** to thread through |
+| forward, past the float's bow | the hull goes full width from x 5 600 (half-width 1 081 at z 300) |
+
+That leaves 720 mm of a 5 700 mm frame, at the stern, as the only place
+a leg could reach the water. A 5 m cantilever off that is not
+structure. And hanging the plate off the **floats** is out — they move.
+
+So:
+
+- **The deck** — 3.2 × 1.78 m of 3 mm 5083 tread plate in two panels,
+  on the frame between the girders at z 800, with a centreline
+  stringer so neither panel cantilevers off its girder. Undocked it is
+  what people stand on, 760 mm above the dinghy's waterline. Docked it
+  lifts out, because at z 800 between the girders is the inside of the
+  boat. **76 kg.** Full frame length would be 134 — plate is the whole
+  cost of a deck, and 3.2 m is already more standing room than a tender
+  needs.
+- **The keel shoe** — 3 mm 5083 bolted flat on the stem's 1 560 mm
+  bottom, transom to x 6 000. Sacrificial: it takes slipway rash,
+  gravel and the odd rock. **81 kg**, and it belongs to the *boat*, not
+  the hangar, which is the point — the hangar comes off and the
+  protection stays.
