@@ -33,41 +33,39 @@ FRONT VIEW                DOCKED                    EXTENDED (sea)
 | Extended | **771 mm** out on the V arms — GM 1.20 → 4.59 m, peak righting 3.8 → 14.8 kNm |
 | Dinghy | both floats + bight: 6.1 m beam, 216 mm freeboard with two aboard |
 
-## 2. Docking — slipway only, and why
+## 2. Docking — winched in afloat, no slipway
 
-Two tapered **spike rails** per side on the stem faces: the hangar's
-girders slide into their channels from astern, the taper closes the fit
-over the last 300 mm, and the electric bayonet lock pins it.
+There is no slipway in the plan, so the hangar docks **in the water**.
+It is pulled in from astern, under the hull, on a steel cable to the
+2 t recovery winch already on the stern gantry.
 
-**It docks on a slipway, not in open water, and that is a real
-limitation rather than a preference.** Afloat:
+**What has to be overcome.** Afloat, the boat's channel sits **192 mm**
+above the water and the hangar's girders sit **526 mm** above its own.
+The hangar therefore floats **334 mm too high** to slide in, and that
+gap is buoyancy: **1 703 kg** of it.
 
-| | height above its own waterline |
+| | |
 |---|---|
-| the boat's channel (z 600) | **193 mm** |
-| the hangar's girders (z 600) | **526 mm** |
+| Straight pull | 1 703 kg — more than the 2 t winch should be asked for |
+| **Through a 2:1 purchase** | **851 kg** — comfortable, one extra block |
 
-The hangar floats **334 mm too high** for the two to line up. Drive it
-**2.2 m down a 15 % slipway** (3.3 m down a 10 %) and the channel comes
-to the boat; then the boat floats on from astern along the rails. The
-hangar is on a slope while it does this, so it engages progressively,
-aft end first — which is what the tapered noses are for.
+The cable leads from the hangar's bight, forward under the hull to a
+turning block on the keel shoe, and back up to the winch. Wind it in
+and the hangar is drawn forward and down until the girders enter their
+channels; the tapered noses and the last 300 mm of rail do the fine
+alignment, and the bayonet locks pin it. **Slack the cable off and its
+own buoyancy walks it back out** — launching needs no power at all.
 
-The alternatives were weighed and rejected:
+**No ramp is cut in the hull, and two attempts proved why.** At the
+full 334 mm the channel has to be cut up to z 1 134 at the transom,
+which takes the stern bottom with it. At 120 mm the hull volume came
+out **identical with the cut and without it** — because the channel is
+already an open mouth at the transom. There was never anything to
+flare.
 
-- **Flood ballast** to sink it in open water: 1.70 t of water, 77 % of
-  the float volume, immersion 26 % → 74 %, plus bulkheads, valves, a
-  large pump and the power to run it — on a boat with 7 kg of margin.
-- **Dropping the frame below the keel** so it passes underneath: costs
-  **1.19 m of road height** (3.20 → 4.39 m, over the 4.00 legal limit),
-  puts the whole frame 400 mm underwater whenever the boat floats, and
-  the wheels can then no longer reach their boxes — so they sit in the
-  water, which is the one thing the retracting gear exists to avoid.
-
-**The wheels stay dry in both states**, which is the check that matters:
-retracted, the tyre bottom is at z 629 — **222 mm above the boat's
-waterline** and **555 mm above the hangar's own** when it floats
-detached.
+**The wheels stay dry throughout**: retracted, the tyre bottom is at
+z 629, **222 mm above the boat's waterline** and **555 mm above the
+hangar's own** when it floats detached.
 
 ## 3. Extenders
 

@@ -549,6 +549,55 @@ WHEEL_Y = 910                      # wheel centreline: the pocket eats
 # The wheels do not move. The arm pivot stays at z 445 on a bracket
 # that drops off the girder, so the axle still travels 0 -> 890 and
 # the wing box is unchanged.
+# ---- THE STERN DOCKING RAMP ----
+# There is no slipway in the plan. The hangar is winched in from
+# astern, under the hull, and the boat's own channel does the lifting.
+#
+# Afloat the hangar's girders sit 334 mm HIGHER above the water than
+# the boat's channel does, so something has to push it down. Straight
+# down that is 1.70 t of buoyancy - a serious winch. Up a RAMP it is
+# only the slope that has to be beaten: over 3000 mm the channel falls
+# 334 mm, 6.4 deg, and the pull drops to about 190 kg plus friction.
+# That is the entire reason for the ramp.
+#
+# A ramp in the hull was drawn twice and thrown away both times. At
+# full 334 mm it cuts the channel up to z 1134 at the transom. At 120
+# it does nothing at all: the hull volume came out identical with the
+# cut and without it, because THE CHANNEL IS ALREADY OPEN AT THE
+# TRANSOM - the hangar's entry is a clear mouth, there is nothing to
+# flare. So the 334 mm is taken by the winch, through a 2:1 purchase:
+#
+#   straight pull   1701 kg   - too much for the 2 t winch to be happy
+#   2:1 purchase     851 kg   - comfortable, one extra block
+#
+# The cable leads from the hangar's bight, forward under the hull to a
+# turning block on the keel shoe, and back up to the 2 t recovery winch
+# already on the stern gantry. Slack it off and the hangar's own
+# buoyancy walks it back out.
+DOCK_ENTRY_MISMATCH = 334          # how much higher the hangar floats
+DOCK_WINCH_PULL_KG = 851           # 1701 kg of buoyancy through a
+                                   # 2:1 purchase. NOTE the winch at
+                                   # the stern arch is a separate thing
+                                   # and already owns WINCH_PULL_KG -
+                                   # this name is prefixed on purpose,
+                                   # a bare WINCH_* would be silently
+                                   # overwritten by it further down.
+DOCK_CABLE_D = 8                   # mm steel, ~4 t breaking
+DOCK_PURCHASE = 2                  # blocks in the tackle
+DOCK_WINCH_KG = 11                 # two blocks, cable and fairlead,
+                                   # nothing more: the 2 t stern winch
+                                   # already on the gantry does the
+                                   # pulling, and 400 kg against its
+                                   # 2000 kg rating is not a stretch.
+                                   # A second winch would have been
+                                   # 26 kg on a boat with no margin.
+
+
+def dock_ramp_deg():
+    import math as _m
+    return _m.degrees(_m.atan2(DOCK_RAMP_RISE, DOCK_RAMP_L))
+
+
 GIRDER_Z0 = T_STEP_Z               # channel floor: the wing underside
 GIRDER_Y = 835                     # just outboard of the stem face,
                                    # over the float's inner half
@@ -1187,6 +1236,7 @@ VCG = {
     "front dome glazing": 2000,
     "waterjets": 150,                          # in the float bottoms
     "keel shoe (alu)": 0,                      # flat on the keel, z 0
+    "dock sheave + fairlead": 200,             # low on the transom
 }
 CREW_VCG = 1500               # people stand on the sole at z 620
 
@@ -1752,6 +1802,7 @@ def mass_budget():
     items["HANGAR, complete vehicle"] = hangar_mass()
     items["waterjets"] = MASS_JETS
     items["keel shoe (alu)"] = shoe_mass()
+    items["dock sheave + fairlead"] = DOCK_WINCH_KG
     items["electrics"] = MASS_ELECTRICS
     items["solar curtains"] = curtain_mass()
     items["interior (incl. 50 kWh, water)"] = sum(INT_MASS.values())
@@ -2337,13 +2388,14 @@ def checks(verbose=True, strict=True):
         _sink = (hangar_mass() + 170) / 1.025 / (2 * FLOAT_LEN * FLOAT_W / 1e6)
         _wlh = (POD_DOCKED[1] - FLOAT_H / 2) + _sink
         _gap = (T_STEP_Z - _wlh) - (T_STEP_Z - _wlb)
-        print(f"docking         SLIPWAY ONLY. Afloat the boat's channel sits "
-              f"{T_STEP_Z - _wlb:.0f} mm over the water and the hangar's "
-              f"girders {T_STEP_Z - _wlh:.0f} mm over its own, so the hangar "
-              f"floats {_gap:.0f} mm TOO HIGH to slide in. Drive it "
-              f"{_gap / 0.15 / 1000:.1f} m down a 15 % slipway (or "
-              f"{_gap / 0.10 / 1000:.1f} m down a 10 %) and the boat floats "
-              f"on from astern")
+        print(f"docking         WINCHED IN AFLOAT, no slipway needed. The "
+              f"boat's channel sits {T_STEP_Z - _wlb:.0f} mm over the water "
+              f"and the hangar's girders {T_STEP_Z - _wlh:.0f} mm over its "
+              f"own, so the hangar floats {_gap:.0f} mm too high: "
+              f"{_gap / 1000 * 2 * FLOAT_LEN * FLOAT_W / 1e6 * 1025:.0f} kg "
+              f"of buoyancy to pull down, {DOCK_WINCH_PULL_KG} kg on the "
+              f"cable through a {DOCK_PURCHASE}:1 purchase, against the "
+              f"{WINCH_PULL_KG} kg stern winch. Slack it and it walks out")
         print(f"nesting         floats 0..{FLOAT_LEN} in a {RECESS_DEPTH} mm "
               f"bilge recess; bow solid {LOA - FLOAT_LEN - 200} mm ahead; "
               f"2 spike rails/side, taper {SPIKE_TAPER}")

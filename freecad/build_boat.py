@@ -208,6 +208,11 @@ def build_hull():
         ry = sy * P.GIRDER_Y
         shell = shell.cut(box(P.GIRDER_X1 + 200, cw, gh + 40,
                               (-100, ry - cw / 2, cz - 20)))
+        # No lead-in is cut here. One was tried at 334 mm and then at
+        # 120, and the hull volume came out IDENTICAL either way - the
+        # channel is already open at the transom, so there was nothing
+        # for the cut to remove. The 334 mm is taken by the winch.
+
         shell = shell.fuse(box(P.GIRDER_X1 + 200, cw + 40, 20,
                                (-100, ry - (cw + 40) / 2, cz + gh)))
         for dy in (-1, 1):
