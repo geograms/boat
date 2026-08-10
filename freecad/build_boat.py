@@ -768,23 +768,16 @@ def build_hangar(phi, coupled=True, tow="sea"):
                 parts.append(box(rb, dw, rh,
                                  (P.GIRDER_X0 + k * P.DECK_RIB_PITCH,
                                   0 if sy > 0 else -dw, P.DECK_Z - rh)))
-        # THE BOW RAMP hinges on the FRAME'S FORWARD END and projects
-        # forward. It used to hinge 1600 mm back from there, which put
-        # the forward tie - a structural beam right across the frame -
-        # in the middle of its swing.  The tie is now the hinge beam
-        # instead of an obstacle.
-        hx = P.GIRDER_X1
-        ramp = box(P.RAMP_L, 2 * dw, P.DECK_T, (0, -dw, -P.DECK_T))
-        ramp.Placement = Placement(
-            Vector(hx, 0, P.DECK_Z),
-            Rotation(Vector(0, 1, 0), P.RAMP_DEG))
-        parts.append(ramp)
-        for sy in (-1, 1):          # the hinge knuckles and a gas strut
-            parts.append(Part.makeCylinder(
-                45, 160, Vector(hx, sy * dw - 80, P.DECK_Z), Vector(0, 1, 0)))
-            parts.append(rod((hx - 700, sy * (dw - 120), P.DECK_Z - 40),
-                             (hx + 500, sy * (dw - 120),
-                              P.DECK_Z - P.RAMP_L * 0.42 * 0.5), 55))
+        # TRACTION BOARDS stowed flat on the deck: two plastic
+        # recovery boards, 4 kg each, that lay off the deck edge to
+        # walk a quad or a bike aboard. They replaced a 35 kg hinged
+        # ramp that had to swing clear of the forward tie.
+        bl, bw_, bt = P.BOARD
+        for k in range(P.BOARD_N):
+            parts.append(box(bl, bw_, bt,
+                             (P.GIRDER_X1 - bl - 200,
+                              -bw_ - 60 + k * (bw_ + 120),
+                              P.DECK_Z + P.DECK_T)))
 
     # ---- THE BIGHT AND THE FORWARD TIE. Two girders on their own are
     # two rails; what makes them a frame is a transverse tie at each

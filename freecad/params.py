@@ -316,25 +316,19 @@ DECK_T = 3                         # mm, 5083-H116 tread plate
 DECK_Z = 800                       # on top of the girders
 DECK_RIB = (60, 40, 3)
 DECK_RIB_PITCH = 1200
-# ---- THE BOW RAMP ----
-# A 1600 mm plate hinged on the FRAME'S FORWARD END, projecting
-# forward, that drops to make a loading ramp. The hinge is the forward
-# tie itself.
+# ---- TRACTION BOARDS instead of a ramp ----
+# The hinged bow ramp is gone. It was 1600 x 1780 of plate on pins and
+# gas struts - 35 kg, a hinge line to keep watertight-ish, and a big
+# flat thing to handle - to do a job two off-the-shelf parts do better.
 #
-# It was first drawn as the forward 1600 mm OF THE DECK, hinged 1600
-# back from the frame's end - which put the forward tie, a beam right
-# across the frame, in the middle of the ramp's swing. Visible the
-# moment the hangar is rendered on its own.
-#
-# Lowered 25 deg it reaches from the deck at z 800 down to z 124 -
-# enough to drive a quad or a bike aboard off a slipway or a low quay,
-# and to walk gear on and off. It is NOT a car ramp; see the payload
-# note in docs/hangar.md.
-RAMP_L = 1600                      # of the deck's own length
-RAMP_DEG = 25.0                    # lowered
-RAMP_KG = 35                       # 1600 x 1780 of 3 mm plate on
-                                   # edge angle, plus pins, gas
-                                   # struts and the latch
+# Two plastic recovery boards, the kind every campervan carries to get
+# a wheel out of sand. 1100 x 320, about 4 kg each, they stow flat on
+# the deck under a clip. Lay them off the deck edge to walk a quad or
+# a bike aboard, or under a wheel on a soft slipway, which is what
+# they were designed for.
+BOARD = (1100, 320, 60)            # a standard recovery board
+BOARD_KG = 4                       # each
+BOARD_N = 2
 DECK_STRINGER = (90, 140, 4)       # centreline beam: without it each
                                    # panel cantilevers 890 mm off its
                                    # girder, which 3 mm plate will not do
@@ -373,7 +367,7 @@ def deck_mass_alu():
     sb, sh, st = DECK_STRINGER
     a_s = sb * sh - (sb - 2 * st) * (sh - 2 * st)
     stringer = a_s * l * 2.7e-6
-    return (plate + ribs + stringer) * 1.10 + RAMP_KG
+    return (plate + ribs + stringer) * 1.10 + BOARD_N * BOARD_KG
 
 
 # ---- THE KEEL SHOE ----
