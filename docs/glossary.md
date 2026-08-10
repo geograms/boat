@@ -92,15 +92,17 @@ Shared language for the design. Geometry values live in
   the shoulder swing 1:1 (90° swing = side-to-flat).
 - **Roll (float roll)** — the float's rotation about its own long axis:
   90° = on its side (road), 0° = flat on the water.
-- **Jack-up stance** — the folded-arms-afloat configuration: floats
-  65 % submerged carry the whole boat, hull keel awash and unloaded.
-  The boat stands on its own floats (self-propelled by the waterjets;
-  nothing external involved).
-- **Pose / mode** — a named configuration of all movable parts: `road`,
-  `launch`, `harbor`, `cruise`, `anchor`.
+- **Jack-up stance** — *removed*. The floats nest under the hull; they
+  never lift the ship. The term survives only in old commit messages.
+- **Pose / mode** — a named configuration of all movable parts:
+  `road`, `launch`, `harbor`, `cruise`, `anchor`, `deck`, `detached`.
 - **Reserve buoyancy** — the float volume above water available to
-  resist heeling; sized to ~82 % of displacement per side (righting
-  safety factor ≥ 3 vs a 50 kn gust).
+  resist heeling. The float sits **71 % immersed** upright, so the
+  reserve is the remaining 155 mm of freeboard, and it is what ends the
+  righting curve at 13°. See [stability.md](stability.md).
+- **GZ curve** — righting arm against heel angle, computed in
+  `freecad/stability.py` for both stances. The only honest way to
+  compare docked with extended.
 - **Bevel (mating face)** — the 12° flat machined/molded on each float
   so it sits flush on the hull bottom in road pose (zero dead space).
 
@@ -175,12 +177,13 @@ Shared language for the design. Geometry values live in
   the float.
 - **Wet-mate connector** — an electrical connector rated to be plugged/
   unplugged and operated underwater.
-- **Skid steering** — steering by running left and right floats' wheels
-  at different speeds; no steered axle.
-- **Tongue load** — the downward weight on the car's tow hitch (~100 kg).
+- **Skid steering** — steering by running the left and right driven
+  wheels at different speeds; no steered axle.
+- **Tongue load** — the downward weight on the car's tow hitch
+  (**128 kg**, or 118 with the battery pack in the car).
 - **Track** — distance between left and right wheel contact patches
-  (2 270 mm).
-- **Wheelbase** — distance from front to rear axle (3 400 mm).
+  (**1 820 mm**).
+- **Wheelbase** — distance from front to rear axle (**3 300 mm**).
 
 ## Solar & energy
 

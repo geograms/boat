@@ -89,11 +89,11 @@ them out to y ±910 gives:
 
 | Wheel at | Track | Tip | Rollover |
 |---|---|---|---|
-| inboard of the girders | 1 300 | 24.9° | 0.46 g |
-| **half into the float** | **1 820** | **33.0°** | **0.65 g** |
-| full float depth | 2 280 | 39.2° | 0.81 g |
+| inboard of the girders | 1 300 | 27.7° | 0.52 g |
+| **half into the float** | **1 820** | **36.3°** | **0.73 g** |
+| full float depth | 2 280 | 42.6° | 0.92 g |
 
-**+8.1° and +41 % of rollover margin** for half a float's width — a tall
+**+11.4° and +59 % of rollover margin** for half a float's width — a tall
 van is ≈0.5 g and a loaded truck 0.35–0.40 g, so this sits in normal
 trailer territory. The float keeps its **outboard** half solid, so the
 skin that meets the water is untouched.
@@ -150,12 +150,14 @@ Righting **SF 2.2** against the 1.9 required.
 
 ## 7. What the floater must PERFORM
 
-- **Buoyancy**: ≥ 300 kg net reserve per float after the wheel bays
-  (asserted in `checks()`); the pair plus bight floats the dinghy with
-  two crew and ≥ 200 mm freeboard.
-- **Righting**: at full extension the pair delivers the boat's
-  stability margin (SF ≥ 1.7 asserted; the compact stance is a chosen
-  trade).
+- **Buoyancy**: ≥ 500 kg of float displacement per side after the wheel
+  notches (asserted in `checks()`); the pair plus bight floats the
+  dinghy with two crew and ≥ 200 mm freeboard.
+- **Righting**: the float pair *is* the boat's stability — the stem
+  alone has GM −0.42 m. Extended, peak righting is **14.5 kNm at 13°**
+  against a Beaufort 6 gust of 4.0, SF 3.6 asserted ≥ 1.9. The curve
+  saturates at 13° because the float has 155 mm of freeboard.
+  See [stability.md](stability.md).
 - **Road**: carries the loaded boat on six wheels; bays put the axle
   inside the envelope so the rig rides low.
 - **Watertight**: any one compartment flooded, the float still floats

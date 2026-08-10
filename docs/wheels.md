@@ -157,9 +157,9 @@ is what puts the wheel centreline at y ±910:
 
 | Wheel at | Track | Tip | Rollover |
 |---|---|---|---|
-| inboard of the girders | 1 300 | 24.9° | 0.46 g |
-| **half into the float** | **1 820** | **33.0°** | **0.65 g** |
-| full float depth | 2 280 | 39.2° | 0.81 g |
+| inboard of the girders | 1 300 | 27.7° | 0.52 g |
+| **half into the float** | **1 820** | **36.3°** | **0.73 g** |
+| full float depth | 2 280 | 42.6° | 0.92 g |
 
 **+8.1° and +41 % of margin** for half a float's width. A tall van is
 ≈0.5 g and a loaded truck 0.35–0.40 g, so this sits in normal trailer

@@ -5,7 +5,17 @@ import math
 # ---- hull: Dutch barge, widened to the German road limit ----
 LOA = 7200
 HULL_BEAM = 2500         # road limit 2550; hangar tucks fully underneath
-WL_Z = 260               # wide hull floats shallow (~2000 kg here)
+WL_Z = 260               # DRAWING waterline only - the plane the renders
+                         # and the mode scenes use. It is NOT the boat's
+                         # real waterline: draft_for(loaded) computes
+                         # that from the mass budget and it is deeper.
+                         # Nothing in the stability block may use WL_Z.
+FLOAT_CB = 0.62          # block coefficient of the float prism. ONE
+                         # number: reserve_kg used to use 0.80 against
+                         # float_buoyancy()'s 0.62 on the same prism,
+                         # which made the reserve driving the righting
+                         # moment 12 % larger than the float's own
+                         # total buoyancy.
 KEEL_FLAT = 40
 
 # [x, y_gunwale, y_chine, z_keel, z_chine, z_sheer]
@@ -538,7 +548,7 @@ def hangar_mass():
 
 def float_buoyancy():
     """kg, both floats fully submerged (before the wheel notches)."""
-    return 2 * FLOAT_LEN * FLOAT_W * FLOAT_H * 0.62 / 1e9 * 1000
+    return 2 * FLOAT_LEN * FLOAT_W * FLOAT_H * FLOAT_CB / 1e9 * 1000
 
 
 def well_loss_kg():
@@ -636,10 +646,11 @@ DESIGN_ALL_UP = BOAT_MASS          # ONE mass figure for the whole project:
                                    # hydrostatics, performance and the road
                                    # numbers all read this. See checks().
 CREW_STORES = 300                  # crew + stores + fuel/water top-up, kg
-_wedge = 0.5 * (BOTTOM_SLOPE * FLOAT_H) * FLOAT_H * FLOAT_LEN
-_reserve = (FLOAT_LEN * FLOAT_W * FLOAT_H * 0.62 - _wedge) * 1e-6
-JACK_DEPTH = FLOAT_W * BOAT_MASS / (2 * _reserve)        # ~387 mm
-HARBOR_WL_Z = (POD_ROAD[1] - FLOAT_W / 2) + JACK_DEPTH   # ~-1: keel awash
+# The jack-up stance is gone (see the note at HARBOR_WL_Z above): the
+# floats nest, they never lift the ship. JACK_DEPTH and the second
+# HARBOR_WL_Z that used to sit here were dead code silently overwriting
+# the live definition, and the value they produced - 720 mm - was
+# nowhere near the "keel awash" their comment claimed.
 
 # in-float electric-hydraulic drive bay (see docs/wheels.md):
 # 48V motor + pump + valve manifold in a watertight compartment;
@@ -1019,6 +1030,68 @@ FRAME_STRAP_X = (1400, 3400, 5400)
 # The bow keeps a FIXED rub bar (the frame's bow tie) — no moving part
 # at the pretty end, and the rounded stem stays clean.
 BOAT_LCG = 3300               # longitudinal centre of gravity estimate
+
+# ---- VERTICAL centre of gravity ----
+# The model has never had one. Stability was a buoyancy moment about
+# the centreline, which is not a righting arm about anything, and the
+# only vertical CG in the repo was a bare literal 1400 in the road tip
+# assert. KG matters twice: it sets GM, and on the road it sets the
+# rollover threshold.
+#
+# Heights are mm above the keel, taken from where each mass actually
+# sits in the model - not guessed round numbers.
+VCG = {
+    # batteries z 352..1060, water tanks in the bilge, joinery to 2000
+    "interior (incl. 50 kWh, water)": 900,
+    # NOT a constant - see structure_vcg(). Lumping the laminate at one
+    # height put it at 700 mm; the 200 mm roof sandwich alone is 222 kg
+    # sitting at 2860, and the honest weighted figure is 1674.
+    "laminate structure (boat)": None,
+    # floats z -10..530, girders z 600..800, wheels below the keel
+    "HANGAR, complete vehicle": 400,
+    # chassis rail at SH_Z, sheer rail at CABIN_BASE_Z
+    "exoskeleton (steel)": 1700,
+    "roof deck + solar rails": 2900,           # on the cabin roof
+    "electrics": 1000,
+    "solar curtains": 2100,                    # roof corner, z 1666..2820
+    "front dome glazing": 2000,
+    "waterjets": 150,                          # in the float bottoms
+}
+CREW_VCG = 1500               # people stand on the sole at z 620
+
+# where each laminate zone sits, mm above the keel
+ZONE_VCG = {
+    "hull_bottom": 250, "hull_topsides": 750, "hull_deck": 1180,
+    "cabin_walls": 1990, "roof_sandwich": 2860, "bulkheads": 1250,
+}
+
+
+def structure_vcg():
+    """VCG of the boat's own laminate, weighted by zone mass."""
+    import laminate as L
+    areas = laminate_areas()
+    m = z = 0.0
+    for zone, h in ZONE_VCG.items():
+        w = L.zone_mass(zone, areas.get(zone, 0.0))
+        m += w
+        z += w * h
+    return z / m
+
+
+def vcg():
+    """KG in mm above the keel, from the mass budget."""
+    items, _empty = mass_budget()
+    m = z = 0.0
+    for k, v in items.items():
+        h = VCG.get(k, "MISSING")
+        if h == "MISSING":
+            raise KeyError(f"no VCG height for mass item {k!r} - add one "
+                           "rather than letting it default silently")
+        if h is None:                       # computed, not assumed
+            h = structure_vcg()
+        m += v
+        z += v * h
+    return (z + CREW_STORES * CREW_VCG) / (m + CREW_STORES)
 ARCH_PIVOT_X = -60            # just aft of the transom, on the stern tie
 ARCH_PIVOT_Y = 950
 ARCH_PIVOT_Z = 760
@@ -1565,8 +1638,14 @@ def checks(verbose=True, strict=True):
     track = 2 * abs(wdown[0])
     # water: floats extended on the inclined slide, wheels flipped up
     water_beam = 2 * float_stern_y(PHI_WATER)   # the stern is widest
+    # THE REAL WATERLINE, not the drawing one. This used to run at
+    # WL_Z 260 while draft_for() put the boat at 375, and `immersion`
+    # was a tautology - POD_WATER[1] equals WL_Z by construction, so it
+    # was pinned at 0.50 and no weight change could ever trip its
+    # assert.
+    wl_now = draft_for(mass_budget()[1] + CREW_STORES)
     float_bot = POD_WATER[1] - FLOAT_H / 2
-    immersion = (WL_Z - float_bot) / FLOAT_H
+    immersion = (wl_now - float_bot) / FLOAT_H
     _h2, wup = arm_points(1, down=False)
     wheel_low_water = wup[1] - WHEEL_DIA / 2
     disp = displacement_kg()
@@ -1574,9 +1653,17 @@ def checks(verbose=True, strict=True):
     # to subtract THREE full-height bays - the flip-arm era - which
     # over-penalised it by 156 kg and made the righting look worse than
     # it is. One source of truth now: well_loss_kg().
-    reserve_kg = FLOAT_LEN * FLOAT_W * FLOAT_H * 0.80 * 1e-6 - well_loss_kg()
-    m_right = reserve_kg * 9.81 * POD_WATER[0] / 1e6
-    m_heel = 0.5 * 1.2 * 1.1 * 11.5 * 25.7**2 * 1.5 / 1000
+    reserve_kg = (FLOAT_LEN * FLOAT_W * FLOAT_H * FLOAT_CB * 1e-6
+                  - well_loss_kg())
+    # m_right and m_heel are kept for the printout, but they are NOT
+    # the stability criterion any more: a buoyancy moment about the
+    # centreline is not a righting arm, and this m_heel used a 1.5 m
+    # lever where the boat's real windage centroid is 1.14 m above the
+    # water on 14.4 m2. stability.py carries the criterion now.
+    import stability as _S
+    _peak = max(_S.gz_curve(float_pose(PHI_WATER)[1]), key=lambda r: r[1])
+    m_right = _peak[1]
+    m_heel = _S.wind_moment(_S.CAT_C_WIND * _S.CAT_C_GUST)
 
     assert road_width <= 2550, f"road width {road_width}"
     # as-BUILT beam: hand-laid laminate is not a milled dimension, and
@@ -1599,7 +1686,8 @@ def checks(verbose=True, strict=True):
     assert wheel_low_water >= 0, "retracted wheel hangs below the keel"
     assert wup[1] + WHEEL_DIA / 2 <= POCKET_TOP + 10, \
         f"retracted wheel top {wup[1] + WHEEL_DIA / 2:.0f} needs a deeper pocket"
-    assert 0.30 < immersion < 0.70, f"float immersion {immersion}"
+    # a real check now - it moves with the mass budget
+    assert 0.30 < immersion < 0.80, f"float immersion {immersion:.2f}"
     # the wide stance is the POINT of the extenders; the limit that
     # matters is what a canal lock will take, not a tidy number
     # 4500 was written when the extenders reached 1650 mm. They now
@@ -1613,10 +1701,19 @@ def checks(verbose=True, strict=True):
     # floats are away as the dinghy
     stem_disp_ok = displacement(700) > 3400
     assert stem_disp_ok, "T-stem cannot float the boat without the floats"
-    # compact stance chosen over the wider one: SF 2+ accepted
-    # the compact hidden-float stance trades righting margin for a clean
-    # hull: SF ~1.8 with the honest bay volumes. Flagged, not hidden.
-    assert m_right / m_heel >= 1.9, f"righting SF {m_right / m_heel:.1f}"
+    # STABILITY, category C (coastal). The criterion is the peak of the
+    # righting curve against a Beaufort 6 GUST on the boat's real
+    # windage - not a buoyancy moment against a wind on half a lever.
+    assert m_right / m_heel >= 1.9, \
+        f"righting {m_right:.1f} kNm vs a F6 gust {m_heel:.1f} kNm = " \
+        f"SF {m_right / m_heel:.1f}"
+    # the stem cannot hold the boat up on its own: state it, so nobody
+    # ever treats the floats as optional
+    assert _S.hull_gm() < 0, \
+        "the stem now has positive GM on its own - re-read stability.py, " \
+        "this design has always depended on the floats"
+    assert _S.downflood_angle() > _S.deck_edge_angle() + 10, \
+        "downflooding angle too close to the deck edge"
     # solar curtains: five panels a side on the roof corner
     rise, run_l, mt = MODULE_FLEX
     curt_run = CURT_N_SIDE * run_l + (CURT_N_SIDE - 1) * CURT_GAP
@@ -1864,7 +1961,19 @@ def checks(verbose=True, strict=True):
         print(f"displacement    {disp:.0f} kg @ WL {WL_Z}")
         print(f"ama reserve     {reserve_kg:.0f} kg/side "
               f"({100 * reserve_kg / 1900:.0f}%)")
-        print(f"righting SF     {m_right / m_heel:.1f}")
+        print(f"righting SF     {m_right / m_heel:.1f} "
+              f"(peak {m_right:.1f} kNm at "
+              f"{max(_S.gz_curve(float_pose(PHI_WATER)[1]), key=lambda r: r[1])[0]:.0f} deg "
+              f"vs a F6 gust {m_heel:.1f} kNm on {_S.windage()[0]:.1f} m2)")
+        print(f"stability       stem alone GM {_S.hull_gm():+.2f} m - the "
+              f"floats ARE the stability; docked GM "
+              f"{_S.stance_gm(POD_DOCKED[0]):.2f} -> extended "
+              f"{_S.stance_gm(float_pose(PHI_WATER)[1]):.2f} m, "
+              f"peak righting {max(_S.gz_curve(POD_DOCKED[0]), key=lambda r: r[1])[1]:.1f} "
+              f"-> {m_right:.1f} kNm")
+        print(f"heel limits     lee float awash 5 deg, deck edge "
+              f"{_S.deck_edge_angle():.0f} deg, downflooding "
+              f"{_S.downflood_angle():.0f} deg")
         print(f"waterjets       3 x {JET_POWER_W} W, grid top "
               f"{WL_Z - grid_top:.0f} mm under WL, face v {face_v:.2f} m/s")
         print(f"stern arch      gantry {-sea_x:.0f} mm aft of transom, "
@@ -2013,7 +2122,7 @@ def checks(verbose=True, strict=True):
         f"pocket reaches y {WHEEL_Y + POCKET_W / 2:.0f}, past the float's " \
         f"midline at {POD_DOCKED[0]:.0f} - it should eat only the inner half"
     import math as _m
-    tip = _m.degrees(_m.atan2(WHEEL_Y, 1400))
+    tip = _m.degrees(_m.atan2(WHEEL_Y, vcg()))
     assert tip >= 30, f"only {tip:.0f} deg of tip angle on the road"
     # THE WHEELS MUST BE OUT OF THE WATER WHEN THEY ARE PUT AWAY.
     # An open well below the waterline leaves the tyre, rim, hub and
@@ -2128,6 +2237,16 @@ def checks(verbose=True, strict=True):
             f"mass budget: {all_up:.0f} kg computed vs {DESIGN_ALL_UP} kg "
             "design figure - the 2000 target predates the computed budget; "
             "re-baseline it or keep cutting, but do not raise it quietly")
+    # the governing coastal risk is NOT the floats, it is windage: the
+    # solar rails standing in a Beaufort 6 gust very nearly reach the
+    # whole righting moment
+    _m_rails = _S.wind_moment(_S.CAT_C_WIND * _S.CAT_C_GUST, True)
+    if _m_rails > m_right / 1.5:
+        open_items.append(
+            f"stability: with the solar rails STANDING, a Beaufort 6 gust "
+            f"makes {_m_rails:.1f} kNm against {m_right:.1f} of righting - "
+            f"SF {m_right / _m_rails:.2f}, where 1.5 is wanted. The rails, "
+            f"not the floats, set the wind limit; stow them by F6")
     if open_items and verbose:
         print("")
         for it in open_items:

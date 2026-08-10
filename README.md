@@ -33,7 +33,7 @@ drift without the build failing.
 | Mass, combination | **3 429 kg** with crew and stores |
 | Road category | **O2 trailer, ≤ 3 500 kg** — 252 kg of margin loaded |
 | Ground clearance, road | 482 mm |
-| Track / wheelbase | 2 270 / 3 400 mm |
+| Track / wheelbase | 1 820 / 3 300 mm |
 | Coupling height / tongue load | 445 mm / +100 kg |
 
 ### Living quarters
@@ -144,10 +144,14 @@ wheels vertical. Water: float flat, wheels dry above the waterline. Six
 155/70 R12C trailer wheels on swing arms, electric-over-hydraulic drive with the
 machinery sealed inside the floats. → [docs/wheels.md](docs/wheels.md)
 
-**Jack-up stance** — the floats hold 3.1 t of buoyancy against a 2.0 t
-boat, so folding the arms in deep water lifts the *hull*: the floats end
-65 % submerged carrying everything and the keel rides awash. Pontoon
-GM ≈ 3.1 m.
+**Stability** — the stem alone has **GM −0.42 m**: the floats are not a
+stability aid, they *are* the stability. Extending them takes GM from
+1.26 to **4.76 m**, peak righting from 7.9 to **14.5 kNm**, and beam
+from 2.48 to **4.02 m**. The curve peaks at 13° and saturates, because
+the float has only 155 mm of freeboard. What actually limits the boat
+in a blow is windage, not the floats: stand the solar rails up in a
+Beaufort 6 gust and the margin falls to 1.10.
+→ [docs/stability.md](docs/stability.md)
 
 **Propulsion** — flush perforated intake grids on the float sides below
 the waterline (0.5 m/s face velocity, 14 mm holes, so weed drifts past),

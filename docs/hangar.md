@@ -30,7 +30,7 @@ FRONT VIEW                DOCKED                    EXTENDED (sea)
 | Stem | **1 560 mm** beam below z 600 — floats the boat alone, and swallows the retracted beams |
 | Floats | **5 400 × 460 × 540**; noses protected by 1 200 mm of solid full-width bow |
 | Docked | outer faces flush at 2 500; draft 313 mm loaded |
-| Extended | **700 mm** out on the sliders — righting SF 2.08, bought with float LENGTH rather than lever |
+| Extended | **771 mm** out on the V arms — GM 1.26 → 4.76 m, peak righting 7.9 → 14.5 kNm |
 | Dinghy | both floats + bight: 6.1 m beam, 216 mm freeboard with two aboard |
 
 ## 2. Docking — the fork
