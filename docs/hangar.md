@@ -42,8 +42,8 @@ first; the float noses never see slam.
 
 ## 3. Extenders
 
-**Single-stage sliders**, two per side at x 2 700 and 4 600, 24 V
-leadscrew, self-locking anywhere in the **0 → 700 mm** stroke.
+**Single-stage sliders**, two per side at x 2 700 and 4 600. **Pushed
+by hand and pinned** — no motor and no screw — through **0 → 700 mm**.
 Purely horizontal: the float's draft never changes, and docked the
 whole telescope is inside the stem. See
 [floater.md](floater.md) §5 for why the swing wing was abandoned.

@@ -108,7 +108,8 @@ stages, no nesting, no rotation, and its draft never changes.
 | Sliders | **2 per side**, x 2 700 and 4 600 (port offset 180 mm so the retracted tails pass) |
 | Section | **160 × 220 × 4** box, 6082-T6 — nothing in the hangar is steel |
 | Band | z **380 … 600** — 57 mm above the loaded waterline, top flush under the wing |
-| Stroke | **700 mm**, electric leadscrew, self-locking anywhere |
+| Stroke | **700 mm**, **pushed by hand and pinned** — no motor, no screw |
+| Lock | one ⌀24 pin through the socket into one of two holes in the slider: docked or extended, nothing in between |
 | Length | 1 020 mm, 320 of it retained in the socket — swallowed whole by the 1 560 mm stem |
 | Root | 13.2 kNm at the socket, 69 MPa, **SF 1.53** |
 | Mass | **9.4 kg the arm, 38 kg all four** |
@@ -131,6 +132,18 @@ over the tarmac**, with a 50 mm ball, two safety-chain eyes and a
 jockey wheel. On the road it pins into two lugs on the bight's face;
 at sea it comes off and stows flat on a float deck, so nothing stands
 in the water or rears over the transom. **26 kg.**
+
+### No motor on the extenders
+
+It is a **slider, not a jack.** The extenders only ever move with the
+boat afloat, and afloat the float carries its own weight — what the
+slider is left holding is friction on its pads, which is a *push*, not
+a lift. Roughly 15 kg of shove on UHMW pads.
+
+A leadscrew here would add a motor, a controller, a cable crossing a
+sliding joint, and its own weight, to do a job two hands and a pin
+already do. **The wheels keep their screws**, because a wheel really
+does have to lift three tonnes of boat.
 
 ### How 700 mm was arrived at
 

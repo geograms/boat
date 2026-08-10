@@ -92,9 +92,10 @@ PANEL_T = 4
 #     sliding in from astern like a fork onto two tapered SPIKE rails
 #     per side; the bow keeps 1.2 m of full-width hull ahead of them,
 #     so a docked float is faired, protected, hydrodynamic
-#   - ELECTRIC EXTENDERS (campervan-lift scissors, 24 V leadscrew,
-#     self-locking) push the docked float out and slightly up to the
-#     trimaran stance - no arms, no elbow, no carriage
+#   - PLAIN SLIDERS push the docked float straight out to the trimaran
+#     stance - no arms, no elbow, no carriage, and no motor either:
+#     the float is buoyant when it matters, so a slider is pushed by
+#     hand and dropped on a pin
 #   - the WHEELS stay on the floats, each on a curved arm that flips
 #     180 deg about a tube spanning an open WHEEL BAY cut through the
 #     float: up through the bay at sea, down through the bay for the
@@ -223,6 +224,16 @@ BEAM_XS = (2700, 4600)             # stations, clear of the wheel notches
 BEAM_DX_PORT = 180                 # port sliders offset along the boat so
                                    # the two sides' tails pass each other
 BEAM_PAD_MARGIN = 1.15             # slide pads, local doublers, end fittings
+EXT_PIN_D = 24                     # the lock. Two holes in the slider,
+                                   # one bore through the socket: docked
+                                   # or extended, nothing in between.
+# NO MOTOR ON THE EXTENDERS. It is a slider, not a jack. It only ever
+# moves with the boat afloat, and afloat the float carries its own
+# weight - the slider is left holding friction on its pads, which is a
+# push, not a lift. A leadscrew here would add a motor, a controller,
+# a cable across a sliding joint and its own weight, to do a job two
+# hands and a pin already do. The wheels keep their screws, because a
+# wheel really does have to lift 3 t of boat.
 
 
 def beam_reach(phi_deg):
@@ -2079,8 +2090,8 @@ def checks(verbose=True, strict=True):
         print(f"nesting         floats 0..{FLOAT_LEN} in a {RECESS_DEPTH} mm "
               f"bilge recess; bow solid {LOA - FLOAT_LEN - 200} mm ahead; "
               f"2 spike rails/side, taper {SPIKE_TAPER}")
-        print(f"extenders       {len(EXT_STATIONS)}/side, 24 V leadscrew, "
-              f"stroke {EXT_STROKE:.0f} mm inclined "
+        print(f"extenders       2/side, HAND-SLID and pinned at both ends "
+              f"of travel, no motor; stroke {EXT_STROKE:.0f} mm inclined "
               f"{math.degrees(math.atan2(EXT_VEC[1], EXT_VEC[0])):.0f} deg; "
               f"sea gap {sea_gap:.0f} mm, water beam "
               f"{2 * (POD_SEA[0] + 450):.0f}")

@@ -712,10 +712,23 @@ def build_hangar(phi, coupled=True, tow="sea"):
             y0 = y1 - P.BEAM_LEN             # tail, inside the stem
             parts.append(box(bw, P.BEAM_LEN, bh,
                              (x0 - bw / 2, min(sy * y0, sy * y1), P.BEAM_Z0)))
-            # the socket at the stem face: guide, pads and the screw nut
+            # the socket at the stem face: guide and slide pads. No
+            # nut, no motor - the slider is pushed by hand and pinned.
             parts.append(box(bw + 90, 120, bh + 60,
                              (x0 - (bw + 90) / 2,
                               sy * P.STEM_HW - 60, P.BEAM_Z0 - 30)))
+            # the pin through the socket, and the spare hole in the
+            # slider for the other end of the travel
+            locks.append(Part.makeCylinder(
+                P.EXT_PIN_D / 2, bh + 140,
+                Vector(x0, sy * P.STEM_HW, P.BEAM_Z0 - 60), Vector(0, 0, 1)))
+            # the OTHER hole: 700 mm along the slider from the one the
+            # pin is in, so it lands on the slider in both poses
+            _spare = P.STEM_HW + (-P.BEAM_STROKE if phi <= 0
+                                  else P.BEAM_STROKE)
+            locks.append(Part.makeCylinder(
+                P.EXT_PIN_D / 2, bh + 20,
+                Vector(x0, sy * _spare, P.BEAM_Z0 - 10), Vector(0, 0, 1)))
             # landing on the float's inner face
             parts.append(box(bw + 70, 70, bh + 40,
                              (x0 - (bw + 70) / 2,
