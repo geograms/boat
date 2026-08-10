@@ -485,6 +485,8 @@ HANGAR_BIGHT_X = -120              # cross beam joining the float tails,
 HANGAR_BIGHT = (140, 180)
 DRAWBAR_LEN = 1900
 DRAWBAR_TUBE = 100
+DRAWBAR_KG = 26                    # A-frame, coupling head, chains,
+                                   # jockey wheel - demountable
 COUPLING_BALL = 50
 COUPLING_H = 445
 JOCKEY_D = 200
@@ -504,8 +506,11 @@ def hangar_mass():
     areas = laminate_areas()
     floats = (L.zone_mass("float_shell", areas.get("float_shell", 0.0)) +
               L.zone_mass("float_deck", areas.get("float_deck", 0.0)))
-    bight_m = 2 * (POD_DOCKED[0] + FLOAT_W / 2) / 1000
-    alu = bight_m * HANGAR_BIGHT[0] * HANGAR_BIGHT[1] * 0.15 * 2.7e-3
+    # TWO transverse ties, one at each end of the girders - that is
+    # what turns two rails into a frame - plus the demountable drawbar.
+    tie_m = 2 * 2 * (GIRDER_Y + GIRDER_SECTION[0] / 2) / 1000
+    alu = tie_m * HANGAR_BIGHT[0] * HANGAR_BIGHT[1] * 0.15 * 2.7e-3
+    alu += DRAWBAR_KG
     return (floats + MASS_WHEELS_HUBS + beam_mass() + MASS_FLIPGEAR +
             MASS_HYDRAULICS + girder_mass() + alu +
             4 * LOCK_MOTOR_KG + 20)

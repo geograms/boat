@@ -113,6 +113,25 @@ stages, no nesting, no rotation, and its draft never changes.
 | Root | 13.2 kNm at the socket, 69 MPa, **SF 1.53** |
 | Mass | **9.4 kg the arm, 38 kg all four** |
 
+### The frame is a closed rectangle, and it has a tongue
+
+Two girders on their own are two rails. What makes them a frame is a
+**transverse tie at each end**:
+
+| | |
+|---|---|
+| **Bight** | aft, at x −120, across both girder ends |
+| **Forward tie** | at x 5 480, the other end of the same rectangle |
+| Both | 140 × 180 box at girder level (z 600 … 800) — out of the water, clear over the docked float whose top is 530 |
+| Gussets | into the girder webs at each corner |
+
+The **drawbar** is a demountable A-frame off the bight: two legs from
+the bight corners down and forward 1 900 mm to a coupling head **445 mm
+over the tarmac**, with a 50 mm ball, two safety-chain eyes and a
+jockey wheel. On the road it pins into two lugs on the bight's face;
+at sea it comes off and stows flat on a float deck, so nothing stands
+in the water or rears over the transom. **26 kg.**
+
 ### How 700 mm was arrived at
 
 Backwards from the weight, not forwards from a wish. A three-stage
@@ -177,7 +196,7 @@ righting moment — the thing that actually matters — went **up**.
 - **Detachable**: docks and undocks on the water, fork-and-lock, with
   the crew in the cockpit.
 
-## 7b. Mass — the 300 kg target, and where the 544 actually goes
+## 7b. Mass — the 300 kg target, and where the 581 actually goes
 
 Asked for a hangar under 300 kg. Every line below is **computed** —
 from measured areas times a laminate schedule, or from a section times
@@ -191,15 +210,15 @@ a length — not estimated:
 | Drive + seals | 80 | 2 × 3 kW, 100:1, one face seal a side |
 | Wheels + hubs | 60 | 4 × 155/70 R12C on steel |
 | **Extender sliders** | **38** | **was 209 as a telescope** |
-| Bight | 25 | |
+| Bight, forward tie, drawbar | 63 | two transverse ties + the demountable A-frame |
 | Locks and sundry | 30 | |
-| **Total** | **544** | was 1 003 |
+| **Total** | **581** | was 1 003 |
 
 **300 kg is below the floor, and it is worth being precise about why.**
 A braked commercial boat trailer for 3 t weighs 400–600 kg empty, and
 it has no floats, no extenders, no retracting wheels and no dinghy
-duty. Of the 544 here, **129 kg is the two float hulls** — those are
-boat, not trailer. The metalwork is 244 kg and the drive 80.
+duty. Of the 581 here, **129 kg is the two float hulls** — those are
+boat, not trailer. The metalwork is 281 kg and the drive 80.
 
 The remaining levers, in order of size: the girders (93 kg) are sized
 by road deflection over a 5.7 m span and would come down if the

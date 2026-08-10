@@ -722,6 +722,52 @@ def build_hangar(phi, coupled=True, tow="sea"):
                               (sy * reach - 35) if sy > 0 else (sy * reach - 35),
                               P.BEAM_Z0 - 20)))
 
+    # ---- THE BIGHT AND THE FORWARD TIE. Two girders on their own are
+    # two rails; what makes them a frame is a transverse tie at each
+    # end. Both sit at girder level in the wing channel, so neither is
+    # in the water and neither fouls the docked float (top z 530).
+    bb, bh = P.HANGAR_BIGHT
+    by = P.GIRDER_Y + gb / 2
+    for tx, tag in ((P.GIRDER_X0, "bight"), (P.GIRDER_X1 - bb, "forward")):
+        parts.append(box(bb, 2 * by, bh,
+                         (tx, -by, gz - bh / 2)))
+        for s_ in (-1, 1):                      # gussets into the girders
+            parts.append(box(bb + 260, 90, bh - 30,
+                             (tx - 130, s_ * P.GIRDER_Y - 45, gz - bh / 2 + 15)))
+
+    # ---- THE DRAWBAR. Demountable: on the road it pins into two
+    # sockets on the bight and drops to the car ball 445 mm over the
+    # tarmac; at sea it comes off and stows flat on a float deck, so
+    # nothing stands in the water or rears over the transom.
+    if tow == "land":
+        nose_x = P.GIRDER_X0 - P.DRAWBAR_LEN
+        nose_z = P.GROUND_Z + P.COUPLING_H
+        for s_ in (-1, 1):                      # the A
+            parts.append(rod((P.GIRDER_X0 + bb / 2, s_ * (by - 90), gz),
+                             (nose_x + 300, 0, nose_z + 60), P.DRAWBAR_TUBE))
+        parts.append(rod((nose_x + 330, 0, nose_z + 60),
+                         (nose_x, 0, nose_z), P.DRAWBAR_TUBE))
+        # coupling head, ball, safety-chain eyes
+        parts.append(box(240, 160, 140, (nose_x - 40, -80, nose_z - 55)))
+        locks.append(Part.makeSphere(P.COUPLING_BALL / 2,
+                                     Vector(nose_x + 30, 0, nose_z - 60)))
+        for s_ in (-1, 1):
+            parts.append(Part.makeTorus(
+                30, 8, Vector(nose_x + 140, s_ * 95, nose_z - 20),
+                Vector(0, 1, 0)))
+        # jockey wheel, clamped to the drawbar
+        parts.append(Part.makeCylinder(
+            55, 420, Vector(nose_x + 470, 150, nose_z - 340), Vector(0, 0, 1)))
+        parts.append(Part.makeCylinder(
+            P.JOCKEY_D / 2, 80, Vector(nose_x + 470, 110, nose_z - 340),
+            Vector(0, 1, 0)))
+    else:
+        # the sockets the A-frame pins into - lugs on the bight's face
+        for s_ in (-1, 1):
+            parts.append(box(110, 160, 160,
+                             (P.GIRDER_X0 - 110, s_ * (by - 90) - 80,
+                              gz - 80)))
+
     if not coupled:
         off = Placement(Vector(P.HANGAR_STANDOFF, 0,
                                P.hangar_standoff_z()), Rotation())
