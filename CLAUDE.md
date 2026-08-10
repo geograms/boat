@@ -114,6 +114,24 @@ every shape, so a GUI build is roughly ten times slower than
 `--console` — seven modes will not finish inside ten minutes, and it
 starves the desktop while it tries. Build headless, then open.
 
+**MEMORY is what freezes this machine, not CPU.** One open mode is
+about **750 MB** with its view providers; all seven is ~5 GB, and the
+desktop already sits at 11 of 15 GB with swap full. `nice` does
+nothing about that. `view.sh` therefore:
+
+- defaults to **one** mode (`./view.sh all` if you really want seven)
+- runs FreeCAD inside a `systemd-run --user --scope` with
+  `MemoryHigh`/`MemoryMax` sized from `MemAvailable`, so it gets
+  throttled and reclaimed instead of dragging the session into swap
+- warns when less than 1.5 GB is available
+
+Check it is actually applied:
+
+```bash
+systemctl --user list-units --type=scope | grep boat-view
+systemctl --user show boat-view-<pid>.scope -p MemoryCurrent -p MemoryMax
+```
+
 ### 4. Beauty shots hide defects — render the parts alone
 
 `beauty_shots.py` renders the whole boat from outside. The hull and the

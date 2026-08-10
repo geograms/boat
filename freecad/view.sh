@@ -36,7 +36,15 @@ for a in "$@"; do
     esac
 done
 ALL=(road launch harbor cruise anchor deck detached)
-[ ${#ARGS[@]} -eq 0 ] && ARGS=("${ALL[@]}")
+# Default to ONE mode. Opening all seven means seven copies of the
+# model in memory - about 1.5 GB each with view providers - and on a
+# 16 GB desktop that is what pushes the machine into swap and freezes
+# everything, terminal included. Ask for `all` if you really want them.
+if [ ${#ARGS[@]} -eq 0 ]; then
+    ARGS=(detached)
+elif [ "${ARGS[0]}" = "all" ]; then
+    ARGS=("${ALL[@]}")
+fi
 
 # A FreeCAD killed mid-run leaves its single-instance socket behind, and
 # every later launch blocks forever trying to hand off to a dead
@@ -55,10 +63,38 @@ fi
 LOG="${TMPDIR:-/tmp}/boat-view.log"
 BIN=~/bin/FreeCAD.AppImage
 
+# MEMORY, not CPU, is what freezes this machine. nice only bounds the
+# processor; FreeCAD loading the model wants a couple of gigabytes, and
+# with the desktop already at 11 of 15 GB that goes straight into swap
+# and takes the whole session down with it.
+#
+# So run it in its own cgroup scope with a memory ceiling: it gets
+# throttled and reclaimed instead of dragging everything else into
+# swap. MemoryHigh throttles, MemoryMax is the hard stop.
+AVAIL=$(awk '/MemAvailable/{printf "%d", $2/1024}' /proc/meminfo)
+SWAPUSED=$(awk '/SwapTotal/{t=$2} /SwapFree/{f=$2} END{printf "%d", (t-f)/1024}' /proc/meminfo)
+HIGH=$(( AVAIL > 3000 ? 2500 : AVAIL * 2 / 3 ))
+[ "$HIGH" -lt 700 ] && HIGH=700
+MAXM=$(( HIGH + 800 ))
+if [ "$AVAIL" -lt 1500 ]; then
+    echo "view.sh: WARNING only ${AVAIL} MB of RAM available and ${SWAPUSED} MB"
+    echo "         of swap already in use. FreeCAD will be capped at"
+    echo "         ${MAXM} MB so it cannot freeze the desktop, but it may"
+    echo "         be slow or get killed. Close something first."
+fi
+LIMIT=()
+if command -v systemd-run > /dev/null; then
+    LIMIT=(systemd-run --user --scope --quiet
+           --unit="boat-view-$$"
+           -p MemoryHigh=${HIGH}M -p MemoryMax=${MAXM}M
+           -p CPUWeight=20 --)
+fi
+
 # nice + ionice keep the desktop responsive while OCC works. The build
 # is CPU-bound for minutes; without this the machine is unusable.
 RUN=(nice -n 12 "$BIN")
 command -v ionice > /dev/null && RUN=(ionice -c2 -n6 "${RUN[@]}")
+RUN=("${LIMIT[@]}" "${RUN[@]}")
 
 if [ "$BUILD" = 1 ]; then
     # headless build: no view providers, so it is ~10x faster. stdin
@@ -106,8 +142,9 @@ fi
 setsid "${RUN[@]}" open_modes.py > "$LOG" 2>&1 < /dev/null &
 PID=$!
 disown 2>/dev/null || true
-echo "view.sh: opening ${#FOUND[@]} document(s), pid $PID (nice 12)"
+echo "view.sh: opening ${#FOUND[@]} document(s), pid $PID"
 echo "         ${FOUND[*]}"
+echo "         nice 12, memory capped at ${MAXM} MB (${AVAIL} MB free now)"
 echo "         log: $LOG"
 
 # screenshots: ~/bin/FreeCAD.AppImage beauty_shots.py -> shots/beauty/
