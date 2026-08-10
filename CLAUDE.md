@@ -81,6 +81,18 @@ this bug and it is why the guard never fired.
 `--console` also drops to an interactive prompt and hangs unless stdin
 is redirected: always `< /dev/null`.
 
+**A headless-built file opens with no camera.** Hand a `boat_*.FCStd`
+straight to FreeCAD and you get an empty grey window zoomed to a few
+millimetres, with the model off screen — indistinguishable from a file
+that failed to load. The tree is populated; only the view is wrong.
+`view.sh` runs `open_modes.py`, which opens each document and does
+`viewAxonometric` + `ViewFit`. Never pass the filenames directly.
+
+**Never build with the GUI up.** FreeCAD makes a view provider for
+every shape, so a GUI build is roughly ten times slower than
+`--console` — seven modes will not finish inside ten minutes, and it
+starves the desktop while it tries. Build headless, then open.
+
 ### 4. Beauty shots hide defects — render the parts alone
 
 `beauty_shots.py` renders the whole boat from outside. The hull and the
