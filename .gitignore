@@ -9,3 +9,4 @@ STL/
 
 # generated: python3 docs/make_pdf.py
 docs/boat-home.pdf
+*.FCBak
