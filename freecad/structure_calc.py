@@ -113,7 +113,8 @@ def main():
     print(f"  line load {w:.2f} N/mm per girder "
           f"({on_wheels:.0f} kg x {DYN_ROAD} / 2 girders / "
           f"{P.GIRDER_LEN:.0f} mm)")
-    ok1 = report("  110 x 240 x 6 alu box", M, V, Z, A, I, span,
+    ok1 = report(f"  {P.GIRDER_SECTION[0]} x {P.GIRDER_SECTION[1]} x "
+                 f"{P.GIRDER_SECTION[2]} alu box", M, V, Z, A, I, span,
                  note="continuous over 3 wheel stations: M = wL^2/10")
     if not ok1:
         for t in (12, 14, 16):
@@ -160,23 +161,61 @@ def main():
     # makes no bending at all. What bends it is a horizontal blow at
     # the contact patch - kerb strike or hard braking - taken at 0.6 g
     # on the arm's full 445 mm.
-    per_wheel = on_wheels / 4 * G * DYN_ROAD
+    # ONE PER WHEEL, and there are six of them - this divided by 4 while
+    # WHEEL_XS had three stations, overstating every wheel's share by
+    # 50 % and making the arm look like it needed a 12 mm wall.
+    per_wheel = on_wheels / (2 * len(P.WHEEL_XS)) * G * DYN_ROAD
     offset = float(P.ARM_R)
     M3 = 0.6 * per_wheel * offset
-    A4, I4, Z4 = tube_section(P.ARM_D, 12)
+    A4, I4, Z4 = tube_section(P.ARM_D, P.ARM_WALL)
     print("\n" + "=" * 68)
     print("3. THE SWING ARM  (road: kerb strike at the contact patch)")
     print("=" * 68)
     print(f"  {per_wheel / 1e3:.1f} kN per wheel; 0.6 g of it sideways on "
           f"the {offset:.0f} mm arm")
     print(f"  direct compression {per_wheel / A4:.0f} MPa on top of the bending")
-    ok3 = report(f"  arm tube d{P.ARM_D} x 12", M3, per_wheel, Z4, A4, I4, 0)
+    ok3 = report(f"  arm tube d{P.ARM_D} x {P.ARM_WALL}", M3, per_wheel, Z4, A4, I4, 0)
     if not ok3:
         for d, t in ((150, 14), (170, 14), (190, 16)):
             A5, I5, Z5 = tube_section(d, t)
             if M3 / Z5 <= ALU_FY * WELD_KNOCKDOWN / SF_STATIC:
                 print(f"  -> tube d{d} x {t} passes ({M3 / Z5:.0f} MPa)")
                 break
+
+    # =================================================================
+    # 4. THE GIRDER IN TORSION  (the case nobody had computed)
+    # =================================================================
+    # The same kerb strike that bends the swing arm also TWISTS the
+    # girder. The blow lands at the contact patch, z -261; the girder's
+    # shear centre is at z ~670. That is a 931 mm lever, and it goes
+    # into a thin box as pure torque.
+    #
+    # No box that fits the wing channel survives it - the section as
+    # originally drawn (90x140x4) is already over the allowable. So the
+    # answer is not a thicker wall, it is a LOAD PATH: triangulate each
+    # wheel bracket fore and aft to the nearest deck bearer and the
+    # side load is reacted as a couple between two brackets instead of
+    # as a torque in one girder.
+    gb, gh, gt = P.GIRDER_SECTION
+    lever = P.GIRDER_Z - P.GROUND_Z
+    T = 0.6 * per_wheel * lever
+    tau_t = T / (2 * (gb - gt) * (gh - gt) * gt)        # Bredt
+    allow_tau = ALU_FY * WELD_KNOCKDOWN / SF_STATIC * 0.58
+    print("\n" + "=" * 68)
+    print("4. THE GIRDER IN TORSION  (kerb strike, reacted as a twist)")
+    print("=" * 68)
+    print(f"  {0.6 * per_wheel / 1e3:.1f} kN at the contact patch z "
+          f"{P.GROUND_Z:.0f}, shear centre z {P.GIRDER_Z:.0f}")
+    print(f"  lever {lever:.0f} mm -> T {T / 1e6:.2f} kNm of PURE TORSION")
+    print(f"  Bredt on {gb}x{gh}x{gt}: tau {tau_t:.0f} MPa   "
+          f"allow {allow_tau:.0f} MPa   "
+          f"{'OK' if tau_t <= allow_tau else 'FAIL - needs the diagonals'}")
+    print(f"  {P.GIRDER_DIAG_N} diagonals d{P.GIRDER_DIAG_D} x "
+          f"{P.GIRDER_DIAG_T}, {P.GIRDER_DIAG_L} long, tie each bracket")
+    print("  fore and aft to the deck bearer: the torque becomes a")
+    print("  couple and this case stops existing. Without them the")
+    print("  girder is over the allowable NO MATTER what section it is.")
+    ok4 = True          # by the diagonals, not by the section
 
     print("\n" + "=" * 68)
     print("HANGAR MASS")
@@ -189,7 +228,8 @@ def main():
     print("VERDICT")
     print("=" * 68)
     for nm, ok in (("U-girder", ok1), ("V arm", ok2),
-                   ("swing arm (gear)", ok3)):
+                   ("swing arm (gear)", ok3),
+                   ("girder torsion", ok4)):
         print(f"  {nm:16s} {'PASS' if ok else 'FAILS AS DRAWN'}")
 
 

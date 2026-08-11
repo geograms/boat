@@ -460,9 +460,16 @@ def build_float(pod, roll, flip=0.0, fx=None):
             P.WELL_L, P.WELL_W + 30, P.WELL_H,
             (_wx - P.WELL_L / 2, ty - P.FLOAT_W / 2 - 30,
              tz - P.FLOAT_H / 2 - 10)))
-        # groove for the docked V arm to lie in - the float's inner
-        # face is against the stem, so the arm needs somewhere to go
-        pass
+        # ...and the slot ABOVE the notch that the swing arm and its
+        # pivot boss dock into. The arm is a 150 tube standing on the
+        # wheel's centreline to the pivot at z 445; the docked float
+        # spans z -110..590 across that same y. Without this the float
+        # is drawn passing straight through the arm. well_loss_kg() has
+        # always charged for this slot - only the geometry was missing.
+        hull_f = hull_f.cut(box(
+            P.WELL_TUBE_L, P.WELL_W + 30, P.FLOAT_H - P.WELL_H + 10,
+            (_wx - P.WELL_TUBE_L / 2, ty - P.FLOAT_W / 2 - 30,
+             tz - P.FLOAT_H / 2 + P.WELL_H - 10)))
     for _ax in P.ARM_XS:
         hull_f = hull_f.cut(box(
             P.ARM_L + 120, P.ARM_GROOVE_D, P.ARM_GROOVE_W,
@@ -775,21 +782,26 @@ def build_hangar(phi, coupled=True, tow="sea"):
     # It is NOT the hull's bottom protection - the frame has nothing
     # below the keel to hang a plate from. That job belongs to the keel
     # shoe on the boat. See the note in params.
+    # EVERYTHING here is inside the docked guard, bearers included. The
+    # stringer and bearers used to be drawn OUTSIDE it, so docked, a
+    # 90x140 beam at z 660..800 and 1760-wide bearers stayed on the
+    # frame - standing inside the boat's stem, which is precisely what
+    # the comment above says cannot be there.
     dw, dl = P.deck_panels()
-    sb, sh, _st = P.DECK_STRINGER
-    parts.append(box(dl, sb, sh, (P.GIRDER_X0, -sb / 2, P.DECK_Z - sh)))
-    for _k in range(1, int(dl / 1400)):        # deck bearers on the stringer
-        parts.append(box(80, 2 * dw, 60,
-                         (P.GIRDER_X0 + _k * 1400, -dw, P.DECK_Z - 60)))
     if phi > 0:                     # laid only when the boat is off
+        bb, bh, _bt = P.DECK_BEARER
+        for _k in range(P.DECK_BEARER_N):
+            bx = P.GIRDER_X0 + (_k + 1) * dl / (P.DECK_BEARER_N + 1)
+            parts.append(box(bb, 2 * dw, bh, (bx, -dw, P.DECK_Z - bh)))
+        # interlocking pontoon plank, laid ACROSS the frame. Each board
+        # is 200 x 880 and weighs 1.1 kg, so the deck comes up one
+        # plank at a time instead of as two 66 kg plates.
+        pw, pd = P.DECK_PLANK
         for sy in (-1, 1):
-            parts.append(box(dl, dw, P.DECK_T,
-                             (P.GIRDER_X0, 0 if sy > 0 else -dw, P.DECK_Z)))
-            rb, rh, _rt = P.DECK_RIB
-            for k in range(int(dl / P.DECK_RIB_PITCH) + 1):
-                parts.append(box(rb, dw, rh,
-                                 (P.GIRDER_X0 + k * P.DECK_RIB_PITCH,
-                                  0 if sy > 0 else -dw, P.DECK_Z - rh)))
+            for k in range(int(dl / pw)):
+                parts.append(box(pw - 4, dw, pd,
+                                 (P.GIRDER_X0 + k * pw,
+                                  0 if sy > 0 else -dw, P.DECK_Z)))
         # TRACTION BOARDS stowed flat on the deck: two plastic
         # recovery boards, 4 kg each, that lay off the deck edge to
         # walk a quad or a bike aboard. They replaced a 35 kg hinged
@@ -799,7 +811,7 @@ def build_hangar(phi, coupled=True, tow="sea"):
             parts.append(box(bl, bw_, bt,
                              (P.GIRDER_X1 - bl - 200,
                               -bw_ - 60 + k * (bw_ + 120),
-                              P.DECK_Z + P.DECK_T)))
+                              P.DECK_Z + P.DECK_PLANK[1])))
 
     # ---- THE BIGHT AND THE FORWARD TIE. Two girders on their own are
     # two rails; what makes them a frame is a transverse tie at each

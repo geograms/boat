@@ -30,7 +30,7 @@ ZONES = {
     "hull_topsides": ("PET60",  20,  900,  600),
     "hull_deck":     ("PET60",  25,  900,  600),
     "float_shell":   ("PET60",  15,  800,  600),
-    "float_deck":    ("PET100", 20, 1200,  800),
+    "float_deck":    ("PET60",  20,  900,  600),
     "cabin_walls":   ("PET60",  20,  600,  600),
     "roof_sandwich": ("PET60", 200,  900,  900),   # per roof.md, carries the glass deck
     "bulkheads":     ("PET60",  15,  600,  600),
@@ -42,7 +42,8 @@ ZONE_NOTE = {
     "hull_topsides": "above the chine; stiffness, not strength",
     "hull_deck":     "walked on, carries the dome and deck hardware",
     "float_shell":   "grounding on slipways, wheel and arm reactions",
-    "float_deck":    "stub-axle and arm landings; denser core under hardware",
+    "float_deck":    "walked on, carries the hatch and solar strips; the "
+                     "stub axles it was specified for are on the ARM now",
     "cabin_walls":   "distributed loads only - the exoskeleton takes point loads",
     "roof_sandwich": "200 mm core: carries the walk-on glass deck over a 2.4 m span",
     "bulkheads":     "shear webs and tank/berth boundaries",

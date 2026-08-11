@@ -160,31 +160,15 @@ SWING_PIVOT_X = 641                # aft vertical pin, both sides.
                                    # only on arm length and angles, so
                                    # the pins are free to sit where the
                                    # float needs support
-SWING_PIVOT_Y = 810                # on the stem face
-SWING_ARM_R = 1918                 # pin to float, both arms
 # The swing arm used to run at z 260 - the float's mid-height, and the
 # loaded waterline - so the gear that holds the boat's stability sat in
 # the sea every hour it floated. It moves up into the band between the
 # waterline and the wing underside, which is only 280 mm tall. So the
 # truss gets SHALLOWER and its chords get FATTER: a shallow truss loses
 # section modulus with depth, and the only way back is chord area.
-SWING_ARM_DEEP = 180       # 340 was better for stress; this fits, and
-                           # leaves 101 mm of air under the bottom chord
-SWING_ARM_Z = 510          # centre: chords at z 420 and 600, so the top
-                           # is flush under the wing and the bottom is
-                           # clear of the water. The tip pins into the
-                           # float's upper 200 mm instead of its waist
-SWING_CHORD = (90, 6)      # 90x90x6 against the old 70x70x4 - nearly
-                           # twice the chord area, which is what buys
-                           # the strength back at half the depth
-                                   # float lost its wheel slots, so its
-                                   # buoyancy - and the arm's load -
-                                   # went up with it
 SWING_ARM_GAP = -2300              # fore/aft pin spacing: the arms land
                                    # at float x 1150 and 3450 deployed,
                                    # so nothing is cantilevered
-SWING_DEG_DOCK = 6.0               # arm angle, docked (lying forward)
-SWING_DEG_SEA = 74.6               # arm angle, deployed
 FLOAT_X_DOCKED = 3300      # the 5400 float sits 600..6000, so the bow
                            # keeps 1200 mm of solid full-width hull
                            # ahead of the float noses
@@ -202,10 +186,6 @@ def float_x(phi_deg):
     bow pin, which is geometry, not a design choice."""
     return float_pose(phi_deg)[0]
 
-
-def swing_angle(phi_deg):
-    t = 0.0 if phi_deg <= 0 else min(1.0, phi_deg / 90.0)
-    return SWING_DEG_DOCK + t * (SWING_DEG_SEA - SWING_DEG_DOCK)
 
 # ---- THE V ARMS ----
 # Two arms per side, each on a VERTICAL pin at the frame and a vertical
@@ -312,10 +292,34 @@ BEAM_H = 220                       # over the waterline, top flush under
 # So hull protection is a KEEL SHOE bolted to the boat (below), and the
 # floor is a deck on the frame. Two parts, because one part cannot be
 # in two places.
-DECK_T = 3                         # mm, 5083-H116 tread plate
+# The deck used to be two 880 x 5700 plates of 3 mm tread, 66 kg EACH,
+# to be lifted out by hand, afloat, over the boat, every time the
+# hangar docked - because at z 800 between the girders is the inside of
+# the boat, so it cannot stay there. Sixty-six kilos is not a thing one
+# person moves off a pontoon, and that single number is most of what
+# "too heavy and unrealistic to move" meant.
+#
+# It is now extruded interlocking pontoon plank, 6005A, the standard
+# marine decking section: it self-spans 1425 mm between bearers, so the
+# ribs AND the centreline stringer both disappear, and each plank is
+# 200 x 880 and weighs 0.9 kg. You lift the deck out one board at a
+# time and stack it.
+DECK_PLANK = (200, 50)             # width, depth of one extrusion
+DECK_PLANK_KGM2 = 6.0              # as extruded, incl. the interlock
 DECK_Z = 800                       # on top of the girders
-DECK_RIB = (60, 40, 3)
-DECK_RIB_PITCH = 1200
+DECK_BEARER = (60, 90, 3)          # three transverse bearers; the fore
+                                   # and aft ties are the end ones.
+                                   # 60x80x3 came out at 8.5 mm of sag
+                                   # against an 8.8 limit - too close to
+                                   # a limit to draw. 90 deep is 2 kg
+                                   # for the margin.
+DECK_BEARER_N = 3
+DECK_UDL_KPA = 2.5                 # what the deck is rated to carry:
+                                   # people, boxes, an outboard. Stated
+                                   # for the first time - the old deck
+                                   # was never checked against any load
+                                   # at all, and failed this one by 2.9x
+                                   # read as a one-way strip.
 # ---- TRACTION BOARDS instead of a ramp ----
 # The hinged bow ramp is gone. It was 1600 x 1780 of plate on pins and
 # gas struts - 35 kg, a hinge line to keep watertight-ish, and a big
@@ -329,9 +333,8 @@ DECK_RIB_PITCH = 1200
 BOARD = (1100, 320, 60)            # a standard recovery board
 BOARD_KG = 4                       # each
 BOARD_N = 2
-DECK_STRINGER = (90, 140, 4)       # centreline beam: without it each
-                                   # panel cantilevers 890 mm off its
-                                   # girder, which 3 mm plate will not do
+# DECK_STRINGER is gone with the plate: the plank spans girder to
+# girder on the bearers and needs no centreline beam under it.
 
 
 # DECK_L is GIRDER_LEN, resolved in deck_panels() because the
@@ -351,23 +354,34 @@ DECK_STRINGER = (90, 140, 4)       # centreline beam: without it each
 
 
 def deck_panels():
-    """(panel width mm, length mm) - two of them, one each side of the
-    centreline, so one person and the haul rope can lift each."""
-    return (GIRDER_Y + GIRDER_SECTION[0] / 2, GIRDER_LEN)
+    """(deck half-width mm, length mm) - the plank runs out from the
+    centreline to each girder.
+
+    The deck stops at the girder's INNER face, not its centreline. Run
+    it to the centreline and it reaches y 865, while a retracted wheel
+    occupies 832.5 to 987.5 - the deck would be drawn through the tyre.
+    Stowed wheels stand above the deck in the dinghy pose, which is the
+    price of keeping them out of the water, so the boards have to stop
+    short of them.
+    """
+    return (GIRDER_Y - GIRDER_SECTION[0] / 2, GIRDER_LEN)
+
+
+def deck_plank_count():
+    """How many planks the deck is made of, and what one weighs."""
+    w, l = deck_panels()
+    n = 2 * int(l / DECK_PLANK[0] + 0.5)
+    return n, w * DECK_PLANK[0] * 1e-6 * DECK_PLANK_KGM2
 
 
 def deck_mass_alu():
-    """kg of both floor panels, plate plus ribs plus handles."""
+    """kg of the whole floor: plank, bearers, traction boards."""
     w, l = deck_panels()
-    plate = 2 * w * l * DECK_T * 2.66e-6
-    b, h, t = DECK_RIB
-    a_rib = b * h - (b - 2 * t) * (h - 2 * t)
-    n = int(l / DECK_RIB_PITCH) + 1
-    ribs = 2 * n * a_rib * w * 2.7e-6
-    sb, sh, st = DECK_STRINGER
-    a_s = sb * sh - (sb - 2 * st) * (sh - 2 * st)
-    stringer = a_s * l * 2.7e-6
-    return (plate + ribs + stringer) * 1.10 + BOARD_N * BOARD_KG
+    plank = 2 * w * l * 1e-6 * DECK_PLANK_KGM2
+    b, h, t = DECK_BEARER
+    a_b = b * h - (b - 2 * t) * (h - 2 * t)
+    bearers = DECK_BEARER_N * a_b * 2 * w * 2.7e-6
+    return (plank + bearers) * 1.10 + BOARD_N * BOARD_KG
 
 
 # ---- THE KEEL SHOE ----
@@ -397,26 +411,14 @@ EXT_VEC = (POD_SEA[0] - POD_DOCKED[0], 0.0)
 EXT_STROKE = EXT_VEC[0]
 # the cross tie is WIDE AND FLAT so it can hide in a shallow keel
 # channel: a deep bar hanging in the flow is pure drag
-TIE_W, TIE_H = 260, 150            # section of the BAR: thin along the
-                                   # boat, deep enough to work. 900 mm
-                                   # along x made it a plaque
 TIE_CHANNEL_D = 175                # channel cut into the hull bottom
 TIE_CHANNEL_W = 1790               # wide enough that the WHOLE bar
                                    # rides inside it, girder to girder
-EXT_STATIONS = (92, 1792)        # midway BETWEEN the wheel
-                                   # stations - the strong bays of
-                                   # the float, clear of the wells
 
 RECESS_DEPTH = FLOAT_W             # the notch swallows the whole float
-SPIKE_L = 3200                     # the girders only have to span the
-                                   # two swing-pin stations (641 and
-                                   # 2941) - forward of that they were
-                                   # carrying nothing but their own mass
-SPIKE_D = 60
 SPIKE_TAPER = 300                  # cone at the forward end: the fork
                                    # closes the fit over the last 300 mm
 
-BOTTOM_SLOPE = 230 / 1096          # hull deadrise, kept for the bevel
 SH_Y, SH_Z = 1210, 760             # legacy exoskeleton rail line: the
                                    # frame and its brackets still run here
 
@@ -449,13 +451,25 @@ POD_ROAD = POD_DOCKED
 # IP68 on a motor is a STATIC test - a rotating seal under load can
 # fail in minutes - so nothing rotating is submerged but that shaft,
 # and the seal is serviceable from outside without opening the box.
+# SIZED FOR SAND, NOT FOR THE SLIPWAY. 3 kW a side was set to climb a
+# 1:8 ramp under its own power, and it could never do that: a 1:8 ramp
+# needs 4979 N, while two driven wheels carrying a third of the boat
+# can only put 4579 N through wet concrete before they spin. The drive
+# was sized for a job traction forbids. That job is the winch's, and
+# always was - which is exactly how the requirement is written, "moving
+# slowly on land such as beaches and exiting the water, sometimes with
+# help of the winch".
+#
+# So size it for what it really does: soft ground at walking pace.
+# Sand at 12 % rolling resistance = 4120 N, against 5723 N of available
+# traction, at 3 km/h = 3.4 kW total. 2 kW a side carries that with
+# margin, where 1.2 would have been a flat-yard figure only.
 DRIVE_PER_SIDE = 1                 # driven wheels, per side
-DRIVE_KW = 3.0                     # each
-DRIVE_RATIO = 100
-DRIVE_NM = 635                     # at each driven wheel
-DRIVE_MOTOR_KG = 30                # motor + reduction, per side
+DRIVE_KW = 2.0                     # each
+DRIVE_NM = 540                     # at each driven wheel, on sand
+DRIVE_MOTOR_KG = 18                # motor + reduction, per side
 DRIVE_SEAL_KG = 4
-DRIVE_CTRL_KG = 12                 # controllers, cabling, both sides
+DRIVE_CTRL_KG = 10                 # controllers, cabling, both sides
 SEAL_DIA = 90
 
 # ---- wheels on SWING ARMS ----
@@ -473,7 +487,28 @@ SEAL_DIA = 90
 # The girders have to REACH the wheels. They ran bight-to-spike-end at
 # x 3300 while the forward station sits at 5200, so that pair hung on
 # nothing at all - visible the moment the frame is rendered on its own.
-GIRDER_SECTION = (90, 140, 4)      # b, h, wall - see structure_calc.
+GIRDER_SECTION = (60, 120, 4)      # b, h, wall - see structure_calc.
+                                   # 90x140 was SF 3.48 in bending with
+                                   # 2.6 mm of sag against a 6.6 limit -
+                                   # far more than the job needs. 60x120
+                                   # is SF 2.13 and 4.95 mm.
+GIRDER_DIAG_D = 60                 # THE TORSION FIX. A kerb strike puts
+GIRDER_DIAG_T = 3                  # 8.7 kN at the contact patch, z -261,
+GIRDER_DIAG_L = 700                # while the girder's shear centre is
+GIRDER_DIAG_N = 12                 # at z 670 - a 931 mm lever, 8.1 kNm
+                                   # of PURE TORSION into a thin box.
+                                   # Bredt gives 87 MPa on the section
+                                   # as drawn against a 60 MPa
+                                   # allowable: the girder ALREADY
+                                   # fails this, and no box that fits
+                                   # the channel passes it. The answer
+                                   # is a load path, not a thicker wall
+                                   # - triangulate each wheel bracket
+                                   # fore and aft to the nearest deck
+                                   # bearer and the side load is shed as
+                                   # a couple instead of a torque.
+                                   # 12 diagonals, 7.9 kg, and a case
+                                   # the model could not previously see.
                                    # SIX wheels halve the girder spans:
                                    # the longest bay goes 3300 -> 1650,
                                    # and bending goes as the span
@@ -483,11 +518,43 @@ GIRDER_SECTION = (90, 140, 4)      # b, h, wall - see structure_calc.
                                    # This is 51 kg the pair against 92 -
                                    # the middle wheels pay for most of
                                    # themselves in girder steel saved.
+WHEEL_KG = 13                      # 155/70 R12C casing 7.5 + a 12x4J
+                                   # steel rim 5.5. The hub, bearings
+                                   # and stub axle are on the arm, in
+                                   # ARM_FITTING_KG, not counted twice
+                                   # here as the old flat 15 did.
 ARM_R = 445                        # pivot to axle
 ARM_PIVOT_Z = 445                  # so the axle reaches z 0 hanging down
 ARM_LIFT = 2 * ARM_R               # 890 mm of travel
 ARM_D = 150                        # arm tube, 6082-T6
-ARM_KG = 22                        # arm, pivot, bearings, actuator, each
+ARM_WALL = 8                       # was 12, which came out at SF 4.5
+                                   # against a 0.6 g kerb strike - and
+                                   # only looked that heavy because
+                                   # structure_calc divided the load by
+                                   # FOUR wheels when there are six.
+                                   # 8 is SF 3.2. It saves 2 kg a
+                                   # station, not the 12 kg a first pass
+                                   # claimed: the pivot, bearings and
+                                   # drive do not thin with the tube.
+ARM_FITTING_KG = 18                # per station, itemised: stub axle,
+                                   # hub and bearings 4.0; pivot shaft,
+                                   # bearings and boss 3.5; the bracket
+                                   # from the girder floor down to the
+                                   # pivot 2.9; stop and lock pin 1.0;
+                                   # rotary drive on the pivot 5.5; end
+                                   # plates 1.1.
+                                   # The old flat ARM_KG = 22 turned out
+                                   # to be RIGHT - thinning the tube
+                                   # only saves 2 kg a station, and the
+                                   # bracket and the drive were never
+                                   # weighed at all. This is not a cut;
+                                   # it is the same number with a bill
+                                   # attached.
+                                   # The drive must be ROTARY on the
+                                   # pivot: the leadscrew drawn from a
+                                   # girder lug to a lug 0.6 R along the
+                                   # arm cannot sweep 180 deg - the lug
+                                   # passes through the pivot line.
 ACT_D = 70                         # leadscrew actuator, arm to frame
 # OVER-CENTRE: hanging straight down, the wheel's load line passes
 # through the pivot, so the road load goes pivot -> hard stop and the
@@ -495,6 +562,29 @@ ACT_D = 70                         # leadscrew actuator, arm to frame
 # arm, not hold the boat up.
 LEG_STROKE = ARM_LIFT              # kept as the name the rest of the
                                    # model and the docs already use
+
+
+def wheel_arm_mass():
+    """kg of ALL the wheel swing arms, computed from the tube.
+
+    This was a flat ARM_KG = 22 a station, one of the guesses that made
+    half the hangar's mass an estimate nobody had revisited. The tube is
+    sizeable from ARM_D/ARM_WALL/ARM_R; the hardware bolted to it is
+    not, so that stays a named allowance instead of hiding inside a
+    single round number.
+    """
+    a = math.pi / 4 * (ARM_D ** 2 - (ARM_D - 2 * ARM_WALL) ** 2)
+    tube = a * ARM_R * 2.7e-6
+    return 2 * len(WHEEL_XS) * (tube + ARM_FITTING_KG)
+
+
+def drive_mass():
+    """kg of the drive, both sides. The DRIVE_* constants above have sat
+    unread since they were written; the flat MASS_HYDRAULICS = 80 they
+    were supposed to feed happens to be exactly this sum, so wiring them
+    up changes no number - it just makes the 80 traceable to the motor
+    it came from."""
+    return 2 * (DRIVE_MOTOR_KG + DRIVE_SEAL_KG) + DRIVE_CTRL_KG
 
 # ---- the wheels themselves ----
 # A proper TRAILER tyre, not a car tyre. 155/70 R12C, load index 104 =
@@ -573,7 +663,23 @@ WHEEL_Y = 910                      # wheel centreline: the pocket eats
 # set the boat's attitude on the frame and it stays there with no
 # power and no pin.
 ARM_JACK_STROKE = 700              # mm of frame travel
-ARM_JACK_DOCK = 334                # the setting that lines the channel up
+def dock_gap():
+    """mm the frame must come down for the girders to meet the channel.
+
+    The boat floats with its channel a little way over the water; the
+    hangar, being far lighter, floats with its girders a long way over
+    its own. The difference is the whole docking problem, and it is
+    what the jacks exist to close.
+
+    This WAS the literal 334, which was 4 mm stale the day it was
+    written and drifts every time a kilo comes off the hangar - the
+    lighter the hangar, the higher it floats and the bigger the gap.
+    It is the number the docking sequence is set by, so it derives.
+    """
+    sink = (hangar_mass() + DINGHY_CREW_KG) / 1.025 / (
+        2 * FLOAT_LEN * FLOAT_W / 1e6)
+    wl_hangar = (POD_DOCKED[1] - FLOAT_H / 2) + sink
+    return draft_for(mass_budget()[1] + CREW_STORES) - wl_hangar
 ARM_JACK_TUBE_D = 110              # outer, 6082-T6
 ARM_JACK_SCREW = 40                # Tr40 trapezoidal, self-locking
 ARM_JACK_KG = 14                   # tube, screw, nut, 24 V gearmotor
@@ -589,12 +695,6 @@ def arm_jacks_mass():
     return 2 * len(ARM_XS) * ARM_JACK_KG
 
 
-def frame_drop(setting="up"):
-    """mm the frame is lowered relative to the floats."""
-    return {"up": 0.0, "dock": ARM_JACK_DOCK,
-            "under": float(ARM_JACK_STROKE)}.get(setting, 0.0)
-
-
 GIRDER_Z0 = T_STEP_Z               # channel floor: the wing underside
 GIRDER_Y = 835                     # just outboard of the stem face,
                                    # over the float's inner half
@@ -606,19 +706,15 @@ GIRDER_LEN = GIRDER_X1 - GIRDER_X0
 GIRDER_Z = GIRDER_Z0 + GIRDER_SECTION[1] / 2      # centre
 
 
-def swing_arm_mass():
-    """kg of all FOUR swing arms: two chords the length of the arm plus
-    about 35 % again for diagonals, gussets and the four pins."""
-    c, t = SWING_CHORD
-    a = c * c - (c - 2 * t) ** 2
-    return 4 * 2 * a * SWING_ARM_R * 2.7e-6 * 1.35
-
-
 def girder_mass():
-    """kg of the girder PAIR, from its own section and its own length."""
+    """kg of the girder PAIR plus the bracket diagonals that keep the
+    kerb strike out of the girder as torsion."""
     b, h, t = GIRDER_SECTION
     a = b * h - (b - 2 * t) * (h - 2 * t)
-    return 2 * a * GIRDER_LEN * 2.7e-6
+    d = math.pi / 4 * (GIRDER_DIAG_D ** 2
+                       - (GIRDER_DIAG_D - 2 * GIRDER_DIAG_T) ** 2)
+    return (2 * a * GIRDER_LEN
+            + GIRDER_DIAG_N * d * GIRDER_DIAG_L) * 2.7e-6
 
 
 POCKET_L = 1000                    # the tyre swings in through the wing
@@ -653,20 +749,11 @@ WELL_TUBE_L = 240                  # the ARM and its pivot live in the
                                    # recess up to z 445, above the wheel
                                    # notch, so they need a full-height
                                    # slot where the float docks past them
-FLIP_TUBE_D = 120                  # the tube the arm swings on: d70
-                                   # came out at 324 MPa against a
-                                   # 104 MPa allowable - see
-                                   # freecad/structure_calc.py
-FLIP_ARM_D = 110
-FLIP_ARM_LEN = 520                 # tube centre to axle: set so the
-                                   # smaller wheel still gives 268 mm
-                                   # of clearance under the keel
 AXLE_DOWN_Z = 0                                    # leg fully down: the
                                    # smaller wheel has to reach 74 mm
                                    # further to keep the keel clear of
                                    # the road
 GROUND_Z = AXLE_DOWN_Z - WHEEL_DIA / 2             # -261 under the keel
-WHEEL_DROP = 60                    # legacy name, still read by ga_drawing
 
 
 
@@ -685,41 +772,64 @@ def arm_points(sy=1, down=True):
 
 # ---- the float pair as a vehicle, and as a dinghy ----
 LOCK_MOTOR_KG = 2.6                # bayonet lock gearmotor, per spike
-HANGAR_BIGHT_X = -120              # cross beam joining the float tails,
-                                   # just clear of the transom
 HANGAR_BIGHT = (140, 180)
+TIE_AFT = (140, 180, 5)            # carries the drawbar: 7.3 kN
+TIE_FWD = (100, 120, 4)            # squares the frame, acts as a bumper
+# ---- BRAKES ----
+# The model has never carried any, and over 750 kg an O2 trailer must
+# have them - docs/homologation.md:81, UN R13 overrun set. A hangar
+# that weighs 677 kg empty and 3.5 t loaded is not exempt by any
+# reading. This is not a cut; it is a bill that was never presented.
+BRAKE_HUB_KG = 6                   # braked drum hub, each
+BRAKE_HUBS = 4                     # the two aft axles
+BRAKE_LINKAGE_KG = 10              # overrun coupling, equaliser, rods,
+                                   # handbrake, breakaway cable
 DRAWBAR_LEN = 1900
 DRAWBAR_TUBE = 100
 DRAWBAR_KG = 26                    # A-frame, coupling head, chains,
                                    # jockey wheel - demountable
 COUPLING_BALL = 50
-COUPLING_H = 445
+# COUPLING_H lives with the stern arch, further down. It was defined
+# here too, and silently overwritten - the same class of same-name
+# collision that has bitten this file twice before.
 JOCKEY_D = 200
 HANGAR_STANDOFF = -7400            # detached: floats astern of the boat
 
 DINGHY_BATT_WH = 2 * 1200          # motorcycle-class packs, one per float
-DINGHY_BATT_KG = 2 * 13
 DINGHY_PANEL = (1160, 540, 3)
 DINGHY_PANEL_W = 100
 DINGHY_CREW_KG = 2 * 85
 
 
+HANGAR_SUNDRY_KG = 20              # fasteners, paint, wiring, anodes.
+                                   # Was a bare literal on the end of
+                                   # the sum with nothing saying what it
+                                   # stood for.
+
+
 def hangar_mass():
-    """kg of the float pair as a trailer: shells, wheels, flip gear,
-    extender halves, bight, drawbar, locks, dinghy kit."""
+    """kg of the float pair as a trailer: shells, wheels, swing arms,
+    V arms, drive, girders, ties, drawbar, deck, locks."""
     import laminate as L
     areas = laminate_areas()
     floats = (L.zone_mass("float_shell", areas.get("float_shell", 0.0)) +
               L.zone_mass("float_deck", areas.get("float_deck", 0.0)))
     # TWO transverse ties, one at each end of the girders - that is
     # what turns two rails into a frame - plus the demountable drawbar.
-    tie_m = 2 * 2 * (GIRDER_Y + GIRDER_SECTION[0] / 2) / 1000
-    alu = tie_m * HANGAR_BIGHT[0] * HANGAR_BIGHT[1] * 0.15 * 2.7e-3
+    # These were a solid section multiplied by a bare 0.15 "fill", which
+    # is not a section anybody can order. They are boxes: the aft tie
+    # takes the drawbar (0.5 g braking of the whole rig = 17.2 kN into
+    # two A-legs, 7.3 kN transverse), the forward one only squares the
+    # frame and acts as a bumper.
+    span = 2 * (GIRDER_Y + GIRDER_SECTION[0] / 2)
+    alu = 0.0
+    for b, h, t in (TIE_AFT, TIE_FWD):
+        alu += (b * h - (b - 2 * t) * (h - 2 * t)) * span * 2.7e-6
     alu += DRAWBAR_KG
+    brakes = BRAKE_HUBS * BRAKE_HUB_KG + BRAKE_LINKAGE_KG
     return (floats + MASS_WHEELS_HUBS + swing_gear_mass() + deck_mass_alu() +
-            MASS_FLIPGEAR +
-            MASS_HYDRAULICS + girder_mass() + alu +
-            4 * LOCK_MOTOR_KG + 20)
+            wheel_arm_mass() + drive_mass() + girder_mass() + alu + brakes +
+            2 * LOCK_MOTOR_KG + HANGAR_SUNDRY_KG)
 
 
 def float_buoyancy():
@@ -729,8 +839,19 @@ def float_buoyancy():
 
 def well_loss_kg():
     """kg of buoyancy the wheel notches take out of ONE float: the notch
-    that lets the wheel down past it, plus the full-height slot where
-    the fixed leg tube passes."""
+    the wheel drops through, plus the slot above it that the swing arm
+    and its pivot boss dock into.
+
+    Both terms are real and this was nearly "simplified" away. The arm
+    is a 150 mm tube on the centreline of the wheel at y 910, standing
+    from z 0 to the pivot at 445; the docked float spans y 780..1240 and
+    z -110..590. They occupy the same space, so the float must be
+    slotted for the arm exactly as it is notched for the tyre.
+
+    build_float does NOT cut this slot yet - only the wheel notch - so
+    the mass model and the geometry disagree here. The mass model is the
+    one that is right.
+    """
     return (len(WHEEL_XS) * (WELL_L * WELL_W * WELL_H
                              + WELL_TUBE_L * WELL_W * (FLOAT_H - WELL_H))
             / 1e9 * 1000)
@@ -738,12 +859,76 @@ def well_loss_kg():
 
 def dinghy_stats():
     """(beam m, displacement kg, freeboard mm): the two floats and the
-    bight running as a catamaran with two people aboard."""
+    bight running as a catamaran with two people aboard.
+
+    The waterplane is LENGTH x WIDTH and the freeboard is measured up
+    the float's DEPTH. This had FLOAT_H in the area and FLOAT_W in the
+    freeboard - width and depth swapped - which made the waterplane
+    7.56 m2 against a true 4.97 and reported the hangar floating 152 mm
+    higher than it does. hangar_standoff_z() below places the detached
+    hangar in the render off this, so the picture was wrong too.
+    """
     beam = (2 * POD_SEA[0] + FLOAT_W) / 1000
     mass = hangar_mass() + DINGHY_CREW_KG
-    area = 2 * FLOAT_LEN * FLOAT_H / 1e6
+    area = 2 * FLOAT_LEN * FLOAT_W / 1e6
     sink = mass / 1000 / area * 1000
-    return beam, mass, FLOAT_W - sink
+    return beam, mass, FLOAT_H - sink
+
+
+def hangar_afloat_mass():
+    """kg that actually floats away when the hangar detaches.
+
+    hangar_mass() is the ROAD bill. Two items are booked to the boat
+    but are physically bolted into the hangar and leave with it:
+
+      * two of the three waterjets - build_float draws the cartridge,
+        pump and intake grid INSIDE each float. Only the stern nacelle
+        stays with the boat.
+      * the arm jacks, which live in the V arms, and the V arms are
+        already counted as hangar.
+
+    Booking them to the boat made the dinghy look 106 kg lighter than
+    it is, which is 106 kg of payload that was never there.
+    """
+    return hangar_mass() + MASS_JETS * 2 / 3 + arm_jacks_mass()
+
+
+def payload_afloat(reserve=0.30):
+    """kg the hangar can carry as a dinghy or work platform, keeping
+    `reserve` of the float pair's buoyancy unused as freeboard.
+
+    The payload figure has only ever existed as a table typed into
+    docs/hangar.md, against a hangar mass that has since changed twice.
+    Requirement 5 - a work platform for maintenance and heavy boxes -
+    needs a number the model stands behind, so here it is.
+
+    Everything demountable still counts: the drawbar travels with the
+    boat, because the trip does not come back to where it launched.
+    """
+    return ((float_buoyancy() - 2 * well_loss_kg()) * (1 - reserve)
+            - hangar_afloat_mass())
+
+
+def float_freeboard(payload=0.0):
+    """mm of float standing out of the water with `payload` aboard.
+
+    A freeboard in millimetres is the honest way to state this. A
+    "30 % reserve" sounds like a rule but is only a fraction of a
+    buoyancy nobody can picture; 200 mm of float showing is something
+    you can look at and judge.
+
+    The notches matter here and a plain waterplane misses them: they
+    are cut UP FROM THE FLOAT BOTTOM, so they are the first volume to
+    flood and the float is at its least buoyant exactly where it floats
+    first. Below WELL_H the section is short by the notches; above it,
+    it is full.
+    """
+    need = (hangar_afloat_mass() + payload) / 1.025 * 1e6      # mm3
+    full = 2 * FLOAT_LEN * FLOAT_W * FLOAT_CB                  # mm2
+    notched = full - 2 * len(WHEEL_XS) * WELL_L * WELL_W
+    if need <= notched * WELL_H:
+        return FLOAT_H - need / notched
+    return FLOAT_H - (WELL_H + (need - notched * WELL_H) / full)
 
 
 def hangar_standoff_z():
@@ -874,11 +1059,7 @@ BALC_HINGE_Z = 1150
 
 # low-profile boxes over the flat wheels (water pose only);
 # balcony stays horizontal and stands on legs down to the box lids
-WHEELBOX_L = 780
-WHEELBOX_W = 780
 WHEELBOX_H = 120   # low lids over the recessed flat wheels
-WHEELBOX_Y0, WHEELBOX_Y1 = -350, 250   # OPEN outboard: tire edge exposed
-                                       # as a rolling harbor fender
 WHEELBOX_TOP_Z = POD_WATER[1] + FLOAT_H / 2 + WHEELBOX_H
 
 # ---- propulsion: 3x flush-intake WATERJETS (docs/propulsion.md) ----
@@ -1116,38 +1297,6 @@ def dome_facet_error():
             x, z = crown(t0 + (t1 - t0) * k / 60)
             worst = max(worst, abs(z - (z0 + (z1 - z0) * (x - x0) / (x1 - x0))))
     return worst
-
-
-def dome_panel_bend():
-    """For each big panel: (deviation from flat mm, bend radius mm).
-
-    A dome is doubly curved, so a LARGE pane has to be curved - there is
-    no way round that. What matters for the builder is how gently: this
-    fits a plane to each panel and reports the radius. Anything over
-    ~1.5 m is ordinary hot-bent glass, milder than a car windscreen."""
-    secs, _ = dome_mesh()
-    edges = dome_panel_edges()
-    out = []
-    for p in range(DOME_PANELS):
-        i0, i1 = edges[p], edges[p + 1]
-        pts = [s_[i] for s_ in secs for i in range(i0, i1 + 1)]
-        n_ = len(pts)
-        cx = sum(q[0] for q in pts) / n_
-        cy = sum(q[1] for q in pts) / n_
-        cz = sum(q[2] for q in pts) / n_
-        # plane normal from the panel's two dominant directions
-        d1 = Vec3(*pts[i1 - i0]) - Vec3(*pts[0])          # across the arch
-        d2 = Vec3(*pts[-1]) - Vec3(*pts[i1 - i0])         # along the sweep
-        nv = d1.cross(d2)
-        if nv.length() < 1e-6:
-            out.append((0.0, float("inf")))
-            continue
-        nv = Vec3(nv.x / nv.length(), nv.y / nv.length(), nv.z / nv.length())
-        dev = max(abs((Vec3(*q) - Vec3(cx, cy, cz)).dot(nv)) for q in pts)
-        span = 2 * max((Vec3(*q) - Vec3(cx, cy, cz)).length() for q in pts)
-        r = float("inf") if dev < 1e-6 else span * span / (8 * dev)
-        out.append((dev, r))
-    return out
 
 
 def dome_mesh():
@@ -1471,24 +1620,11 @@ BULKHEAD_X = (900, 2400, 3900, 5400, 6200)
 
 # masses that are NOT laminate, kg. Sources in the docs named alongside.
 MASS_EXOSKELETON = 260     # S355 tube frame + brackets, galvanised
-MASS_UGIRDER = 0           # computed: see girder_mass()
-                           # span at 3.1 m and the 160-deep section
-                           # deflected 22.6 mm against a 12.4 limit -
-                           # stiffness, not stress, set this size
-MASS_WHEELS_HUBS = 15 * 2 * len(WHEEL_XS)   # 15 kg a wheel,
-                           # 155/70 R12C on steel rims
-MASS_EXTENDERS = 0         # computed: see swing_arm_mass()
-                           # 70x70x4 chords - the chords take the
-                           # moment axially instead of a box wall
-                           # taking it in bending
-MASS_FLIPGEAR = 2 * len(WHEEL_XS) * ARM_KG   # wheel swing arms:
-                           # arm, pivot, bearings, actuator
-MASS_HYDRAULICS = 80       # 2 x (3 kW motor + reduction + seal),
-                           # one per float, plus controls
+MASS_WHEELS_HUBS = WHEEL_KG * 2 * len(WHEEL_XS)
+MASS_FLIPGEAR = 0          # computed: see wheel_arm_mass()
+MASS_HYDRAULICS = 0        # computed: see drive_mass()
 MASS_JETS = 75             # 3 x 2 kW waterjet cartridges incl. ducting
 MASS_ELECTRICS = 120       # inverter/charger, MPPTs, busbars, cabling
-MASS_SOLAR = 0             # roof panels are in deck_mass(), side
-                           # panels in curtain_mass()
 
 # ---- interior ----
 # 5300 x 2280 of floor and 1850 of height. Four zones, aft to forward:
@@ -1613,8 +1749,6 @@ ANCHOR_ROLLER = (20, 0, 1170)   # over the transom edge
 WINCH_BODY = (300, 420, 230)  # x, y, z: fits between the gantry legs
 
 # ---- stern pod ----
-STERNPOD_DIA = 300
-STERNPOD_LEN = 700
 
 # phi: arm swing (0 = road, PHI_WATER = floats on the water)
 # roll: float roll (90 = on its side / wheels vertical, 0 = flat)
@@ -1676,17 +1810,6 @@ def tongue_load_kg(pack_aboard=True):
     cx, _ = arch_coupling()
     m, lcg = road_mass_kg(pack_aboard)
     return m * (lcg - axle) / (cx - axle)
-
-
-def naca_pts(chord, t=0.12, n=20):
-    top = []
-    for i in range(n + 1):
-        u = i / n
-        yt = 5 * t * chord * (0.2969 * math.sqrt(u) - 0.1260 * u
-                              - 0.3516 * u**2 + 0.2843 * u**3 - 0.1015 * u**4)
-        top.append((u * chord, yt))
-    bot = [(x, -y) for x, y in reversed(top[1:-1])]
-    return top + bot
 
 
 # ---------------------------------------------------------------
@@ -2390,7 +2513,7 @@ def checks(verbose=True, strict=True):
               f"hangar's girders {T_STEP_Z - _wlh:.0f} mm over its own, so "
               f"the frame must come down {_gap:.0f} mm. "
               f"{2 * len(ARM_XS)} screws in the V arms, {ARM_JACK_STROKE} mm "
-              f"of travel: {ARM_JACK_DOCK} to line up, {ARM_JACK_STROKE} to "
+              f"of travel: {dock_gap():.0f} to line up, {ARM_JACK_STROKE} to "
               f"put the frame {ARM_JACK_STROKE - (T_STEP_Z - _wlh):.0f} mm "
               f"UNDER the water. {arm_jack_load_kg():.0f} kg a screw with "
               f"the boat aboard, self-locking, so they set the ride height "
@@ -2415,8 +2538,10 @@ def checks(verbose=True, strict=True):
               f"the girder, {DRIVE_NM} Nm at the forward wheel - the hangar "
               f"keeps its own drive when it detaches")
         print(f"dinghy          {dg_beam:.2f} m beam, {dg_mass:.0f} kg with "
-              f"two aboard, {dg_free:.0f} mm freeboard, {DINGHY_BATT_WH} Wh "
-              f"+ 2 x {DINGHY_PANEL_W} W")
+              f"two aboard, {dg_free:.0f} mm freeboard")
+        print(f"{'payload afloat':16s}{payload_afloat(0.30):.0f} kg at 30 % "
+              f"reserve; {float_freeboard(500):.0f} mm of float still showing "
+              f"with 500 kg on it")
 
     # Two items are open by decision, not by oversight. strict=True (the
     # contract run) fails on them; strict=False lets the model build so
