@@ -278,3 +278,70 @@ forbids** — which is what the winch is for, and always was. Re-sized
 for what it really does, soft ground at walking pace (sand at 12 %
 rolling resistance, 4 120 N against 5 723 N of traction, 3 km/h), it is
 2 kW a side.
+
+## 11. Docking: the sequence, and proof that it fits
+
+The hangar could never be shown to go under the boat, because nothing
+in the repo ever tested it. Beauty shots cannot: the hull stands in
+front of the hangar in every one, so a frame buried in the wing looks
+perfectly fine. `freecad/dock_check.py` intersects the hull solid with
+every part of the hangar and measures the volume that comes back.
+
+**It found that the hangar overlapped the hull in every pose already** -
+21 litres in cruise, 11 in road, 12 litres per float - none of it
+visible in any render. The docking pose was not the problem; the model
+had simply never been checked.
+
+### The sequence
+
+| | | |
+|---|---|---|
+| 1 | floats **splayed**, frame jacked **down 358 mm** | girders come to the boat's channel; the floats pass **outside** the hull instead of driving into the wing |
+| 2 | winch forward | the girders enter the channels from astern; wheels are **down**, because stowed they stand up into a wing that has no pocket over them yet |
+| 3 | jack the frame **up** | the boat's weight transfers to the floats, which sink ~356 mm **on their own** - the jack never has to push them down |
+| 4 | close the V arms | the floats swing into their recesses, now at the right height |
+
+Step 3 is why the stroke works. The float bottom goes from −166 mm
+(hangar floating light) to −522 mm (fully docked); the recess floor it
+has to reach is at −515. **It matches to 7 mm, and it is load transfer
+that does it, not the screw.** The jack only travels the 358 mm of
+step 1, leaving 342 mm of its 700 mm spare.
+
+### What had to change to make it true
+
+- **The wing's outer lip, `T_LIP_Z`, was the most expensive 40 mm in the
+  model.** It is a *shadow line* - its only job is to let the docked
+  float sit recessed behind the hull face. But everything that passes
+  under the wing is capped by the **lip**, not by the step at 600: the
+  float's top and the V arms were both drawn to 600 and were cutting
+  through it along their whole length. Raising it 550 → 590 keeps a
+  10 mm shadow line and gives back the float's full 700 mm of depth,
+  its road clearance and its reserve.
+- **The V-arm pins sat exactly on the stem face.** `py = sy * STEM_HW`
+  put the pin, its lug, the open stop and the road latch half inside
+  the hull. They belong on the groove's centreline - which is also the
+  only line where the parallelogram closes without the float yawing.
+- **The girder's web stiffeners were drawn 70 mm proud all round**, so
+  eight of them stood outside a girder running in a 100 mm channel.
+  A web stiffener in a box girder is an internal diaphragm.
+- **The wheel pockets and the girder channel are one merged void**, and
+  whichever was lined last left its wall standing in the other. The
+  pocket's end walls were putting a plate through the girder twice per
+  wheel.
+- **There is no forward tie any more** and there cannot be one: at
+  girder level it crosses the cabin (`SOLE_Z` 620 is 20 mm above the
+  wing), and under the keel it cannot clear during the approach. Its
+  job is done by the deck bearers when detached and by the boat itself
+  when docked.
+- **The float sat on the stem face with zero gap.** That is not a fit,
+  it is a tangency; the check read 12 litres a side, which is 3 mm of
+  numerical sliver over 3.8 m² of touching face. Nothing is built to
+  zero.
+
+Run it after any geometry change:
+
+```bash
+~/bin/FreeCAD.AppImage --console dock_check.py < /dev/null | tail -20
+```
+
+All eight poses now report **FITS**, zero interference.

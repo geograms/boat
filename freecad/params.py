@@ -120,10 +120,22 @@ PANEL_T = 4
 # hull, bottoms flush, so the docked boat is one clean barge body.
 STEM_HW = 780                      # half-beam of the stem below the step
 T_STEP_Z = 600                     # underside of the T's wings
-T_LIP_Z = 550                      # the wing's outer LIP drops to here:
-                                   # the docked float (top 450) rides
-                                   # recessed 40 mm behind the hull
-                                   # face, in its shadow line
+T_LIP_Z = 590                      # the wing's outer LIP drops to here,
+                                   # and it is a SHADOW LINE - the only
+                                   # thing it does is let the docked
+                                   # float sit recessed behind the hull
+                                   # face instead of flush.
+                                   # It was 550, and it was the single
+                                   # most expensive 40 mm in the model:
+                                   # everything that passes under the
+                                   # wing - the float's top, the V arms
+                                   # - is capped by the LIP, not by the
+                                   # step at 600. Hung off 550 the float
+                                   # had to drop 50 mm, which cost 50 mm
+                                   # of road clearance AND pushed it to
+                                   # 81 % immersed, over the limit.
+                                   # 590 keeps a 10 mm shadow line and
+                                   # gives all of that back.
 FLOAT_LEN = 5400           # see the EXTENDER SLIDERS block: righting
                            # is reserve x lever, and buying it with
                            # FLOAT LENGTH is far cheaper than buying
@@ -132,7 +144,20 @@ FLOAT_LEN = 5400           # see the EXTENDER SLIDERS block: righting
                                    # swing wing needs fore-and-aft room
 FLOAT_W = 460                      # the shorter swing-wing float has to
                                    # win its volume back in section
-FLOAT_H = 700                      # DEPTH is the cheap stability lever.
+FLOAT_H = 700                      # DEPTH is the cheap stability lever,
+                                   # and the wing's LIP is what caps it.
+                                   # The float's top can be no higher
+                                   # than T_LIP_Z 550, so every extra
+                                   # millimetre of depth comes off the
+                                   # road clearance underneath, one for
+                                   # one. At 700 the float hangs 160 mm
+                                   # below the keel and leaves 101 mm -
+                                   # less than a speed bump. 680 leaves
+                                   # 121 and gives up about 0.35 kNm of
+                                   # peak righting - but see T_LIP_Z:
+                                   # raising the lip 40 mm made the
+                                   # trade unnecessary and the float is
+                                   # back at its full 700.
                                    # At 540 the float sat 71 % immersed
                                    # with 155 mm of freeboard, and that
                                    # freeboard is what ended the righting
@@ -220,7 +245,25 @@ ARM_SECTION = (160, 220, 5)        # box, 6082-T6, in the z 380..600 band.
                                    # the deeper float.
 ARM_PAD = 1.15                     # pins, bushes, stop, lugs
 ARM_GROOVE_W = 120                 # the groove in the float's inner face
-ARM_GROOVE_D = 160                 # that the arm lies in when docked
+ARM_GROOVE_D = 200                 # that the arm lies in when docked. 160
+                                   # put the arm's centreline at y 860,
+                                   # so a 160-wide arm reached y 780 -
+                                   # exactly the stem face, and every
+                                   # pin, lug and stop hung on it was
+                                   # half buried in the hull. 200 moves
+                                   # the whole line out to 880 and the
+                                   # arm clears the stem by 20 mm.
+
+
+def arm_pin_y():
+    """y of the arm pins, both ends. The arm lies in the float's groove
+    when docked, so its centreline is the groove's mid-depth - and the
+    parallelogram only closes if the girder pin is on the SAME line:
+    docked   float inner face 780 + 100 = 880
+    splayed  float inner face 1551 + 100 = 1651 = 880 + 900 sin 59
+    Anything else and the float yaws, which is the one thing the
+    parallelogram exists to prevent."""
+    return STEM_HW + FLOAT_DOCK_GAP_Y + ARM_GROOVE_D / 2
 
 
 def arm_angle(phi_deg):
@@ -235,7 +278,7 @@ def float_pose(phi_deg):
     import math as _m
     a = _m.radians(arm_angle(phi_deg))
     return (FLOAT_X_DOCKED - ARM_L * (1 - _m.cos(a)),
-            STEM_HW + FLOAT_W / 2 + ARM_L * _m.sin(a),
+            STEM_HW + FLOAT_DOCK_GAP_Y + FLOAT_W / 2 + ARM_L * _m.sin(a),
             0.0)
 
 
@@ -263,9 +306,23 @@ def swing_gear_mass():
 HINGE_PIN_D = 80                   # vertical pin at each end of each arm
 STAY_KG = 3                        # the open stop and its lug, per side
 HAUL_KG = 4                        # haul-in line, block, cleat, per side
-BEAM_Z0 = 380                      # the band the arms swing in: 57 mm
-BEAM_H = 220                       # over the waterline, top flush under
-                                   # the wing at 600
+BEAM_Z0 = 360                      # the band the V arms swing in.
+BEAM_H = 220                       # It was 380..600, "flush under the
+                                   # wing at 600" - but the wing's outer
+                                   # LIP hangs to T_LIP_Z 550, and that
+                                   # is what the arm passes under on its
+                                   # way to the float. Probed along the
+                                   # whole length at y 1200 the hull
+                                   # starts at 550 every time, so the
+                                   # top 50 mm of every arm was cutting
+                                   # through the lip.
+                                   # The band drops to 330..550. That
+                                   # puts the arm's underside 82 mm
+                                   # below the loaded waterline instead
+                                   # of 32 - it was already wet, and it
+                                   # is aluminium on a mechanism that
+                                   # only opens when the floats are in
+                                   # the water anyway.
 
 
 # ---- THE HANGAR FLOOR ----
@@ -402,8 +459,24 @@ DOCK_CLEAR = 10                    # float top to the wing underside
 # The float hangs from the WING, not from the keel plane. Anchoring it
 # to the keel was fine while the float was shallower than the T step;
 # now the top is what is constrained and the depth grows downward.
-POD_DOCKED = (STEM_HW + FLOAT_W / 2,
-              T_STEP_Z - DOCK_CLEAR - FLOAT_H / 2)
+FLOAT_DOCK_GAP_Y = 12              # clearance between the stem's face
+                                   # and the float's inner face when
+                                   # docked. It was ZERO - the two
+                                   # surfaces were coincident, which is
+                                   # not a fit, it is a tangency: the
+                                   # solid check reported 11 litres of
+                                   # overlap a side, which is 3 mm of
+                                   # numerical sliver over 3.8 m2 of
+                                   # touching face. Nothing is built to
+                                   # zero.
+# The float tucks under the wing's LIP, not under its step. T_STEP_Z
+# 600 is the step at the stem; the wing's outer edge hangs 50 mm lower,
+# to T_LIP_Z 550, and that is what the float's outboard half sits
+# under. Hung off 600 the float's top 40 mm was buried in the lip along
+# its whole 5.4 m - 13 litres of solid interference a side, and the
+# largest single clash left in the model.
+POD_DOCKED = (STEM_HW + FLOAT_DOCK_GAP_Y + FLOAT_W / 2,
+              T_LIP_Z - DOCK_CLEAR - FLOAT_H / 2)
 POD_SEA = (float_pose(90)[1], POD_DOCKED[1])            # extended -
                                                     # compact stance by
                                                     # choice (2/3 of 2.5)
@@ -411,6 +484,13 @@ EXT_VEC = (POD_SEA[0] - POD_DOCKED[0], 0.0)
 EXT_STROKE = EXT_VEC[0]
 # the cross tie is WIDE AND FLAT so it can hide in a shallow keel
 # channel: a deep bar hanging in the flow is pure drag
+TIE_SEAT_Z = 95                    # the forward tie's centreline where
+                                   # it crosses under the keel, sitting
+                                   # in a seat cut flush into the stem
+                                   # bottom so no bar stands in the flow
+TIE_SEAT_L = 300                   # x length of that seat: the tie is
+                                   # 140 wide and lands in it, it does
+                                   # not slide along it
 TIE_CHANNEL_D = 175                # channel cut into the hull bottom
 TIE_CHANNEL_W = 1790               # wide enough that the WHOLE bar
                                    # rides inside it, girder to girder
@@ -698,7 +778,15 @@ def arm_jacks_mass():
 GIRDER_Z0 = T_STEP_Z               # channel floor: the wing underside
 GIRDER_Y = 835                     # just outboard of the stem face,
                                    # over the float's inner half
-GIRDER_X0 = -120                   # at the bight
+GIRDER_X0 = -320                   # at the bight. -120 put the bight
+                                   # at x -120..20 while the transom is
+                                   # at -100, so the beam that ties the
+                                   # two girders together was drawn 20
+                                   # mm INSIDE the boat, with its
+                                   # gussets 120 mm in. It has to clear
+                                   # astern: there is nowhere at girder
+                                   # level for a transverse member to
+                                   # cross the hull.
 GIRDER_X1 = max(WHEEL_XS) + 420    # past the forward wheel station
 GIRDER_LEN = GIRDER_X1 - GIRDER_X0
 
@@ -743,7 +831,7 @@ POCKET_TOP = 1180                  # sole is at 620, so 560 mm proud
 # up into their boxes with nothing beside them.
 WELL_L = 800                       # along the float, matching the box
 WELL_W = 230                       # the float's inner half of 460
-WELL_H = 420                       # from the float's bottom up; the top
+WELL_H = 425                       # from the float's bottom up; the top
                                    # 220 mm of the inner half stays solid
 WELL_TUBE_L = 240                  # the ARM and its pivot live in the
                                    # recess up to z 445, above the wheel
@@ -1767,6 +1855,21 @@ MODES = {
     # dinghy pose - the boat floats free on its own hull
     "detached": dict(phi=PHI_SPLAY, curt=78, tow="sea", lift=0,
                      rails=0, coupled=False),
+    # THE DOCKING POSE, and the one the whole hangar has to earn: the
+    # frame jacked down dock_gap() so the girders are at the boat's
+    # wing channel, floats splayed so they pass OUTSIDE the hull rather
+    # than driving into the wing, sliding in from astern. This is the
+    # only pose in which the hangar can get under the boat, and until
+    # now nothing drew it.
+    # deck=False because the planks come UP before docking: at z 800
+    # between the girders is the inside of the boat, so the floor
+    # cannot be down while the frame slides in. That is the whole
+    # reason the deck is 58 loose boards and not two plates.
+    # wheels DOWN for the approach: stowed, they stand up in the wing,
+    # and until the frame is home there is no pocket above them.
+    "docking": dict(phi=PHI_SPLAY, curt=78, tow="sea", lift=0, rails=0,
+                    coupled=False, drop=True, standoff_x=-2600,
+                    deck=False, wheels_down=True),
 }
 
 

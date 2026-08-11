@@ -165,6 +165,42 @@ def build_hull():
          (P.CABIN_X0 + 50, P.CABIN_W / 2 - 70)],
         DECK_Z - 60, DECK_Z + 60))
     # the float notches are built into the T sections themselves
+    # ---- GIRDER CHANNELS. The frame's two girders used to hang under
+    # the hull at z 140..380, with the loaded waterline at 319 - half
+    # submerged whenever the boat floated. They now run in a lined
+    # channel in the WING, z 600..800: out of the water, tucked against
+    # the hull, and clear over the docked float instead of fighting it
+    # for the same band. Open at the bottom and at the stern so the
+    # hangar still slides on from astern.
+    # The channel used to be gb+40 wide with 20 mm liners, so the clear
+    # width was gb EXACTLY - the girder touched both walls. That is not
+    # a fit, it is an interference waiting for a millimetre of build
+    # tolerance. 15 mm liners in a gb+50 channel give 10 mm a side, and
+    # the roof is lifted 20 mm off the girder's top flange.
+    gb, gh = P.GIRDER_SECTION[0], P.GIRDER_SECTION[1]
+    cw, cz, lin = gb + 50, P.GIRDER_Z0, 15
+    for sy in (-1, 1):
+        ry = sy * P.GIRDER_Y
+        shell = shell.cut(box(P.GIRDER_X1 + 200, cw, gh + 80,
+                              (-100, ry - cw / 2, cz - 20)))
+        # No lead-in is cut here. One was tried at 334 mm and then at
+        # 120, and the hull volume came out IDENTICAL either way - the
+        # channel is already open at the transom, so there was nothing
+        # for the cut to remove. The 334 mm is taken by the winch.
+
+        shell = shell.fuse(box(P.GIRDER_X1 + 200, cw + 40, 20,
+                               (-100, ry - (cw + 40) / 2, cz + gh + 20)))
+        for dy in (-1, 1):
+            shell = shell.fuse(box(
+                P.GIRDER_X1 + 200, lin, gh + 40,
+                (-100, ry + dy * (cw / 2) - (lin if dy > 0 else 0), cz)))
+
+    # ORDER MATTERS: the girder channels are cut FIRST and the wheel
+    # pockets second. The two voids overlap - the channel runs y
+    # 780..890 and the pocket y 810..1010 - so whichever is lined last
+    # leaves its wall standing in the other one. Lining the channel
+    # last put a 15 mm wall right down the middle of every pocket, and
+    # the swing arm, its boss, the actuator and the drive all hit it.
     # ---- WHEEL BOXES. Four of them, and they are cut into the T's
     # WING, not into the keel. Below z 600 the hull is only the 1560 mm
     # stem: at the wheel's y +-910 there is simply no hull to cut, that
@@ -184,67 +220,53 @@ def build_hull():
             shell = shell.fuse(box(P.POCKET_L + 40, P.POCKET_W + 40, 22,
                                    (cx - (P.POCKET_L + 40) / 2,
                                     py - (P.POCKET_W + 40) / 2, zt)))
-            for dy in (-1, 1):
-                shell = shell.fuse(box(
-                    P.POCKET_L + 40, 20, zt - z0,
-                    (cx - (P.POCKET_L + 40) / 2,
-                     py + dy * (P.POCKET_W / 2) - (20 if dy > 0 else 0), z0)))
+            # OUTBOARD wall only. The pocket and the girder channel are
+            # one merged void here, and the inboard wall would stand in
+            # the middle of it - straight through the girder. The
+            # channel's own inboard liner closes that side already.
+            shell = shell.fuse(box(
+                P.POCKET_L + 40, 10, zt - z0,
+                (cx - (P.POCKET_L + 40) / 2,
+                 py + sy * P.POCKET_W / 2 - (10 if sy > 0 else 0), z0)))
+            # the end walls stop OUTBOARD of the girder channel. Run
+            # them the full width of the pocket and they cross the
+            # channel, which puts a 20 mm plate through the girder at
+            # both ends of every pocket - six wheels, twelve plates.
+            ey0 = sy * (P.GIRDER_Y + (P.GIRDER_SECTION[0] + 50) / 2)
+            ey1 = py + sy * (P.POCKET_W / 2 + 20)
             for dx in (-1, 1):
                 shell = shell.fuse(box(
-                    20, P.POCKET_W + 40, zt - z0,
+                    20, abs(ey1 - ey0), zt - z0,
                     (cx + dx * (P.POCKET_L / 2) - (20 if dx > 0 else 0),
-                     py - (P.POCKET_W + 40) / 2, z0)))
+                     min(ey0, ey1), z0)))
 
-    # ---- GIRDER CHANNELS. The frame's two girders used to hang under
-    # the hull at z 140..380, with the loaded waterline at 319 - half
-    # submerged whenever the boat floated. They now run in a lined
-    # channel in the WING, z 600..800: out of the water, tucked against
-    # the hull, and clear over the docked float instead of fighting it
-    # for the same band. Open at the bottom and at the stern so the
-    # hangar still slides on from astern.
-    gb, gh = P.GIRDER_SECTION[0], P.GIRDER_SECTION[1]
-    cw, cz = gb + 40, P.GIRDER_Z0
+    # ---- KEEL SEAT for the hangar's forward cross tie. One shallow
+    # pocket cut flush into the stem bottom, lined so the hull stays
+    # closed, with a stop at its forward end for the tie to seat
+    # against.
+    #
+    # This replaces a 3 400 mm channel running most of the length of
+    # the bottom. That channel was there because the tie had to slide
+    # the whole way aft-to-forward to dock, in contact the entire
+    # time. With the arm jacks it does not: the frame goes down 349 mm
+    # for the approach, so the tie passes clear UNDER the keel and only
+    # comes up into this seat at the end of the travel. The hull gets
+    # roughly a cubic metre of displacement back, and loses 3 m of slot
+    # that had to be kept fair and watertight.
+    seat_x = P.GIRDER_X1 - P.HANGAR_BIGHT[0] - 60
+    seat_w = 2 * P.STEM_HW - 40
+    shell = shell.cut(box(P.TIE_SEAT_L, seat_w, P.TIE_SEAT_Z + P.HANGAR_BIGHT[1] / 2 + 20,
+                          (seat_x, -seat_w / 2, -20)))
+    cd = P.TIE_SEAT_Z + P.HANGAR_BIGHT[1] / 2
+    shell = shell.fuse(box(P.TIE_SEAT_L + 52, seat_w, 26,
+                           (seat_x - 26, -seat_w / 2, cd)))
     for sy in (-1, 1):
-        ry = sy * P.GIRDER_Y
-        shell = shell.cut(box(P.GIRDER_X1 + 200, cw, gh + 40,
-                              (-100, ry - cw / 2, cz - 20)))
-        # No lead-in is cut here. One was tried at 334 mm and then at
-        # 120, and the hull volume came out IDENTICAL either way - the
-        # channel is already open at the transom, so there was nothing
-        # for the cut to remove. The 334 mm is taken by the winch.
-
-        shell = shell.fuse(box(P.GIRDER_X1 + 200, cw + 40, 20,
-                               (-100, ry - (cw + 40) / 2, cz + gh)))
-        for dy in (-1, 1):
-            shell = shell.fuse(box(
-                P.GIRDER_X1 + 200, 20, gh + 20,
-                (-100, ry + dy * (cw / 2) - (20 if dy > 0 else 0), cz)))
-
-    # ---- KEEL CHANNEL for the hangar's cross tie. The tie has to
-    # travel the whole length of the hull bottom to dock, so instead of
-    # hanging in the flow it runs in a shallow channel cut into the
-    # keel and finishes FLUSH: no bar in the water, no drag. The
-    # forward end of the channel is ramped so the water closes over it.
-    ch_x1 = 3400
-    shell = shell.cut(box(ch_x1, P.TIE_CHANNEL_W, P.TIE_CHANNEL_D + 10,
-                          (-40, -P.TIE_CHANNEL_W / 2, -10)))
-    ramp = Part.makeBox(420, P.TIE_CHANNEL_W, P.TIE_CHANNEL_D,
-                        Vector(ch_x1, -P.TIE_CHANNEL_W / 2, 0))
-    ramp.rotate(Vector(ch_x1, 0, P.TIE_CHANNEL_D), Vector(0, 1, 0), 15)
-    shell = shell.cut(ramp)
-    # LINE the channel: cutting it opened the hull shell, so the roof
-    # and both walls are added back and the boat stays watertight
-    cw, cd = P.TIE_CHANNEL_W, P.TIE_CHANNEL_D
-    shell = shell.fuse(box(ch_x1 + 420, cw, 26, (-40, -cw / 2, cd)))
-    for sy in (-1, 1):
-        shell = shell.fuse(box(ch_x1 + 420, 26, cd + 26,
-                               (-40, sy * cw / 2 - (26 if sy > 0 else 0), 0)))
-    # guide strips INSIDE the channel, and the stop the tie seats on
-    for sy in (-1, 1):
-        shell = shell.fuse(box(ch_x1 - 200, 70, 34,
-                               (60, sy * 400 - 35, P.TIE_CHANNEL_D - 34)))
-    shell = shell.fuse(box(90, P.TIE_CHANNEL_W - 60, P.TIE_CHANNEL_D,
-                           (ch_x1 - 120, -(P.TIE_CHANNEL_W - 60) / 2, 0)))
+        shell = shell.fuse(box(P.TIE_SEAT_L + 52, 26, cd + 26,
+                               (seat_x - 26,
+                                sy * seat_w / 2 - (26 if sy > 0 else 0), 0)))
+    # the stop the tie seats against at the forward end of its travel
+    shell = shell.fuse(box(40, seat_w - 60, cd,
+                           (seat_x + P.TIE_SEAT_L - 40, -(seat_w - 60) / 2, 0)))
 
     # the dome is a ROOM, not a bubble on the deck: open the foredeck
     # under it so the saloon sole runs on through, leaving a 130 mm
@@ -604,11 +626,20 @@ def build_curtains(deg):
             Part.makeCompound(hinges))
 
 
-def build_hangar(phi, coupled=True, tow="sea"):
-    """The docking gear: spike rails in the hull recesses, the electric
-    extenders, and the bight + drawbar joining the float tails.
+def build_hangar(phi, coupled=True, tow="sea", drop=0.0,
+                 standoff_x=None, deck=True, wheels_down=None):
+    """The hangar frame: girders, running gear, V arms, floor, ties.
     phi 0 = docked, 90 = extended to the sea stance.
+
+    `drop` lowers the FRAME relative to the floats, which is what the
+    arm jacks do: the floats stay on their own waterline and everything
+    bolted to them comes down. At drop = dock_gap() the girders line up
+    with the boat's wing channel, which is the only height at which the
+    frame can be slid in from astern.
+
     Returns (frame, locks, rubber)."""
+    if wheels_down is None:
+        wheels_down = phi <= 5      # default: down only in the road pose
     parts, locks, rubber = [], [], []
     pod = P.pod_at(phi)
 
@@ -643,10 +674,13 @@ def build_hangar(phi, coupled=True, tow="sea"):
             45, 110, Vector(700, ry + sy * (gb / 2), gz),
             Vector(0, sy, 0)))
         # web stiffeners every 1.2 m - the girder is the load path
+        # INTERNAL diaphragms, flush in the box section. They were
+        # drawn 70 mm proud all round, which put 130 x 180 of steel
+        # outside a girder running in a 100 mm channel - eight of them,
+        # every one buried in the hull. A web stiffener in a box girder
+        # is inside the box; that is what it stiffens.
         for lx in range(500, int(P.GIRDER_X1) - 300, 1200):
-            parts.append(box(90, gb + 70, gh + 60,
-                             (lx, ry - (gb + 70) / 2,
-                              gz - (gh + 60) / 2)))
+            parts.append(box(90, gb, gh, (lx, ry - gb / 2, gz - gh / 2)))
 
     # ---- SWING ARMS AND WHEELS, on the FRAME. The wheel sits on the
     # END of a 445 mm arm pivoted at z 445 off the girder. Hanging
@@ -661,7 +695,7 @@ def build_hangar(phi, coupled=True, tow="sea"):
     # the boat. It only swings the arm.
     for wx in P.WHEEL_XS:
         for sy in (-1, 1):
-            pivot, axle = P.arm_points(sy, down=(phi <= 5))
+            pivot, axle = P.arm_points(sy, down=wheels_down)
             py = pivot[0]
             # the arm itself, pivot to axle
             arm = Part.makeCylinder(
@@ -671,15 +705,24 @@ def build_hangar(phi, coupled=True, tow="sea"):
             parts.append(arm)
             # pivot boss and its bracket down onto the girder web
             parts.append(Part.makeCylinder(
-                95, P.POCKET_W + 60, Vector(wx, py - (P.POCKET_W + 60) / 2,
+                95, P.POCKET_W - 60, Vector(wx, py - (P.POCKET_W - 60) / 2,
                                             pivot[1]), Vector(0, 1, 0)))
-            # bracket dropping from the girder down to the pivot
-            parts.append(box(200, 170, P.GIRDER_Z - pivot[1] + 100,
+            # bracket dropping from the girder down to the pivot. It
+            # used to run 100 mm PAST the girder centre; anything on
+            # the frame that stands above the girder's underside and is
+            # not inside the girder channel hits the wing during the
+            # docking slide, because the wheels are not under their
+            # pockets yet at that point.
+            parts.append(box(200, 170,
+                             P.GIRDER_Z - P.GIRDER_SECTION[1] / 2
+                             - pivot[1] + 100,
                              (wx - 100, py - 85, pivot[1] - 100)))
             # the leadscrew actuator: frame lug to a lug at 0.6 R along
             # the arm. Self-locking, so the arm parks anywhere.
             lug = (wx, py, pivot[1] + (axle[1] - pivot[1]) * 0.6)
-            anc = (wx + 330, py, P.GIRDER_Z - P.GIRDER_SECTION[1] / 2)
+            # the anchor lug hangs BELOW the girder's underside, not
+            # above it - same reason as the bracket
+            anc = (wx + 330, py, P.GIRDER_Z - P.GIRDER_SECTION[1] / 2 - 90)
             # the anchor LUG on the girder's underside - the actuator
             # used to start at a point in space with nothing to react
             # against, which is what made it read as a loose rod
@@ -691,8 +734,8 @@ def build_hangar(phi, coupled=True, tow="sea"):
                 P.ACT_D / 2 + 14, d.Length * 0.45, Vector(*anc), d))
             # stub axle, tyre and rim on the END of the arm
             parts.append(Part.makeCylinder(
-                46, P.WHEEL_W + 90,
-                Vector(wx, axle[0] - (P.WHEEL_W + 90) / 2, axle[1]),
+                46, P.WHEEL_W + 20,
+                Vector(wx, axle[0] - (P.WHEEL_W + 20) / 2, axle[1]),
                 Vector(0, 1, 0)))
             rubber.append(Part.makeTorus(
                 (P.WHEEL_DIA - P.WHEEL_W) / 2, P.WHEEL_W / 2,
@@ -705,9 +748,14 @@ def build_hangar(phi, coupled=True, tow="sea"):
             # in a box on the girder web, one short shaft out through a
             # marine face seal to the forward wheel.
             if wx == min(P.WHEEL_XS):
+                # the box used to straddle z 550..770, i.e. 170 mm up
+                # into the wing, where the hull is solid and nothing is
+                # cut for it. It fits entirely in the z 380..600 band
+                # under the wing, outboard of the stem - the same clear
+                # air the V arms swing in.
                 parts.append(box(380, 220, 220,
                                  (wx - 480, py + sy * 60 - 110,
-                                  P.GIRDER_Z - 110)))
+                                  P.BEAM_Z0)))
                 parts.append(Part.makeCylinder(
                     P.SEAL_DIA / 2, 60,
                     Vector(wx, axle[0] - sy * (P.WHEEL_W / 2 + 60), axle[1]),
@@ -725,9 +773,9 @@ def build_hangar(phi, coupled=True, tow="sea"):
     for sy in (-1, 1):
         for ax in P.ARM_XS:
             # hull pin on the girder, float pin on the float's inner face
-            px, py = ax, sy * P.STEM_HW
+            px, py = ax, sy * P.arm_pin_y()
             tx = ax - P.ARM_L * _math.cos(ang) * 0 - P.ARM_L * (1 - _math.cos(ang))
-            ty = sy * (P.STEM_HW + P.ARM_L * _math.sin(ang))
+            ty = sy * (P.arm_pin_y() + P.ARM_L * _math.sin(ang))
             L = _math.hypot(tx - px, abs(ty) - abs(py))
             yawd = _math.degrees(_math.atan2(abs(ty) - abs(py), tx - px))
             arm = box(max(L, 1.0), ab, ah, (0, -ab / 2, P.BEAM_Z0))
@@ -744,22 +792,34 @@ def build_hangar(phi, coupled=True, tow="sea"):
                 P.ARM_JACK_TUBE_D / 2, P.ARM_JACK_STROKE * 0.55,
                 Vector(tx, ty, P.BEAM_Z0 + P.BEAM_H / 2),
                 Vector(0, 0, -1)))
+            # the screw and its drive head are drawn RETRACTED, inside
+            # the arm's own band. Drawn extended they stood 280 mm
+            # above the wing lip, through the hull, in every docked
+            # pose - the jack is only wound out when the frame is down
+            # and the boat is not there.
             parts.append(Part.makeCylinder(
-                P.ARM_JACK_SCREW / 2, P.ARM_JACK_STROKE * 0.5,
-                Vector(tx, ty, P.BEAM_Z0 + P.BEAM_H / 2 + 40),
+                P.ARM_JACK_SCREW / 2, P.BEAM_H / 2 - 20,
+                Vector(tx, ty, P.BEAM_Z0 + P.BEAM_H / 2),
                 Vector(0, 0, 1)))
-            parts.append(box(150, 150, 110,
+            parts.append(box(150, 150, 60,
                              (tx - 75, ty - 75,
-                              P.BEAM_Z0 + P.BEAM_H / 2 + 40)))
+                              P.BEAM_Z0 + P.BEAM_H - 60)))
             for (qx, qy) in ((px, py), (tx, ty)):     # the two pins
+                # the pin used to run BEAM_Z0-100 to +700, poking 100 mm
+                # up into the wing where the hull is solid across the
+                # full beam and nothing is cut for it. It now lives
+                # entirely in the z 320..600 band, under the wing.
                 parts.append(Part.makeCylinder(
-                    P.HINGE_PIN_D / 2, P.BEAM_H + 200,
-                    Vector(qx, qy, P.BEAM_Z0 - 100), Vector(0, 0, 1)))
-                parts.append(box(200, 220, 90,
-                                 (qx - 100, qy - 110, P.BEAM_Z0 - 100)))
+                    P.HINGE_PIN_D / 2, P.BEAM_H + 60,
+                    Vector(qx, qy, P.BEAM_Z0 - 60), Vector(0, 0, 1)))
+                parts.append(box(200, 140, 90,
+                                 (qx - 100, qy - 70, P.BEAM_Z0 - 60)))
             # the open stop: a hard lug on the girder the arm lands on
+            # py - sy*55 put this lug INBOARD of the pin on the port
+            # side, straight into the stem. Centred on the pin line it
+            # clears on both sides.
             parts.append(box(140, 110, P.BEAM_H,
-                             (px - 70 - 190, py - sy * 55, P.BEAM_Z0)))
+                             (px - 70 - 190, py - 55, P.BEAM_Z0)))
         # haul-in line: float's forward end back to a block on the frame
         locks.append(rod((fcx + P.FLOAT_LEN / 2 - 300, sy * (fcy - P.FLOAT_W / 2),
                           P.BEAM_Z0 + P.BEAM_H / 2),
@@ -771,7 +831,7 @@ def build_hangar(phi, coupled=True, tow="sea"):
         # road latch, holding the V shut against the stem face
         parts.append(box(160, 120, 140,
                          (P.FLOAT_X_DOCKED - P.FLOAT_LEN / 2 + 500,
-                          sy * P.STEM_HW - 60, P.BEAM_Z0 + 40)))
+                          sy * P.arm_pin_y() - 60, P.BEAM_Z0 + 40)))
 
     # ---- THE FLOOR. Aluminium deck panels between the girders, on
     # the frame and only on the frame: the floats move, so nothing here
@@ -788,7 +848,7 @@ def build_hangar(phi, coupled=True, tow="sea"):
     # frame - standing inside the boat's stem, which is precisely what
     # the comment above says cannot be there.
     dw, dl = P.deck_panels()
-    if phi > 0:                     # laid only when the boat is off
+    if deck and not coupled:        # laid only when the boat is OFF
         bb, bh, _bt = P.DECK_BEARER
         for _k in range(P.DECK_BEARER_N):
             bx = P.GIRDER_X0 + (_k + 1) * dl / (P.DECK_BEARER_N + 1)
@@ -814,17 +874,48 @@ def build_hangar(phi, coupled=True, tow="sea"):
                               P.DECK_Z + P.DECK_PLANK[1])))
 
     # ---- THE BIGHT AND THE FORWARD TIE. Two girders on their own are
-    # two rails; what makes them a frame is a transverse tie at each
-    # end. Both sit at girder level in the wing channel, so neither is
-    # in the water and neither fouls the docked float (top z 530).
+    # two rails; a transverse tie at each end makes them a frame.
+    #
+    # Both used to sit at GIRDER level, and both were therefore drawn
+    # straight through the boat: above z 600 the hull is full beam, so
+    # ANY member crossing the centreline up there is inside the cabin.
+    # There is no channel for them and there cannot be one - it would
+    # be a bar across the saloon at knee height.
+    #
+    # So they go where a boat trailer's crossbeams actually go: under
+    # the keel. The bight clears astern of the transom entirely. The
+    # forward tie drops on legs outboard of the stem - open air, below
+    # the wing - and crosses in a short seat cut flush into the keel.
+    #
+    # It is a SEAT, not the 3.4 m travel channel that used to be cut
+    # here. That channel existed because the tie had to slide the whole
+    # length of the bottom to dock. It does not any more: the jacks put
+    # the frame 349 mm down for the approach, which carries the tie
+    # clear UNDER the keel, and it only rises into the seat at the end.
+    # Trading 3.4 m of channel for 180 mm of seat gives the hull back
+    # about a cubic metre of the volume it floats on.
     bb, bh = P.HANGAR_BIGHT
     by = P.GIRDER_Y + gb / 2
-    for tx, tag in ((P.GIRDER_X0, "bight"), (P.GIRDER_X1 - bb, "forward")):
-        parts.append(box(bb, 2 * by, bh,
-                         (tx, -by, gz - bh / 2)))
-        for s_ in (-1, 1):                      # gussets into the girders
-            parts.append(box(bb + 260, 90, bh - 30,
-                             (tx - 130, s_ * P.GIRDER_Y - 45, gz - bh / 2 + 15)))
+    # the bight: aft of the transom, nothing to clear
+    parts.append(box(bb, 2 * by, bh, (P.GIRDER_X0, -by, gz - bh / 2)))
+    for s_ in (-1, 1):
+        parts.append(box(bb + 40, 90, bh - 30,
+                         (P.GIRDER_X0 - 20, s_ * P.GIRDER_Y - 45,
+                          gz - bh / 2 + 15)))
+    # THERE IS NO FORWARD TIE, and there cannot be one. At girder level
+    # it crosses the cabin - SOLE_Z is 620, twenty millimetres above the
+    # wing, so there is no bilge to hide a beam in. Under the keel it
+    # cannot clear during the approach either: the girders have to be AT
+    # the channel while the tie would have to be BELOW the keel, and the
+    # frame is rigid, so it cannot be both.
+    #
+    # It does not need one. The girders are closed at the forward end by
+    # whatever the hangar is doing at the time:
+    #   detached  - the three deck bearers, which are laid with the deck
+    #   docked    - the boat itself, captive in both girder channels
+    #   sliding in - the bight and the twelve bracket diagonals, and the
+    #               only load then is the winch pulling it straight
+    # That is the whole reason the bight is as deep as it is.
 
     # ---- THE DRAWBAR. Demountable: on the road it pins into two
     # sockets on the bight and drops to the car ball 445 mm over the
@@ -860,11 +951,18 @@ def build_hangar(phi, coupled=True, tow="sea"):
                               gz - 80)))
 
     if not coupled:
-        off = Placement(Vector(P.HANGAR_STANDOFF, 0,
-                               P.hangar_standoff_z()), Rotation())
+        sx = P.HANGAR_STANDOFF if standoff_x is None else standoff_x
+        off = Placement(Vector(sx, 0, P.hangar_standoff_z()), Rotation())
         for grp in (parts, locks, rubber):
             for shp in grp:
                 shp.Placement = off.multiply(shp.Placement)
+    if drop:
+        # the jacks, applied: the frame and everything on it comes down
+        # relative to the floats, which do not move because they float
+        dn = Placement(Vector(0, 0, -drop), Rotation())
+        for grp in (parts, locks, rubber):
+            for shp in grp:
+                shp.Placement = dn.multiply(shp.Placement)
     return (Part.makeCompound(parts), Part.makeCompound(locks),
             Part.makeCompound(rubber))
 
@@ -1474,8 +1572,11 @@ def build_mode(mode):
      hatch, hydraulics, thruster) = build_float(pod, 0,
                                                 P.float_yaw(cfg["phi"]),
                                                 fx_now)
-    hframe, hlocks, htyres = build_hangar(cfg["phi"], cfg.get("coupled", True),
-                                  cfg["tow"])
+    hframe, hlocks, htyres = build_hangar(
+        cfg["phi"], cfg.get("coupled", True), cfg["tow"],
+        drop=P.dock_gap() if cfg.get("drop") else 0.0,
+        standoff_x=cfg.get("standoff_x"), deck=cfg.get("deck", True),
+        wheels_down=cfg.get("wheels_down"))
     add("HangarFrame", hframe, (0.55, 0.57, 0.60), group=g_gear)
     add("HangarLocks", hlocks, (0.80, 0.65, 0.20), group=g_gear)
     add("HangarTyres", htyres, (0.12, 0.12, 0.13), group=g_gear)
@@ -1484,8 +1585,8 @@ def build_mode(mode):
     add("CurtainPanels", cpanels, PANEL, group=g_gear)
     add("CurtainHinges", chinges, GRAY, group=g_gear)
     stand_off = (None if cfg.get("coupled", True) else
-                 Placement(Vector(P.HANGAR_STANDOFF, 0, P.hangar_standoff_z()),
-                           Rotation()))
+                 Placement(Vector(cfg.get("standoff_x") or P.HANGAR_STANDOFF,
+                                  0, P.hangar_standoff_z()), Rotation()))
 
     def _off(shape):
         if stand_off is not None and shape is not None:
