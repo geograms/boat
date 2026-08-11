@@ -26,7 +26,8 @@ os.makedirs(OUT, exist_ok=True)
 for old in glob.glob(OUT + "/*.png"):
     os.remove(old)
 
-MODES = ["cruise", "detached", "deck", "road", "harbor", "launch", "anchor"]
+MODES = ["cruise", "detached", "docking", "deck", "road",
+         "harbor", "launch", "anchor"]
 # Build one mode at a time and close it again: six documents' worth of
 # view providers open at once is what killed the GUI process.
 sys.argv = ["beauty"]

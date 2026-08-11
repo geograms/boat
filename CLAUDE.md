@@ -162,6 +162,35 @@ viewAxonometric` + `SendMsgToActiveView("ViewFit")`, save at 2400×1500.
 Plan views from below are the most informative single view of the
 hangar.
 
+### 4b. A render CANNOT prove two parts fit - intersect them
+
+Renders are how you find a part that is missing or obviously wrong.
+They are useless for interference, because the hull stands in front of
+the hangar in every view: the frame was buried in the wing by 21 litres
+in `cruise` and 11 in `road`, and 12 litres of float was inside the
+hull on each side, and NONE of it showed in any picture.
+
+`freecad/dock_check.py` does it properly - it intersects the hull solid
+with each part of the hangar and prints the volume:
+
+```bash
+cd freecad && ~/bin/FreeCAD.AppImage --console dock_check.py < /dev/null \
+    | sed -n '/DOES IT FIT/,$p'
+# every mode must say FITS, and the last line must be ALL CLEAR
+```
+
+Run it after ANY geometry change. Two things it taught that are worth
+keeping in mind while drawing:
+
+- **Tangency is not a fit.** Two surfaces at the same coordinate give
+  litres of boolean sliver and will not build. Give real clearance -
+  `FLOAT_DOCK_GAP_Y` exists because the float sat on the stem face at
+  exactly zero.
+- **The cap under the wing is `T_LIP_Z` (590), not `T_STEP_Z` (600).**
+  The wing's outer lip hangs lower than its step, and it is the lip
+  that everything passing underneath has to clear. Probe the hull if in
+  doubt: `hull.isInside(Vector(x, y, z), 1e-6, True)`.
+
 ### 5. Delete stale `.FCStd` for modes that no longer exist
 
 `MODES` in params is the list. Anything else in `freecad/*.FCStd` is a
