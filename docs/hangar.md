@@ -345,3 +345,51 @@ Run it after any geometry change:
 ```
 
 All eight poses now report **FITS**, zero interference.
+
+## 12. The floats are fixed now, and what that decided
+
+The V arms are gone. Each float bolts to the girder on **four welded
+struts** - no pins, no stops, no haul ropes, no latch, no groove in the
+float, no parallelogram to keep true, and no powered jacks either.
+**Nothing on the hangar moves any more except the six wheels.**
+
+| | was | now |
+|---|---|---|
+| Float connection | 4 swinging V arms on 8 vertical pins + 4 powered screw jacks | **4 welded struts** |
+| Mass | 55 kg of arm gear + 56 kg of jacks | **36 kg** |
+| Governing load | 16.4 kN of slam on a 900 mm lever, in bending | the same blow on a **260 mm** strut |
+
+The strut is sized by a *side* blow, not the vertical one - 4.9 kN taken
+as bending over its own short length, 12 MPa against 104. The axial
+case is trivial. That is the structural argument for the change in one
+line: **the arm multiplied the worst sea load by 3.5; the strut divides
+it by the same.**
+
+### What it cost, stated plainly
+
+Righting is reserve × **lever**, and a fixed float can only sit where
+the road lets it. Beam is 2.50 m in every condition instead of 4.05.
+
+| | with arms | **fixed** |
+|---|---|---|
+| Peak righting | 14.7 kNm | **3.8 kNm** |
+| F6 gust (4.0 kNm) | SF 3.7 | **SF 0.95** |
+| Stability vanishes | beyond 40° | **~38°** |
+
+**An F6 gust alone exceeds the peak righting moment.** The crew's own
+weight on one rail is most of it. This is a **sheltered-water boat** as
+drawn - canals, harbours, rivers - not ISO category C, and not the
+coastal boat the floats were sized for. `checks()` reports it as the
+first open item, every run.
+
+### And it cannot be docked afloat any more
+
+A fixed float cannot move out of the hull's way, so the frame cannot be
+slid under a floating boat: the solid check reads **105 litres** of
+float driven into the wing. Splaying the arms was the only thing that
+made the afloat slide-in possible, and the screw jacks went with them.
+
+So the boat is picked up **off a slipway**, the way every trailered boat
+is: back the rig down until it floats over, then pull out. That is a
+deliberate reversal of the earlier decision to dock afloat, and it is
+the price of having nothing that moves.

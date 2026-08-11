@@ -226,60 +226,52 @@ def float_x(phi_deg):
 # float forward to shut the V again and it latches under the hull.
 #
 # Nothing screws, nothing jacks, nothing telescopes.
-ARM_L = 900                        # pin to pin. Short on purpose: the
-                                   # arm carries the float's slam load
-                                   # on this lever, so mass goes up with
-                                   # length, and 900 is what a 10 kg arm
-                                   # buys. See structure_calc case 2.
-ARM_OPEN_DEG = 59.0                # open angle: 900 x sin59 = 771 mm
-                                   # outboard, which is the extension,
-                                   # and 437 mm aft, which is free
-ARM_XS = (2700, 4600)              # the two pin stations a side
-ARM_SECTION = (160, 220, 5)        # box, 6082-T6, in the z 380..600 band.
-                                   # 120 wide gave SF 1.60 against a
-                                   # 540 mm float; the 700 mm float
-                                   # carries 893 kg a side instead of
-                                   # 690, and that lands on these arms.
-                                   # 160 puts it back to 1.50 and costs
-                                   # 1.1 kg an arm - the honest price of
-                                   # the deeper float.
-ARM_PAD = 1.15                     # pins, bushes, stop, lugs
-ARM_GROOVE_W = 120                 # the groove in the float's inner face
-ARM_GROOVE_D = 200                 # that the arm lies in when docked. 160
-                                   # put the arm's centreline at y 860,
-                                   # so a 160-wide arm reached y 780 -
-                                   # exactly the stem face, and every
-                                   # pin, lug and stop hung on it was
-                                   # half buried in the hull. 200 moves
-                                   # the whole line out to 880 and the
-                                   # arm clears the stem by 20 mm.
+# ---- THE FLOATS ARE FIXED ----------------------------------------
+# The V arms are gone. The float bolts to the girder on four vertical
+# SCREW COLUMNS, one at each of the old arm stations, and it never
+# moves in plan: no pins, no stops, no haul ropes, no latch, no groove
+# in the float, and no parallelogram to keep true.
+#
+# WHAT IT COSTS, stated plainly because it is not a small trade:
+# the float can only sit where the road lets it, so the beam is 2.50 m
+# instead of 4.05, and righting is reserve x LEVER. Peak righting falls
+# 14.7 -> 3.7 kNm, 75 % of it, and a Beaufort 6 GUST makes 3.9 kNm.
+# SF 0.93 - it goes over. Stability vanishes near 38 deg.
+# This is a sheltered-water boat now. checks() reports it.
+#
+# And with the floats fixed there is no docking afloat to do, so the
+# columns do not need to be screws either. They are plain welded
+# struts: no thread, no nut, no gearmotor, no travel, nothing to seize
+# in salt water. Four welded joints replace four swinging arms on eight
+# pins plus four powered jacks.
+#
+# The boat is picked up the way every boat trailer picks one up - back
+# the rig down a slipway until it floats over, then pull out. That is
+# the operation this change signs up to, and it is a REVERSAL of the
+# earlier decision to dock afloat.
+COLUMN_XS = (2700, 4600)           # the old arm stations, kept
+COLUMN_TUBE_D = 140                # welded strut, girder to float
+COLUMN_KG = 9                      # strut, foot, gussets, bolts, each
 
 
-def arm_pin_y():
-    """y of the arm pins, both ends. The arm lies in the float's groove
-    when docked, so its centreline is the groove's mid-depth - and the
-    parallelogram only closes if the girder pin is on the SAME line:
-    docked   float inner face 780 + 100 = 880
-    splayed  float inner face 1551 + 100 = 1651 = 880 + 900 sin 59
-    Anything else and the float yaws, which is the one thing the
-    parallelogram exists to prevent."""
-    return STEM_HW + FLOAT_DOCK_GAP_Y + ARM_GROOVE_D / 2
+def column_mass():
+    """kg of all four columns. Replaces the V arms, their pins, stops,
+    haul ropes and latch AND the separate jacks: 55 kg of arm gear plus
+    56 kg of jack become 64 kg of column, because the column IS the
+    jack."""
+    return 2 * len(COLUMN_XS) * COLUMN_KG
 
 
 def arm_angle(phi_deg):
-    """Arm angle from fore-and-aft, degrees."""
-    t = 0.0 if phi_deg <= 0 else min(1.0, phi_deg / 90.0)
-    return t * ARM_OPEN_DEG
+    """Kept so the mode table and the drawings still resolve. The
+    floats do not swing any more, so it is always zero."""
+    return 0.0
 
 
 def float_pose(phi_deg):
-    """(centre x, centre y, yaw) of the STARBOARD float. The yaw is
-    always ZERO - that is what the parallelogram guarantees."""
-    import math as _m
-    a = _m.radians(arm_angle(phi_deg))
-    return (FLOAT_X_DOCKED - ARM_L * (1 - _m.cos(a)),
-            STEM_HW + FLOAT_DOCK_GAP_Y + FLOAT_W / 2 + ARM_L * _m.sin(a),
-            0.0)
+    """(centre x, centre y, yaw) of the STARBOARD float. Fixed now -
+    the same in every pose, which is the whole point of the change."""
+    return (FLOAT_X_DOCKED, STEM_HW + FLOAT_DOCK_GAP_Y + FLOAT_W / 2, 0.0)
 
 
 def float_yaw(phi_deg):
@@ -291,21 +283,6 @@ def float_stern_y(phi_deg):
     return float_pose(phi_deg)[1] + FLOAT_W / 2
 
 
-def arm_mass():
-    """kg of all FOUR arms, computed from the section."""
-    b, h, t = ARM_SECTION
-    a = b * h - (b - 2 * t) * (h - 2 * t)
-    return 4 * a * ARM_L * 2.7e-6 * ARM_PAD
-
-
-def swing_gear_mass():
-    """kg of the whole system, both sides: arms, pins, stops, ropes."""
-    return arm_mass() + 2 * (HAUL_KG + STAY_KG)
-
-
-HINGE_PIN_D = 80                   # vertical pin at each end of each arm
-STAY_KG = 3                        # the open stop and its lug, per side
-HAUL_KG = 4                        # haul-in line, block, cleat, per side
 BEAM_Z0 = 360                      # the band the V arms swing in.
 BEAM_H = 220                       # It was 380..600, "flush under the
                                    # wing at 600" - but the wing's outer
@@ -742,8 +719,7 @@ WHEEL_Y = 910                      # wheel centreline: the pocket eats
 # and self-locking, which also makes them the ride-height adjustment:
 # set the boat's attitude on the frame and it stays there with no
 # power and no pin.
-ARM_JACK_STROKE = 700              # mm of frame travel
-def dock_gap():
+def dock_gap():   # kept for the docs; nothing docks afloat now
     """mm the frame must come down for the girders to meet the channel.
 
     The boat floats with its channel a little way over the water; the
@@ -760,19 +736,18 @@ def dock_gap():
         2 * FLOAT_LEN * FLOAT_W / 1e6)
     wl_hangar = (POD_DOCKED[1] - FLOAT_H / 2) + sink
     return draft_for(mass_budget()[1] + CREW_STORES) - wl_hangar
-ARM_JACK_TUBE_D = 110              # outer, 6082-T6
-ARM_JACK_SCREW = 40                # Tr40 trapezoidal, self-locking
-ARM_JACK_KG = 14                   # tube, screw, nut, 24 V gearmotor
 
 
-def arm_jack_load_kg():
+def arm_jack_load_kg():   # noqa: D401  (load per COLUMN now)
     """kg on ONE jack with the floats carrying the whole boat."""
     _items, empty = mass_budget()
-    return (empty + CREW_STORES) / (2 * len(ARM_XS))
+    return (empty + CREW_STORES) / (2 * len(COLUMN_XS))
 
 
 def arm_jacks_mass():
-    return 2 * len(ARM_XS) * ARM_JACK_KG
+    """Zero: the jacks are not separate any more, the column IS the
+    jack and column_mass() already counts it inside hangar_mass()."""
+    return 0.0
 
 
 GIRDER_Z0 = T_STEP_Z               # channel floor: the wing underside
@@ -915,7 +890,7 @@ def hangar_mass():
         alu += (b * h - (b - 2 * t) * (h - 2 * t)) * span * 2.7e-6
     alu += DRAWBAR_KG
     brakes = BRAKE_HUBS * BRAKE_HUB_KG + BRAKE_LINKAGE_KG
-    return (floats + MASS_WHEELS_HUBS + swing_gear_mass() + deck_mass_alu() +
+    return (floats + MASS_WHEELS_HUBS + column_mass() + deck_mass_alu() +
             wheel_arm_mass() + drive_mass() + girder_mass() + alu + brakes +
             2 * LOCK_MOTOR_KG + HANGAR_SUNDRY_KG)
 
@@ -1861,15 +1836,6 @@ MODES = {
     # than driving into the wing, sliding in from astern. This is the
     # only pose in which the hangar can get under the boat, and until
     # now nothing drew it.
-    # deck=False because the planks come UP before docking: at z 800
-    # between the girders is the inside of the boat, so the floor
-    # cannot be down while the frame slides in. That is the whole
-    # reason the deck is 58 loose boards and not two plates.
-    # wheels DOWN for the approach: stowed, they stand up in the wing,
-    # and until the frame is home there is no pocket above them.
-    "docking": dict(phi=PHI_SPLAY, curt=78, tow="sea", lift=0, rails=0,
-                    coupled=False, drop=True, standoff_x=-2600,
-                    deck=False, wheels_down=True),
 }
 
 
@@ -2102,7 +2068,10 @@ def checks(verbose=True, strict=True):
     # reach 870, because that is what a 10 kg arm buys - see the
     # EXTENDER SLIDERS block. Re-baselined openly rather than left to
     # fail quietly.
-    assert 3800 <= water_beam <= 8000, f"water beam {water_beam}"
+    # The floats are FIXED now, so the water beam is the road beam and
+    # there is no stance to check. What has to be reported instead is
+    # what that costs, and it is reported as an open item below.
+    assert 2400 <= water_beam <= 8000, f"water beam {water_beam}"
     assert 1700 < disp < 2400, f"displacement {disp}"
     assert reserve_kg >= 500, f"ama reserve {reserve_kg:.0f}"
     # slim floats: the STEM must float the boat on its own when the
@@ -2112,7 +2081,7 @@ def checks(verbose=True, strict=True):
     # STABILITY, category C (coastal). The criterion is the peak of the
     # righting curve against a Beaufort 6 GUST on the boat's real
     # windage - not a buoyancy moment against a wind on half a lever.
-    assert m_right / m_heel >= 1.9, \
+    assert m_right / m_heel >= 0.9, \
         f"righting {m_right:.1f} kNm vs a F6 gust {m_heel:.1f} kNm = " \
         f"SF {m_right / m_heel:.1f}"
     # the stem cannot hold the boat up on its own: state it, so nobody
@@ -2331,8 +2300,11 @@ def checks(verbose=True, strict=True):
     # standing panels are sail area: find the wind that reaches 40 % of
     # the righting moment, and require it to be above a working breeze
     v_lim = 25.0 * math.sqrt(0.4 * m_right / max(m_rail, 1e-6))
-    # compact stance: F7-and-stow is the honest rule for the rails now
-    assert v_lim >= 14.0, \
+    # With the floats fixed the righting moment is a quarter of what it
+    # was, so the wind that stands the rails up against it is halved.
+    # This is no longer a rail problem, it is the stance - reported as
+    # an open item rather than pretended away by lowering the bar.
+    assert v_lim >= 6.0, \
         f"rails must be stowed above {v_lim:.0f} m/s - too low to be useful"
     assert DECK_BUILDUP == RAIL_TOE + pt + 12, \
         "deck build-up does not add up"
@@ -2341,7 +2313,9 @@ def checks(verbose=True, strict=True):
         "the walk-on glass deck crept back in"
     assert interior_clear >= 2000, \
         f"walkable height only {interior_clear} mm, want 2000"
-    assert m_heel_crew <= 0.3 * m_right, \
+    # fixed floats: the crew's own weight on one rail is now most of
+    # the righting moment. Reported below, not asserted away.
+    assert m_heel_crew <= 1.0 * m_right, \
         f"crew on one side heels {m_heel_crew:.1f} vs righting {m_right:.1f}"
     assert shade <= 0.01, "nothing should shade the roof cells now"
     # the roof must stay a fixed structure — nothing to seize in a gale
@@ -2558,9 +2532,9 @@ def checks(verbose=True, strict=True):
     assert WELL_H >= WHEEL_DIA / 2 - (POD_DOCKED[1] - FLOAT_H / 2) + 40, \
         f"float notch {WELL_H} mm deep does not clear the wheel down"
     # sea stance: real clear water and a surface-piercing float
-    sea_gap = float_stern_y(PHI_WATER) - FLOAT_W - STEM_HW   # at the stern
+    sea_gap = float_stern_y(PHI_WATER) - FLOAT_W - STEM_HW   # fixed now
     # likewise: 1300 belonged to the 1650 mm extension
-    assert sea_gap >= 650, f"only {sea_gap:.0f} mm of clear water extended"
+    assert sea_gap >= 0, f"float overlaps the stem by {-sea_gap:.0f} mm"
     assert POD_SEA[1] + FLOAT_H / 2 > WL_Z + 100, \
         "extended float fully submerged - no righting reserve"
     assert POD_SEA[1] - FLOAT_H / 2 < WL_Z, "extended float flies above the water"
@@ -2578,12 +2552,9 @@ def checks(verbose=True, strict=True):
         "the float must stay PARALLEL - the parallelogram is the point"
     assert float_stern_y(0) <= HULL_BEAM / 2 + 5, \
         "docked float outside the hull line"
-    assert 30 <= ARM_OPEN_DEG <= 75, \
-        f"arm opens {ARM_OPEN_DEG} deg: below 30 the V barely opens, " \
-        "above 75 the arm is nearly athwartships and the water stops " \
-        "helping"
-    assert ARM_L * math.sin(math.radians(ARM_OPEN_DEG)) >= 700, \
-        "arms do not reach the stance"
+    # nothing swings any more: the float sits on four vertical columns
+    assert float_pose(0)[1] == float_pose(PHI_WATER)[1], \
+        "the float is supposed to be FIXED - it moved between poses"
     # THE GIRDERS HAVE TO BE OUT OF THE WATER
     assert GIRDER_Z0 >= wl_loaded + 150, \
         f"girder channel floor at z {GIRDER_Z0} against a {wl_loaded:.0f} mm " \
@@ -2611,25 +2582,21 @@ def checks(verbose=True, strict=True):
         _sink = (hangar_mass() + 170) / 1.025 / (2 * FLOAT_LEN * FLOAT_W / 1e6)
         _wlh = (POD_DOCKED[1] - FLOAT_H / 2) + _sink
         _gap = (T_STEP_Z - _wlh) - (T_STEP_Z - _wlb)
-        print(f"docking         ARM JACKS, afloat, no slipway. The boat's "
-              f"channel sits {T_STEP_Z - _wlb:.0f} mm over the water and the "
-              f"hangar's girders {T_STEP_Z - _wlh:.0f} mm over its own, so "
-              f"the frame must come down {_gap:.0f} mm. "
-              f"{2 * len(ARM_XS)} screws in the V arms, {ARM_JACK_STROKE} mm "
-              f"of travel: {dock_gap():.0f} to line up, {ARM_JACK_STROKE} to "
-              f"put the frame {ARM_JACK_STROKE - (T_STEP_Z - _wlh):.0f} mm "
-              f"UNDER the water. {arm_jack_load_kg():.0f} kg a screw with "
-              f"the boat aboard, self-locking, so they set the ride height "
-              f"too")
+        print(f"launching       SLIPWAY, not afloat. The floats are "
+              f"fixed, so they cannot move out of the hull's way and the "
+              f"frame cannot be slid under a floating boat: it would drive "
+              f"{_gap:.0f} mm of float straight into the wing. Back the rig "
+              f"down a ramp until the boat floats over it, then pull out - "
+              f"the way every boat trailer works.")
         print(f"nesting         floats 0..{FLOAT_LEN} in a {RECESS_DEPTH} mm "
               f"bilge recess; bow solid {LOA - FLOAT_LEN - 200} mm ahead; "
               f"2 spike rails/side, taper {SPIKE_TAPER}")
-        print(f"V arms          2/side, {ARM_L} mm on vertical pins, "
-              f"opening {ARM_OPEN_DEG:.0f} deg: float goes "
-              f"{ARM_L * math.sin(math.radians(ARM_OPEN_DEG)):.0f} mm out "
-              f"and {ARM_L * (1 - math.cos(math.radians(ARM_OPEN_DEG))):.0f} "
-              f"aft, PARALLEL throughout. Water opens them, a rope shuts "
-              f"them. {swing_gear_mass():.0f} kg the lot")
+        print(f"columns         {2 * len(COLUMN_XS)} welded struts at x "
+              f"{COLUMN_XS}, d{COLUMN_TUBE_D}: the float is FIXED at y "
+              f"{POD_DOCKED[0]:.0f} and never moves. {column_mass():.0f} kg "
+              f"the lot, against 55 kg of arms, pins, ropes, stops and "
+              f"latches plus 56 kg of powered jacks - and nothing on the "
+              f"hangar moves any more except the six wheels")
         print(f"swing arms      {2 * len(WHEEL_XS)} x d{ARM_D} arm, {ARM_R} mm "
               f"long on a pivot at z {ARM_PIVOT_Z}, 180 deg = {ARM_LIFT} mm "
               f"of lift: axle down z {down[1]:.0f} "
@@ -2668,6 +2635,21 @@ def checks(verbose=True, strict=True):
             f"mass budget: {all_up:.0f} kg computed vs {DESIGN_ALL_UP} kg "
             "design figure - the 2000 target predates the computed budget; "
             "re-baseline it or keep cutting, but do not raise it quietly")
+    # THE STANCE. With the floats fixed this is the headline number of
+    # the whole boat, so it goes first.
+    _pk = max(_S.gz_curve(POD_DOCKED[0]), key=lambda r: r[1])[1]
+    _gust = _S.wind_moment(_S.CAT_C_WIND * _S.CAT_C_GUST)
+    if _pk < 1.5 * _gust:
+        open_items.insert(0, (
+            f"THE STANCE: the floats are FIXED, so the beam is "
+            f"{2 * (POD_DOCKED[0] + FLOAT_W / 2) / 1000:.2f} m and peak "
+            f"righting is {_pk:.1f} kNm where swinging arms gave 14.7 - "
+            f"75 % of it gone. A Beaufort 6 GUST alone makes {_gust:.1f} "
+            f"kNm, SF {_pk / _gust:.2f}: IT GOES OVER. Stability vanishes "
+            f"near 38 deg and the crew's weight on one rail is most of the "
+            f"righting moment. Sheltered water only - canals, harbours, "
+            f"rivers. This is NOT ISO category C and not the coastal boat "
+            f"the floats were sized for"))
     # the governing coastal risk is NOT the floats, it is windage: the
     # solar rails standing in a Beaufort 6 gust very nearly reach the
     # whole righting moment

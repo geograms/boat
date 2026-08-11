@@ -492,11 +492,9 @@ def build_float(pod, roll, flip=0.0, fx=None):
             P.WELL_TUBE_L, P.WELL_W + 30, P.FLOAT_H - P.WELL_H + 10,
             (_wx - P.WELL_TUBE_L / 2, ty - P.FLOAT_W / 2 - 30,
              tz - P.FLOAT_H / 2 + P.WELL_H - 10)))
-    for _ax in P.ARM_XS:
-        hull_f = hull_f.cut(box(
-            P.ARM_L + 120, P.ARM_GROOVE_D, P.ARM_GROOVE_W,
-            (_ax - P.ARM_L - 60, ty - P.FLOAT_W / 2 - 10,
-             P.BEAM_Z0 - P.ARM_GROOVE_W / 2 + 30)))
+    # No arm groove any more: nothing lies against the float's inner
+    # face, so the face stays solid. That is buoyancy back, and one
+    # fewer moulded feature.
 
     # solar strips on the deck, in the gaps between the wheels
     strips = []
@@ -761,77 +759,41 @@ def build_hangar(phi, coupled=True, tow="sea", drop=0.0,
                     Vector(wx, axle[0] - sy * (P.WHEEL_W / 2 + 60), axle[1]),
                     Vector(0, sy, 0)))
 
-    # ---- THE V ARMS. Two per side on vertical pins, equal length and
-    # parallel: a parallelogram, so the float TRANSLATES and never
-    # yaws. Seen from above the two sides mirror and the four arms read
-    # as a V. They sweep AFT as they open, so the water's push on the
-    # float drives them further open against the stop; a rope pulls the
-    # float forward to shut the V and a latch holds it for the road.
-    ang = _math.radians(P.arm_angle(phi))
-    ab, ah, at_ = P.ARM_SECTION
+    # ---- THE COLUMNS. The V arms are gone. The float bolts to the
+    # girder on four vertical screw columns, one at each of the old arm
+    # stations, and it never moves in plan.
+    #
+    # What went with the arms: eight vertical pins and their lugs, four
+    # open stops, two haul ropes with blocks, two road latches, the
+    # groove down each float's inner face, and the parallelogram that
+    # had to stay true or the float would yaw. That is the robustness
+    # the change buys - a column in a tube takes side load in shear
+    # instead of on a pin, and there is no linkage to go out of square.
+    #
+    # They are plain WELDED struts - no screw, no nut, no gearmotor,
+    # nothing to seize. With the float fixed there is no docking afloat
+    # to do, so there is no travel to provide: the boat is picked up off
+    # a slipway like any other trailered boat.
     fcx, fcy, _yaw = P.float_pose(phi)
     for sy in (-1, 1):
-        for ax in P.ARM_XS:
-            # hull pin on the girder, float pin on the float's inner face
-            px, py = ax, sy * P.arm_pin_y()
-            tx = ax - P.ARM_L * _math.cos(ang) * 0 - P.ARM_L * (1 - _math.cos(ang))
-            ty = sy * (P.arm_pin_y() + P.ARM_L * _math.sin(ang))
-            L = _math.hypot(tx - px, abs(ty) - abs(py))
-            yawd = _math.degrees(_math.atan2(abs(ty) - abs(py), tx - px))
-            arm = box(max(L, 1.0), ab, ah, (0, -ab / 2, P.BEAM_Z0))
-            arm.Placement = Placement(
-                Vector(px, py, 0), Rotation(Vector(0, 0, 1), sy * yawd))
-            parts.append(arm)
-            # THE ARM JACK at the float end: a rotating electric screw
-            # between the float and the frame. The floats stay where
-            # the water puts them; winding these drives the FRAME down,
-            # 334 mm to line the channel up for docking and 700 to put
-            # it under the water entirely. Self-locking, so it doubles
-            # as the ride-height setting once the boat is aboard.
+        for cx_ in P.COLUMN_XS:
+            cy = sy * fcy
+            # outer tube, hung off the girder web
             parts.append(Part.makeCylinder(
-                P.ARM_JACK_TUBE_D / 2, P.ARM_JACK_STROKE * 0.55,
-                Vector(tx, ty, P.BEAM_Z0 + P.BEAM_H / 2),
-                Vector(0, 0, -1)))
-            # the screw and its drive head are drawn RETRACTED, inside
-            # the arm's own band. Drawn extended they stood 280 mm
-            # above the wing lip, through the hull, in every docked
-            # pose - the jack is only wound out when the frame is down
-            # and the boat is not there.
-            parts.append(Part.makeCylinder(
-                P.ARM_JACK_SCREW / 2, P.BEAM_H / 2 - 20,
-                Vector(tx, ty, P.BEAM_Z0 + P.BEAM_H / 2),
-                Vector(0, 0, 1)))
-            parts.append(box(150, 150, 60,
-                             (tx - 75, ty - 75,
-                              P.BEAM_Z0 + P.BEAM_H - 60)))
-            for (qx, qy) in ((px, py), (tx, ty)):     # the two pins
-                # the pin used to run BEAM_Z0-100 to +700, poking 100 mm
-                # up into the wing where the hull is solid across the
-                # full beam and nothing is cut for it. It now lives
-                # entirely in the z 320..600 band, under the wing.
-                parts.append(Part.makeCylinder(
-                    P.HINGE_PIN_D / 2, P.BEAM_H + 60,
-                    Vector(qx, qy, P.BEAM_Z0 - 60), Vector(0, 0, 1)))
-                parts.append(box(200, 140, 90,
-                                 (qx - 100, qy - 70, P.BEAM_Z0 - 60)))
-            # the open stop: a hard lug on the girder the arm lands on
-            # py - sy*55 put this lug INBOARD of the pin on the port
-            # side, straight into the stem. Centred on the pin line it
-            # clears on both sides.
-            parts.append(box(140, 110, P.BEAM_H,
-                             (px - 70 - 190, py - 55, P.BEAM_Z0)))
-        # haul-in line: float's forward end back to a block on the frame
-        locks.append(rod((fcx + P.FLOAT_LEN / 2 - 300, sy * (fcy - P.FLOAT_W / 2),
-                          P.BEAM_Z0 + P.BEAM_H / 2),
-                         (P.GIRDER_X1 - 300, sy * P.GIRDER_Y,
-                          P.BEAM_Z0 + P.BEAM_H / 2), 12))
-        parts.append(Part.makeCylinder(
-            55, 90, Vector(P.GIRDER_X1 - 300, sy * P.GIRDER_Y, P.BEAM_Z0),
-            Vector(0, 0, 1)))
-        # road latch, holding the V shut against the stem face
-        parts.append(box(160, 120, 140,
-                         (P.FLOAT_X_DOCKED - P.FLOAT_LEN / 2 + 500,
-                          sy * P.arm_pin_y() - 60, P.BEAM_Z0 + 40)))
+                P.COLUMN_TUBE_D / 2, P.BEAM_H + 40,
+                Vector(cx_, cy, P.BEAM_Z0 - 20), Vector(0, 0, 1)))
+            # foot on the float's deck, and a cap gusset on top
+            parts.append(box(240, 240, 40, (cx_ - 120, cy - 120,
+                                            P.BEAM_Z0 - 60)))
+            parts.append(box(150, 150, 60, (cx_ - 75, cy - 75,
+                                            P.BEAM_Z0 + P.BEAM_H - 40)))
+            # the bracket out to the girder: the float is inboard of the
+            # girder line, so this is a short shear plate, not a lever
+            gy = sy * P.GIRDER_Y
+            y0, y1 = sorted((cy, gy))
+            parts.append(box(160, max(y1 - y0, 1), 90,
+                             (cx_ - 80, y0, P.GIRDER_Z
+                              - P.GIRDER_SECTION[1] / 2 - 90)))
 
     # ---- THE FLOOR. Aluminium deck panels between the girders, on
     # the frame and only on the frame: the floats move, so nothing here

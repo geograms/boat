@@ -26,7 +26,7 @@ for old in glob.glob(OUT + "/*.png"):
 KEEP = ("Hull", "HangarFrame", "HangarTyres", "HangarLocks",
         "FloatStb", "FloatPort", "WheelForks")
 
-MODES = ["docking", "road", "cruise"]
+MODES = ["cruise", "road", "detached"]
 W, H = 2400, 1500
 
 for mode in MODES:

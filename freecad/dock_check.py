@@ -106,6 +106,6 @@ def check(mode):
 
 # FreeCAD's own argv comes through here too - "--console" is not a mode
 ok = True
-for m in ([a for a in sys.argv if a in P.MODES] or ["docking"]):
+for m in ([a for a in sys.argv if a in P.MODES] or list(P.MODES)):
     ok = check(m) and ok
 print("\nALL CLEAR" if ok else "\nCLASHES REMAIN")

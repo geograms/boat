@@ -125,33 +125,49 @@ def main():
                 break
 
     # =================================================================
-    # 2. THE V ARM
+    # 2. THE COLUMN  (sea: a float driven under by a wave)
     # =================================================================
-    # Two arms a side on vertical pins, parallel and equal - so the
-    # float translates and never yaws. A wave driving the float under
-    # puts 70 % of its buoyancy on the worse arm, on the arm's own
-    # length as the lever. That is why the arm is SHORT: mass climbs
-    # with length twice over, in section and in span.
+    # The V arms are gone; the float sits on four vertical screw
+    # columns. A wave driving the float under no longer bends anything
+    # on a 900 mm lever - it pushes STRAIGHT UP the column, which takes
+    # it in compression through the screw and its nut. That is the
+    # whole structural argument for the change: the worst sea load
+    # stopped being a bending moment and became an axial one.
     reserve = P.float_buoyancy() / 2 - P.well_loss_kg()          # kg
-    ARM_SHARE = 0.70
-    F = reserve * G * DYN_SLAM * ARM_SHARE
-    M2 = F * P.ARM_L
-    V2 = F
-    _b, _h, _t = P.ARM_SECTION
-    A2, I2, Z2 = box_section(_b, _h, _t)
+    COL_SHARE = 0.70            # the worse column of the pair
+    F = reserve * G * DYN_SLAM * COL_SHARE
+    A2, I2, Z2 = tube_section(P.COLUMN_TUBE_D, 8)
     print("\n" + "=" * 68)
-    print("2. THE V ARM  (sea: a float driven under by a wave)")
+    print("2. THE COLUMN  (sea: a float driven under by a wave)")
     print("=" * 68)
     print(f"  float reserve {reserve:.0f} kg x slam {DYN_SLAM} x "
-          f"{ARM_SHARE:.0%} -> {F / 1e3:.1f} kN on the worse arm")
-    print(f"  lever is the arm itself: {P.ARM_L} mm")
-    print(f"  opens {P.ARM_OPEN_DEG:.0f} deg -> float "
-          f"{P.ARM_L * math.sin(math.radians(P.ARM_OPEN_DEG)):.0f} mm out, "
-          f"parallel throughout")
-    ok2 = report(f"  arm {_b}x{_h}x{_t} box", M2, V2, Z2, A2, I2, 0,
-                 note="water opens it, a rope shuts it, a stop holds it")
-    print(f"  {P.arm_mass() / 4:.1f} kg the arm, {P.swing_gear_mass():.0f} kg "
-          f"the whole system both sides")
+          f"{COL_SHARE:.0%} -> {F / 1e3:.1f} kN UP the column, axial")
+    print(f"  tube d{P.COLUMN_TUBE_D} x 8: direct stress "
+          f"{F / A2:.0f} MPa   allow {ALU_FY * WELD_KNOCKDOWN / SF_STATIC:.0f}"
+          f"   {'OK' if F / A2 <= ALU_FY * WELD_KNOCKDOWN / SF_STATIC else 'FAIL'}")
+    # buckling: pinned-pinned over the free length of the column
+    Le = P.BEAM_H + 40
+    Pcr = math.pi ** 2 * ALU_E * I2 / Le ** 2
+    print(f"  Euler buckling over {Le:.0f} mm free length: {Pcr / 1e3:.0f} kN "
+          f"against {F / 1e3:.1f} kN -> SF {Pcr / F:.1f}")
+    # THE GOVERNING CASE is not the axial one. A strut with no
+    # diagonal takes a sideways or fore-and-aft blow on the float in
+    # BENDING over its own short length, as a cantilever off the
+    # girder. Take 30 % of the slam as the transverse component.
+    Fs = 0.30 * F
+    Ms = Fs * (P.BEAM_H + 40)
+    sig_s = Ms / Z2
+    allow = ALU_FY * WELD_KNOCKDOWN / SF_STATIC
+    print(f"  side blow {Fs / 1e3:.1f} kN on the float, taken as bending over "
+          f"the {P.BEAM_H + 40:.0f} mm strut:")
+    print(f"      sigma {sig_s:.0f} MPa   allow {allow:.0f} MPa   "
+          f"{'OK' if sig_s <= allow else 'FAIL'}   (SF {allow / sig_s:.2f})")
+    print("  THIS is what sizes the strut - the axial case is trivial. It is")
+    print("  also why it is short: the moment is the blow times the length,")
+    print("  where a 900 mm arm multiplied the same blow by three and a half.")
+    ok2 = (F / A2 <= allow and Pcr / F >= 3.0 and sig_s <= allow)
+    print(f"  {P.column_mass():.0f} kg the four struts, against 55 kg of V "
+          f"arms, pins, ropes and stops plus 56 kg of powered jacks")
 
     # =================================================================
     # 3. THE SWING ARM (running gear)
@@ -227,7 +243,7 @@ def main():
     print("=" * 68)
     print("VERDICT")
     print("=" * 68)
-    for nm, ok in (("U-girder", ok1), ("V arm", ok2),
+    for nm, ok in (("U-girder", ok1), ("column", ok2),
                    ("swing arm (gear)", ok3),
                    ("girder torsion", ok4)):
         print(f"  {nm:16s} {'PASS' if ok else 'FAILS AS DRAWN'}")
